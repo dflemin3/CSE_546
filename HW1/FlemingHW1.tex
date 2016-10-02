@@ -1,0 +1,122 @@
+
+\documentclass[12pt]{amsart}
+\usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+\geometry{a4paper} % or letter or a5paper or ... etc
+% \geometry{landscape} % rotated page geometry
+
+% See the ``Article customise'' template for come common customisations
+
+\title{CSE 546 HW1}
+\author{David Fleming}
+\date{}
+
+%%% BEGIN DOCUMENT
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+%%% QUESTION 1 %%%
+
+\section*{Question 1}
+
+\subsection*{1.1}
+Since 
+\begin{align}
+E[X] = \int max(X_1,X_2) f(x) dx_1 dx_2
+\end{align}
+where $f(x) = 1$ is the PDF for the uniform random variates.  We consider two regions, one below the line defined by $X = X_1 = X_2$ and one above said line for our integrations.  This gives us the following integral:
+
+\begin{equation} \label{eqn:1.1}
+\begin{split}
+E[X] & = \int_0^1 \int_{x_2}^1 x_1 dx_1 dx_2 + \int_0^1 \int_{x_1}^1 x_2 dx_2 dx_1 \\
+& = \int_0^1 (\frac{1}{2} - \frac{1}{2}x_2^2) dx_2 + \int_0^1 (\frac{1}{2} - \frac{1}{2}x_1^2) dx_1 \\
+& = (\frac{1}{2}x_2 - \frac{1}{6}x_2^2) \vert_0^1 + (\frac{1}{2}x_1 - \frac{1}{6}x_1^2) \vert_0^1 \\
+& = \frac{2}{3}
+\end{split}
+\end{equation}
+
+\subsection*{1.2}
+Since
+\begin{align}
+Var[X] = E[X^2] - E[X]^2
+\end{align}
+and we now know $E[X] = 2/3$, we solve the integral presented above but with the integrand squared as follows
+\begin{equation} \label{eqn:1.2}
+\begin{split}
+E[X^2] & = \int_0^1 \int_{x_2}^1 x_1^2 dx_1 dx_2 + \int_0^1 \int_{x_1}^1 x_2^2 dx_2 dx_1 \\
+& = \int_0^1 (\frac{1}{3} - \frac{1}{3}x_2^3) dx_2 + \int_0^1 (\frac{1}{3} - \frac{1}{3}x_1^3) dx_1 \\
+& = (\frac{1}{3}x_2 - \frac{1}{12}x_2^4)\vert_0^1 + (\frac{1}{3}x_1 - \frac{1}{12}x_1^4)\vert_0^1 \\
+& = \frac{1}{2}
+\end{split}
+\end{equation}
+
+which when combined with the definition for $Var[X]$ gives
+\begin{equation}
+Var[X] = \frac{1}{2} - \left( \frac{2}{3} \right)^2 = \frac{1}{18}
+\end{equation}
+
+\subsection*{1.3}
+
+Since 
+\begin{align}
+Cov[X,X_1] = E[X X_1] - E[X]E[X_1]
+\end{align}
+and we know $E[X]$ from $1.1$ and $E[X_1] = 1/2$ is the trivial result for the uniform distribution from $[0,1]$, we need only calculate the first term as follows:
+\begin{equation} \label{eqn:1.3}
+\begin{split}
+E[XX_1] & = \int_0^1 \int_{x_2}^1 x_1^2 dx_1 dx_2 + \int_0^1 \int_{x_1}^1 x_2 x_1 dx_2 dx_1 \\
+& = \int_0^1 (\frac{1}{3} - \frac{1}{3}x_2^3) dx_2 + \int_0^1 x_1(\frac{1}{2} - \frac{1}{2}x_1^2) dx_1 \\
+& = (\frac{1}{3}x_2 - \frac{1}{12}x_2^4) \vert_0^1 + (\frac{1}{4}x_1^2 - \frac{1}{8}x_1^4) \vert_0^1 \\
+& = \frac{3}{8} 
+\end{split}
+\end{equation}
+giving us
+\begin{equation}
+Cov[X,X_1] = E[X X_1] - E[X]E[X_1] = \frac{3}{8} - \frac{2}{3}\frac{1}{2} = \frac{1}{24}
+\end{equation}
+
+Note: For this question, I collaborated with Matt Wilde.
+
+%%% QUESTION 2 %%%
+\section*{Question 2}
+
+\subsection*{2.1}
+
+For the log-likelihood of G given $\lambda$ and i.i.d. samples, we have
+\begin{equation} \label{eqn:2.1}
+\begin{split}
+LL & = \log \left( P(G | \theta)  \right) \\
+& = \Pi_i^n P(G_i | \theta) \\
+& = \log \left( \frac{\lambda^{\Sigma_i^n k_i} e^{-\lambda n}}{\Pi_i^n k_i !} \right) \\
+& = \Sigma_i^n k_i \log \lambda - \lambda n - \log \Pi_i^n k_i !
+\end{split}
+\end{equation}
+
+\subsection*{2.2}
+
+To compute the MLE for $\lambda$ in general,
+\begin{equation} 
+\begin{split}
+\frac{\partial}{\partial \lambda} \left[ LL \right] = 0
+\end{split}
+\end{equation}
+which yields
+
+\begin{equation} \label{eqn:2.2}
+\begin{split}
+0 & = \frac{\partial}{\partial \lambda} \left( \Sigma_i^n k_i \log \lambda - \lambda n - \log \Pi_i^n k_i ! \right) \\ 
+& = \frac{\Sigma_i^n k_i}{\lambda} - n \\
+\hat{\lambda}_{MLE} & = \frac{\Sigma_i^n k_i}{n} \\
+\end{split}
+\end{equation}
+
+\subsection*{2.3}
+For the observed set G, I use Eqn.~\ref{eqn:2.2} to compute $\lambda_{MLE}$ as
+\begin{equation}
+\hat{\lambda}_{MLE} = \frac{4+1+3+5+5+1+3+8}{8} = 3.75
+\end{equation}
+
+Note: For this question, I collaborated with Matt Wilde.
+
+\end{document}

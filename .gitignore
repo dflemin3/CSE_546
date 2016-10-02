@@ -1,1 +1,8 @@
 /HW1/hw1-data/*
+*.DS_Store
+ml_exams/*
+CSE546_2014_Lectures/*
+*.toc
+*.synctex.gz
+*.log
+*.aux

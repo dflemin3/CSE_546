@@ -19,8 +19,9 @@ import regression_utils as ru
 def fit_ridge(X, y, lam=1):
     """
     Given data x and labels y and optional penalty lam(bda), fit a ridge linear
-    regression model using the algorithm described in Section 7.5.2 in Murphy. This
-    method is more numerically stable (no matrix inversion) than the brute-force solution
+    regression model using the algorithm described in Section 7.5.2 in Murphy. 
+    Thismethod is more numerically stable (no matrix inversion) than the 
+    brute-force solution.
 
     Parameters
     ----------
@@ -43,12 +44,12 @@ def fit_ridge(X, y, lam=1):
     yc = y - np.mean(y)
     Xc = X - X.mean(axis=1, keepdims=True)
     
-    # Compute sigma, tau
+    # Compute sigma, tau as a function of lambda
     sigma = 1.0
     tau = sigma/np.sqrt(lam)
 
     # Make cholesky decomposition matrix to append to X 
-    # such that X is (n + d) x d    
+    # such that X's shape is (n + d) x d    
     delta = (1.0/(tau**2))*np.identity(Xc.shape[-1])
     delta = np.linalg.cholesky(delta)
 
@@ -59,7 +60,7 @@ def fit_ridge(X, y, lam=1):
     # Perform QR Decomposition
     Q, R = np.linalg.qr(Xc)
     
-    # Finish!
+    # Compute weight vector
     w = np.dot(np.linalg.inv(R),Q.T)
     w = np.dot(w,yc)
     
@@ -67,6 +68,47 @@ def fit_ridge(X, y, lam=1):
     w0 = (np.sum(y) - np.sum(np.dot(X,w)))/len(y)
     
     return w0, w
+# end function
+
+
+def ridge_bin_class(X, y, lam=1, thresh=1):
+    """
+    Use a ridge regression model as defined in fit_ridge to use as a binary
+    classifier.  In this case, if w dot x >= threshold, return 1, else return 
+    0 for that element
+
+    Parameters
+    ----------
+    X : array (n x d)
+        features array (d features, n samples)
+    y : vector (n x 1)
+        labels
+    lam : float (optional)
+        regularization constant
+    thresh : float (optional)
+        classification threshold
+
+    Returns
+    -------
+    w0 : float
+        Constant offset term
+    w : vector (d x 1)
+        linear weight vector
+    y : vector (n x 1)
+        predictions
+    """
+    
+    # Fit model
+    w0, w = fit_ridge(X, y, lam=lam)
+    
+    # Now return predictions according to threshold
+    y_hat = w0 + np.dot(X,w).reshape((len(X),1))
+    y = np.zeros_like(y_hat)
+    y[y_hat >= thresh] = 1
+    
+    return w0, w, y
+# end function
+
     
 # Test it out!
 if __name__ == "__main__":

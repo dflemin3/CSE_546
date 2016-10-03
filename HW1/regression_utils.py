@@ -2,7 +2,9 @@
 """
 Created on Mon Oct  3 14:59:49 2016
 
-@author: dflemin3
+@author: dflemin3 [David P Fleming, University of Washington]
+
+@email: dflemin3 (at) uw (dot) edu
 
 This file contains utility functions for generating fake data and testing the results
 of regression algorithms for speed, accuracy, etc.
@@ -48,7 +50,7 @@ def generate_norm_data(n,k,d,sigma=1,sparse=False):
     assert(k < d), "k < d must hold for k: %lf, d: %lf" % (k,d)
     
     #Create w vector
-    #Let w0 = 0 and create a w∗ by setting the first k elements to ±10 
+    #Let w[0] = 0 and create a w∗ by setting the first k elements to ±10 
     #(choose any sign pattern) and the remaining elements to 0
     w = np.zeros(d).reshape((d,1))
     for i in range(1,k+1):
@@ -74,3 +76,61 @@ def generate_norm_data(n,k,d,sigma=1,sparse=False):
         y = np.dot(X,w) + eps
         
     return w, X, y.reshape((len(y),1))
+# end function
+
+
+def linear_model(X, w, w0):
+    """
+    Evaluate a simple linear model of the form
+    y = w0+ Xw
+    
+    Parameters
+    ----------
+    X : array (n x d)
+        Data array (n observations, d features)
+    w : array (d x 1)
+        feature weight array
+    w0 : float
+        constant offset term
+        
+    Returns
+    -------
+    y : array (n x 1)
+        prediction vector
+    """
+    
+    return np.dot(X,w) + w0
+# end function
+
+
+def MSE(y, y_hat):
+    """
+    Compute the mean squared error of a prediction
+    
+    Parameters
+    ----------
+    y : array (n x 1)
+        array of observations
+    y_hat : array (n x 1)
+        array of predictions
+    
+    Returns
+    -------
+    mse : float
+        mean squared error
+    """
+    
+    return np.power(y - y_hat,2)/len(y)
+# end function
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

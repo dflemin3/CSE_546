@@ -2,7 +2,9 @@
 """
 Created on Mon Oct  3 11:26:17 2016
 
-@author: dflemin3
+@author: dflemin3 [David P Fleming, University of Washington]
+
+@email: dflemin3 (at) uw (dot) edu
 """
 
 from __future__ import print_function, division
@@ -12,7 +14,7 @@ import numpy as np
 from numpy import array, int8, uint8, zeros
 
 def load_mnist(dataset="training", digits=np.arange(10),
-               path="/astro/users/dflemin3/Desktop/CSE_546/Data"):
+               path="/Users/dflemin3/Desktop/Career/Grad_Classes/CSE_546/Data"):
     """
     Loads MNIST files into 3D numpy arrays
 

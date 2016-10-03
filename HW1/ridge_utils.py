@@ -2,7 +2,9 @@
 """
 Created on Mon Oct  3 12:03:42 2016
 
-@author: dflemin3
+@author: dflemin3 [David P Fleming, University of Washington]
+
+@email: dflemin3 (at) uw (dot) edu
 
 This file contains routines to fit a linear function using Ridge Regression
 and simple routines for building and optimizing a linear classifier again using
@@ -12,7 +14,6 @@ Ridge Regression
 from __future__ import print_function, division
 
 import numpy as np
-import mnist_utils as mu
 import regression_utils as ru
 
 def fit_ridge(X, y, lam=1):
@@ -32,10 +33,12 @@ def fit_ridge(X, y, lam=1):
 
     Returns
     -------
+    w0 : float
+        Constant offset term
     w : vector (d x 1)
         linear weight vector
     """
-
+    
     # Center data to avoid penalizing constant offset term
     yc = y - np.mean(y)
     Xc = X - X.mean(axis=1, keepdims=True)
@@ -58,19 +61,20 @@ def fit_ridge(X, y, lam=1):
     
     # Finish!
     w = np.dot(np.linalg.inv(R),Q.T)
-    return np.dot(w,yc)
+    w = np.dot(w,yc)
     
-# Test
+    # Compute w0
+    w0 = (np.sum(y) - np.sum(np.dot(X,w)))/len(y)
+    
+    return w0, w
+    
+# Test it out!
 if __name__ == "__main__":
-    #print("Loading data...")
-    #images, labels = mu.load_mnist(dataset='training')
     
     w, X, y = ru.generate_norm_data(10000,5,10)
     
     print(w.shape,X.shape,y.shape)
     
-    #images = ss.csc_matrix(images,dtype=images.dtype)
-
     print("Performing ridge regression...")
     print(fit_ridge(X,y,lam=1))
     print(w)

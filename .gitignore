@@ -4,5 +4,7 @@ ml_exams/*
 CSE546_2014_Lectures/*
 *.toc
 *.synctex.gz
+*.pyc
 *.log
 *.aux
+/Data/*

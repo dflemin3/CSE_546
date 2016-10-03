@@ -12,7 +12,7 @@ import numpy as np
 from numpy import array, int8, uint8, zeros
 
 def load_mnist(dataset="training", digits=np.arange(10),
-               path="/Users/dflemin3/Desktop/Career/Grad_Classes/CSE_546/Data"):
+               path="/astro/users/dflemin3/Desktop/CSE_546/Data"):
     """
     Loads MNIST files into 3D numpy arrays
 

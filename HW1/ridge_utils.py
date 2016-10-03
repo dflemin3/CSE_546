@@ -9,13 +9,17 @@ and simple routines for building and optimizing a linear classifier again using
 Ridge Regression
 """
 
+from __future__ import print_function, division
+
 import numpy as np
 import mnist_utils as mu
+import regression_utils as ru
 
 def fit_ridge(X, y, lam=1):
     """
     Given data x and labels y and optional penalty lam(bda), fit a ridge linear
-    regression model
+    regression model using the algorithm described in Section 7.5.2 in Murphy. This
+    method is more numerically stable (no matrix inversion) than the brute-force solution
 
     Parameters
     ----------
@@ -32,25 +36,41 @@ def fit_ridge(X, y, lam=1):
         linear weight vector
     """
 
-    # First define matrix to be inverted
-    w = lam*np.identity(len(y)) + np.dot(np.transpose(X),X)
-    print(w.shape)
-    return w
-    # Invert!
-    w = np.linalg.inv(w)
-    print(w.shape)
-    return w
+    # Center data to avoid penalizing constant offset term
+    yc = y - np.mean(y)
+    Xc = X - X.mean(axis=1, keepdims=True)
+    
+    # Compute sigma, tau
+    sigma = 1.0
+    tau = sigma/np.sqrt(lam)
 
-    # Final multiplication
-    w = np.dot(w,np.transpose(X))
-    w = np.dot(w,y)
+    # Make cholesky decomposition matrix to append to X 
+    # such that X is (n + d) x d    
+    delta = (1.0/(tau**2))*np.identity(Xc.shape[-1])
+    delta = np.linalg.cholesky(delta)
 
-    return w
+    # Augment y, x
+    yc = np.vstack((y/sigma,np.zeros((Xc.shape[-1],1))))
+    Xc = np.vstack((Xc/sigma,delta))
 
+    # Perform QR Decomposition
+    Q, R = np.linalg.qr(Xc)
+    
+    # Finish!
+    w = np.dot(np.linalg.inv(R),Q.T)
+    return np.dot(w,yc)
+    
 # Test
 if __name__ == "__main__":
-    print("Loading data...")
-    images, labels = mu.load_mnist(dataset='training')
+    #print("Loading data...")
+    #images, labels = mu.load_mnist(dataset='training')
+    
+    w, X, y = ru.generate_norm_data(10000,5,10)
+    
+    print(w.shape,X.shape,y.shape)
+    
+    #images = ss.csc_matrix(images,dtype=images.dtype)
 
     print("Performing ridge regression...")
-    print(fit_ridge(images,labels))
+    print(fit_ridge(X,y,lam=1))
+    print(w)

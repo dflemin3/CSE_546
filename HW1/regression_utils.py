@@ -120,7 +120,7 @@ def MSE(y, y_hat):
         mean squared error
     """
     
-    return np.power(y - y_hat,2)/len(y)
+    return np.sum(np.power(y - y_hat,2))/len(y)
 # end function
     
     

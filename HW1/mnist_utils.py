@@ -51,7 +51,7 @@ def load_mnist(dataset="training", digits=np.arange(10),
         images[i] = array(img[ ind[i]*rows*cols : (ind[i]+1)*rows*cols ]).reshape((rows, cols))
         labels[i] = lbl[ind[i]]
 
-    return images.reshape(len(images),784), labels
+    return images.reshape(len(images),(28*28)), labels
 
 if __name__ == "__main__":
     # Test data loading, make sure shape is correct

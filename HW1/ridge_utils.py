@@ -71,9 +71,9 @@ def fit_ridge(X, y, lam=1):
 # end function
 
 
-def ridge_bin_class(X, y, lam=1, thresh=1):
+def ridge_bin_class(X, w, w0, thresh=1):
     """
-    Use a ridge regression model as defined in fit_ridge to use as a binary
+    Use a ridge regression model computed in fit_ridge to use as a binary
     classifier.  In this case, if w dot x >= threshold, return 1, else return 
     0 for that element
 
@@ -98,15 +98,12 @@ def ridge_bin_class(X, y, lam=1, thresh=1):
         predictions
     """
     
-    # Fit model
-    w0, w = fit_ridge(X, y, lam=lam)
-    
-    # Now return predictions according to threshold
-    y_hat = w0 + np.dot(X,w).reshape((len(X),1))
+    # Evaluate model, return predictions according to threshold
+    y_hat = ru.linear_model(X, w, w0)
     y_hat_class = np.zeros_like(y_hat)
     y_hat_class[y_hat >= thresh] = 1
     
-    return w0, w, y_hat_class
+    return y_hat_class
 # end function
 
     

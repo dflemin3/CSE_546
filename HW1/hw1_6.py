@@ -50,7 +50,7 @@ def mnist_ridge_thresh(X, y, lam = 1):
     This function finds the best w (dot) x criteria for labeling a MNIST
     digit as a 2.  For the purposes of this classification, 2 -> 1, while
     everything else -> 0.  Computed simply by taking median of predictions
-    corresponding to indicies of 1's in truth vector
+    corresponding to indicies of 1's in truth vector (only use on training data!)
     
     Parameters
     ----------
@@ -68,9 +68,7 @@ def mnist_ridge_thresh(X, y, lam = 1):
     sl_best : float
         minimum square loss
     """
-        
-    print("True number of 2s:",np.sum(y))
-    
+            
     # Fit model
     w0, w = ri.fit_ridge(X, y, lam=lam)
     
@@ -79,7 +77,7 @@ def mnist_ridge_thresh(X, y, lam = 1):
     
     # Make where 2s occur in truth
     mask = (y == 1)
-    
+        
     # Take median of corresponding predicted values
     thresh_best = np.median(y_hat[mask])
     
@@ -117,31 +115,31 @@ def mnist_ridge_lam(X, y, num = 10, minlam=1.0e-5, maxlam=1.0e5):
         minimum loss
     """
     
-    # Make array of thresholds to testout
+    # Make array of lambdas, thresholds
     lams = np.logspace(np.log10(minlam),np.log10(maxlam),num)
     thresh = np.zeros_like(lams)
-    
     loss = np.zeros_like(lams)
     
     # Loop over thresholds, evaluate model, see which is best
     for ii in range(len(lams)):
         print("Iteration, lambda:",ii,lams[ii])
         
-        # First, compute threshold for this lambda
+        # Fit training set for model parameters
         w0, w = ri.fit_ridge(X, y, lam=lams[ii])
+                
+        # Predict
+        y_hat = ru.linear_model(X, w, w0)
     
-        y_hat = w0 + np.dot(X,w)
-        
+        # Compute threshold as median of predicted rows corresponding to twos
         mask = (y == 1)
-        
         thresh[ii] = np.median(y_hat[mask])
         
-        # Now run classifier with that threshold
-        w0, w, y_hat = ri.ridge_bin_class(X, y, lam=lams[ii], thresh=thresh[ii])
+        # Classify, then get square loss, 1/0 error
+        y_hat = ri.ridge_bin_class(X, w, w0, thresh=thresh[ii])
         print("Predicted Number of 2s:",np.sum(y_hat))
         print("Predicted threshold:",thresh[ii])
         
-        # Find minimum of MSE to optimize threshold
+        # Find minimum of loss to optimize threshold
         loss[ii] = ru.loss_01(y, y_hat)
         print("0-1 Loss:",loss[ii])
     
@@ -172,54 +170,55 @@ def mnist_ridge_lam(X, y, num = 10, minlam=1.0e-5, maxlam=1.0e5):
 if __name__ == "__main__":
     
     # Flags to control functionality
-    find_best_lam = True
+    find_best_lam = False
         
     # Best threshold from previous running of script
     #
     # From a previous grid search on training data:
-    # Best wx threshold: 0.616 # lam == 1
 
     # Best lambda: 3.359818e-08
     # Best Square Loss: 3041.000
     # Best wx: 0.588
     
     best_lambda = 1.0
-    best_thresh = 0.588
     
     # Load in MNIST training data
     print("Loading MNIST Training data...")
     X_train, y_train = mu.load_mnist(dataset='training')
-    
     y_train_true = mnist_two_filter(y_train)
-    mask_train = (y_train_true == 1)
+    print("True number of twos in training set:",np.sum(y_train_true))
         
+    # Perform grid search to find best regularization constant?
     if find_best_lam:
         print("Finding optimal lambda and threshold...")
         # Find the best lambda based on 0/1 training error
-        best_lam, best_sl, best_thresh = mnist_ridge_lam(X_train, y_train_true)
-        print("Best lambda: %e" % best_lam)
+        best_lambda, best_sl, best_thresh = mnist_ridge_lam(X_train, y_train_true)
+        print("Best lambda: %e" % best_lambda)
         print("Best Square Loss: %.3lf" % best_sl)
         print("Best wx: %.3lf" % best_thresh)
+    else:
+        best_thresh = mnist_ridge_thresh(X_train, y_train_true, lam=best_lambda)
+        print("Best wx: %.3lf" % best_thresh)
         
-    # Evaluate model on training set, get square loss, 1/0 error
-    w0, w, y_hat = ri.ridge_bin_class(X_train, y_train_true, thresh=best_thresh,
-                                      lam=best_lam)
-    sl_train = ru.square_loss(y_train_true, y_hat)
-    err_10_train = ru.loss_01(y_train_true, y_hat)
+    # Fit training set for model parameters
+    w0, w = ri.fit_ridge(X_train, y_train, lam=best_lambda)
+    
+    # Classify, then get square loss, 1/0 error
+    y_hat_train = ri.ridge_bin_class(X_train, w, w0, thresh=best_thresh)
+    sl_train = ru.square_loss(y_train_true, y_hat_train)
+    err_10_train = ru.loss_01(y_train_true, y_hat_train)
     
     # Load testing set
     # Load in MNIST training data
     print("Loading MNIST Testing data...")
     X_test, y_test = mu.load_mnist(dataset='testing')
-    
     y_test_true = mnist_two_filter(y_test)
-    mask_test = (y_test_true == 1)
+    print("True number of twos in testing set:",np.sum(y_test_true))
         
-    # Evaluate model on training set, get square loss, 1/0 error
-    w0, w, y_hat = ri.ridge_bin_class(X_test, y_test_true, thresh=best_thresh,
-                                      lam=best_lam)
-    sl_test = ru.square_loss(y_test_true, y_hat)
-    err_10_test = ru.loss_01(y_test_true, y_hat)
+    # Classify using training set fit, get square loss, 1/0 error
+    y_hat_test = ri.ridge_bin_class(X_test, w, w0, thresh=best_thresh)
+    sl_test = ru.square_loss(y_test_true, y_hat_test)
+    err_10_test = ru.loss_01(y_test_true, y_hat_test)
     
     # Output!
     print("Square Loss on training, testing set: %.3lf, %.3lf" % (sl_train, sl_test))

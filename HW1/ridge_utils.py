@@ -42,7 +42,7 @@ def fit_ridge(X, y, lam=1):
     
     # Center data to avoid penalizing constant offset term
     yc = y - np.mean(y)
-    Xc = X - X.mean(axis=1, keepdims=True)
+    Xc = X - X.mean(axis=0)
     
     # Compute sigma, tau as a function of lambda
     sigma = 1.0
@@ -52,11 +52,11 @@ def fit_ridge(X, y, lam=1):
     # such that X's shape is (n + d) x d    
     delta = (1.0/(tau**2))*np.identity(Xc.shape[-1])
     delta = np.linalg.cholesky(delta)
-
+    
     # Augment y, x
     yc = np.vstack((y/sigma,np.zeros((Xc.shape[-1],1))))
     Xc = np.vstack((Xc/sigma,delta))
-
+    
     # Perform QR Decomposition
     Q, R = np.linalg.qr(Xc)
     
@@ -65,7 +65,7 @@ def fit_ridge(X, y, lam=1):
     w = np.dot(w,yc)
     
     # Compute w0
-    w0 = (np.sum(y) - np.sum(np.dot(X,w)))/len(y)
+    w0 = np.mean(y) - np.dot(np.transpose(X.mean(axis=0)),w)
     
     return w0, w
 # end function
@@ -118,5 +118,5 @@ if __name__ == "__main__":
     print(w.shape,X.shape,y.shape)
     
     print("Performing ridge regression...")
-    print(fit_ridge(X,y,lam=1))
+    print(fit_ridge(X,y,lam=1.0))
     print(w)

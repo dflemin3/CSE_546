@@ -40,18 +40,59 @@ def mnist_two_filter(y):
     mask = (y == 2)
     y_twos = np.zeros_like(y)
     y_twos[mask] = 1
-    
+
     return y_twos
 #end function
 
 
-def mnist_ridge_thresh(X, y, lam = 1, num = 20, minthresh=9., 
-                       maxthresh=20.):
+def mnist_ridge_thresh(X, y, lam = 1):
     """
     This function finds the best w (dot) x criteria for labeling a MNIST
     digit as a 2.  For the purposes of this classification, 2 -> 1, while
-    everything else -> 0.  Optimize over the threshold by minimizing the square
-    loss
+    everything else -> 0.  Computed simply by taking median of predictions
+    corresponding to indicies of 1's in truth vector
+    
+    Parameters
+    ----------
+    X : array (n x d)
+        Data array (n observations, d features)
+    w : array (d x 1)
+        feature weight array
+    lam : float
+        regularization constant
+    
+    Returns
+    -------
+    thresh_best : float
+        optimal threshold for picking out 2s
+    sl_best : float
+        minimum square loss
+    """
+        
+    print("True number of 2s:",np.sum(y))
+    
+    # Fit model
+    w0, w = ri.fit_ridge(X, y, lam=lam)
+    
+    # Predict
+    y_hat = w0 + np.dot(X,w)
+    
+    # Make where 2s occur in truth
+    mask = (y == 1)
+    
+    # Take median of corresponding predicted values
+    thresh_best = np.median(y_hat[mask])
+    
+    return thresh_best
+# end function
+
+
+def mnist_ridge_lam(X, y, num = 10, minlam=1.0e-5, maxlam=1.0e5):
+    """
+    This function finds the best regularization constant lambda
+    for labeling a MNIST digit as a 2.  For the purposes of this classification, 
+    2 -> 1, while everything else -> 0.  Optimize over lam by minimizing the 
+    0-1 loss.
     
     Parameters
     ----------
@@ -63,46 +104,45 @@ def mnist_ridge_thresh(X, y, lam = 1, num = 20, minthresh=9.,
         regularization constant
     num : int
         number of threshold gridpoints to search over
-    minthresh : float
-        minimum threshold grid value
-    maxthresh : float
-        maximum threshold grid value
+    minlam : float
+        minimum lambda grid value
+    maxlam : float
+        maximum lambda grid value
     
     Returns
     -------
-    thresh_best : float
+    lam_best : float
         optimal threshold for picking out 2s
-    sl_best : float
-        minimum square loss
+    loss_best : float
+        minimum loss
     """
     
-    # Filter for 2s for binary classifier "truth"
-    y_true = mnist_two_filter(y)
-    print("True number of 2s:",np.sum(y_true))
-    
-    w0, w = ri.fit_ridge(X, y, lam=lam)
-    
-    y_hat = w0 + np.dot(X,w)
-    
-    mask = (y_true == 1)
-    
-    thresh_best = np.median(y_hat[mask])
-    
-    return thresh_best
-    """
     # Make array of thresholds to testout
-    thresh = np.linspace(minthresh,maxthresh,num)
+    lams = np.logspace(np.log10(minlam),np.log10(maxlam),num)
+    thresh = np.zeros_like(lams)
     
-    loss = np.zeros_like(thresh)
+    loss = np.zeros_like(lams)
     
     # Loop over thresholds, evaluate model, see which is best
-    for ii in range(len(thresh)):
-        print("Threshold iteration",ii)
-        w0, w, y_hat = ri.ridge_bin_class(X, y, lam=lam, thresh=thresh[ii])
-        print("Number of 2s:",np.sum(y_hat))
+    for ii in range(len(lams)):
+        print("Iteration, lambda:",ii,lams[ii])
+        
+        # First, compute threshold for this lambda
+        w0, w = ri.fit_ridge(X, y, lam=lams[ii])
+    
+        y_hat = w0 + np.dot(X,w)
+        
+        mask = (y == 1)
+        
+        thresh[ii] = np.median(y_hat[mask])
+        
+        # Now run classifier with that threshold
+        w0, w, y_hat = ri.ridge_bin_class(X, y, lam=lams[ii], thresh=thresh[ii])
+        print("Predicted Number of 2s:",np.sum(y_hat))
+        print("Predicted threshold:",thresh[ii])
         
         # Find minimum of MSE to optimize threshold
-        loss[ii] = ru.loss_01(y_true, y_hat)
+        loss[ii] = ru.loss_01(y, y_hat)
         print("0-1 Loss:",loss[ii])
     
     # Get best threshold (min MSE on training set) and return it
@@ -111,34 +151,40 @@ def mnist_ridge_thresh(X, y, lam = 1, num = 20, minthresh=9.,
     # Now plot it
     fig, ax = plt.subplots()
     
-    ax.plot(thresh,loss,"-o",lw=3)
-    ax.set_xlabel(r"$x \bullet w$")
+    ax.plot(lams,loss,"-o",lw=3)
+    ax.set_xlabel(r"$\lambda$")
     ax.set_ylabel(r"0-1 Loss")
     
     # Plot best fit and asymptotes
-    plt.axvline(x=thresh[best_ind], ymin=-100, ymax = 100, 
+    plt.axvline(x=lams[best_ind], ymin=-100, ymax = 100, 
                 linewidth=3, color='k', ls="--")
     
-    fig.tight_layout()
-    fig.savefig("sl_thresh.pdf")
+    ax.set_xscale("log")
     
-    return thresh[best_ind], loss[best_ind]
-    """
+    fig.tight_layout()
+    fig.savefig("sl_lam.pdf")
+    
+    return lams[best_ind], loss[best_ind], thresh[best_ind]
+    
 # end function
 
     
 if __name__ == "__main__":
     
     # Flags to control functionality
-    find_best_thresh = False
-    
+    find_best_lam = True
+        
     # Best threshold from previous running of script
     #
     # From a previous grid search on training data:
-    # Best wx threshold: 0.421
-    # Best MSE: 0.033
+    # Best wx threshold: 0.616 # lam == 1
 
-    #best_thresh = 0.421
+    # Best lambda: 3.359818e-08
+    # Best Square Loss: 3041.000
+    # Best wx: 0.588
+    
+    best_lambda = 1.0
+    best_thresh = 0.588
     
     # Load in MNIST training data
     print("Loading MNIST Training data...")
@@ -146,19 +192,18 @@ if __name__ == "__main__":
     
     y_train_true = mnist_two_filter(y_train)
     mask_train = (y_train_true == 1)
-    
-    best_thresh = mnist_ridge_thresh(X_train, y_train)
-    print("Best wx threshold: %.3lf" % best_thresh)
         
-    if find_best_thresh:
-        print("Finding optimal threshold...")
-        # Find the best threshold base on 0/1 error
-        best_thresh, best_sl = mnist_ridge_thresh(X_train, y_train)
-        print("Best wx threshold: %.3lf" % best_thresh)
+    if find_best_lam:
+        print("Finding optimal lambda and threshold...")
+        # Find the best lambda based on 0/1 training error
+        best_lam, best_sl, best_thresh = mnist_ridge_lam(X_train, y_train_true)
+        print("Best lambda: %e" % best_lam)
         print("Best Square Loss: %.3lf" % best_sl)
+        print("Best wx: %.3lf" % best_thresh)
         
     # Evaluate model on training set, get square loss, 1/0 error
-    w0, w, y_hat = ri.ridge_bin_class(X_train, y_train, thresh=best_thresh)
+    w0, w, y_hat = ri.ridge_bin_class(X_train, y_train_true, thresh=best_thresh,
+                                      lam=best_lam)
     sl_train = ru.square_loss(y_train_true, y_hat)
     err_10_train = ru.loss_01(y_train_true, y_hat)
     
@@ -171,7 +216,8 @@ if __name__ == "__main__":
     mask_test = (y_test_true == 1)
         
     # Evaluate model on training set, get square loss, 1/0 error
-    w0, w, y_hat = ri.ridge_bin_class(X_test, y_test, thresh=best_thresh)
+    w0, w, y_hat = ri.ridge_bin_class(X_test, y_test_true, thresh=best_thresh,
+                                      lam=best_lam)
     sl_test = ru.square_loss(y_test_true, y_hat)
     err_10_test = ru.loss_01(y_test_true, y_hat)
     

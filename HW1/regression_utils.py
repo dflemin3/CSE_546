@@ -122,7 +122,46 @@ def MSE(y, y_hat):
     
     return np.sum(np.power(y - y_hat,2))/len(y)
 # end function
+
+
+def square_loss(y, y_hat):
+    """
+    Compute the square loss of a binary classifier
     
+    Parameters
+    ----------
+    y : array (n x 1)
+        array of observations
+    y_hat : array (n x 1)
+        array of predictions
+    
+    Returns
+    -------
+    sl : float
+        square loss
+    """
+    return np.sum(np.power(y - y_hat,2))
+# end function
+
+
+def loss_01(y, y_hat):
+    """
+    Compute the 0-1 loss of a binary classifier
+    
+    Parameters
+    ----------
+    y : array (n x 1)
+        array of observations
+    y_hat : array (n x 1)
+        array of predictions
+    
+    Returns
+    -------
+    loss : float
+        0-1 loss
+    """
+    return np.sum(y != y_hat)
+# end function
     
     
     

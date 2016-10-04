@@ -103,10 +103,10 @@ def ridge_bin_class(X, y, lam=1, thresh=1):
     
     # Now return predictions according to threshold
     y_hat = w0 + np.dot(X,w).reshape((len(X),1))
-    y = np.zeros_like(y_hat)
-    y[y_hat >= thresh] = 1
+    y_hat_class = np.zeros_like(y_hat)
+    y_hat_class[y_hat >= thresh] = 1
     
-    return w0, w, y
+    return w0, w, y_hat_class
 # end function
 
     

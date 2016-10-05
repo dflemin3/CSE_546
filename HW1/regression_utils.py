@@ -99,7 +99,7 @@ def linear_model(X, w, w0):
         prediction vector
     """
     
-    return np.dot(X,w) + w0
+    return w0 + np.dot(X,w)
 # end function
 
 

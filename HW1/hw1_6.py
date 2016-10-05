@@ -73,7 +73,7 @@ def mnist_ridge_thresh(X, y, lam = 1):
     w0, w = ri.fit_ridge(X, y, lam=lam)
     
     # Predict
-    y_hat = w0 + np.dot(X,w)
+    y_hat = ru.linear_model(X, w, w0)
     
     # Make where 2s occur in truth
     mask = (y == 1)
@@ -85,7 +85,7 @@ def mnist_ridge_thresh(X, y, lam = 1):
 # end function
 
 
-def mnist_ridge_lam(X, y, num = 10, minlam=1.0e-5, maxlam=1.0e5):
+def mnist_ridge_lam(X, y, num = 20, minlam=1.0e-10, maxlam=1.0e10):
     """
     This function finds the best regularization constant lambda
     for labeling a MNIST digit as a 2.  For the purposes of this classification, 
@@ -176,11 +176,12 @@ if __name__ == "__main__":
     #
     # From a previous grid search on training data:
 
-    # Best lambda: 3.359818e-08
-    # Best Square Loss: 3041.000
-    # Best wx: 0.588
+    # Best lambda: 7.847600e+07
+    # Best Square Loss: 3037.000
+    # Best wx: 0.589
     
-    best_lambda = 1.0
+    best_lambda = 1#7.847600e+07
+    best_thresh = 0.589
     
     # Load in MNIST training data
     print("Loading MNIST Training data...")
@@ -201,7 +202,7 @@ if __name__ == "__main__":
         print("Best wx: %.3lf" % best_thresh)
         
     # Fit training set for model parameters
-    w0, w = ri.fit_ridge(X_train, y_train, lam=best_lambda)
+    w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
     
     # Classify, then get square loss, 1/0 error
     y_hat_train = ri.ridge_bin_class(X_train, w, w0, thresh=best_thresh)

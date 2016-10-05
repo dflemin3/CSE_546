@@ -42,8 +42,8 @@ def fit_ridge(X, y, lam=1):
     
     # Center data to avoid penalizing constant offset term
     yc = y - np.mean(y)
-    Xc = X - X.mean(axis=0)
-    
+    Xc = X - np.mean(X,axis=0)
+        
     # Compute sigma, tau as a function of lambda
     sigma = 1.0
     tau = sigma/np.sqrt(lam)
@@ -58,15 +58,18 @@ def fit_ridge(X, y, lam=1):
     Xc = np.vstack((Xc/sigma,delta))
     
     # Perform QR Decomposition
-    Q, R = np.linalg.qr(Xc)
+    #Q, R = np.linalg.qr(Xc)
     
     # Compute weight vector
-    w = np.dot(np.linalg.inv(R),Q.T)
+    w = np.linalg.inv(np.dot(np.transpose(Xc),Xc))
+    w = np.dot(w,np.transpose(Xc))
     w = np.dot(w,yc)
+    #w = np.dot(np.linalg.inv(R),Q.T)
+    #w = np.dot(w,yc)
     
     # Compute w0
-    w0 = np.mean(y) - np.dot(np.transpose(X.mean(axis=0)),w)
-    
+    w0 = np.mean(y) - np.dot(np.transpose(np.mean(X,axis=0)),w)
+        
     return w0, w
 # end function
 
@@ -110,7 +113,7 @@ def ridge_bin_class(X, w, w0, thresh=1):
 # Test it out!
 if __name__ == "__main__":
     
-    w, X, y = ru.generate_norm_data(10000,5,10)
+    w, X, y = ru.generate_norm_data(10000,7,10)
     
     print(w.shape,X.shape,y.shape)
     

@@ -21,7 +21,7 @@
 \section*{Question 1}
 
 \subsection*{1.1}
-Since 
+The expectation value for $max(X_1, X_2)$ is given by
 \begin{align}
 E[X] = \int max(X_1,X_2) f(x) dx_1 dx_2
 \end{align}
@@ -118,5 +118,47 @@ For the observed set G, I use Eqn.~\ref{eqn:2.2} to compute $\lambda_{MLE}$ as
 \end{equation}
 
 Note: For this question, I collaborated with Matt Wilde.
+
+%%% QUESTION 3 %%%
+
+\section*{Question 3}
+
+TODO
+
+%%% QUESTION 4 %%%
+
+\section*{Question 4}
+
+Note: Both both subquestions 1 and 2, I assume that the too small or too large $\lambda$s bias the model to a too complex or too simple model relative to the optimum model complexity, respectively.
+
+\subsection*{4.1: Too Small a $\lambda$}
+\subsubsection*{4.1.a}
+For both LASSO and Ridge Regression (RR), the error on the training set would decrease as the penalty term for both regression techniques would be effectively negligible.  With small $\lambda$, the regularization penalty is also small causing both regression techniques to tend towards least squares regression (LSR) and allow for more complex models which overfit the training data and hence leading to smaller training set error.  For example, too small of a $\lambda$ could push both LASSO and RR to favor a high-order polynomial model when the underlying data is linear.
+
+\subsubsection*{4.1.b}
+For both LASSO and RR, too small a $\lambda$ leads to overfitting on the training set.  With a model overfit on the training set, it will do a poor job of generalizing to new data and hence will poorly fit the testing set leading to larger testing error.
+
+\subsubsection*{4.1.c}
+For both LASSO and RR, too small a $\lambda$ yields too small of a complexity penalty causing both algorithms to tend towards the LSR solution.  In this case, $\hat{\omega}$ could get large via overfitting.  RR, however, will likely predict larger $\hat{\omega}$ than LASSO as RR's $l_2$ norm penalty primarily seeks to control the magnitude of the weight vector, hence biasing towards larger values in this case as the penalty decreases, while LASSO seeks a sparse solution.
+
+
+\subsubsection*{4.1.d}
+With LASSO, too small of a $\lambda$ would yield more non-zero parameters since a smaller regularization penalty will prevent many of the elements of $\hat{\omega}$ from being set to 0 under LASSO's sharp $l_1$ norm penalty which tries to make $\hat{\omega}$ sparse.  For RR, too small of a $\lambda$ would have little effect on the number of non-zero parameters as RR's regularization penalty deals with constraining the magnitude of $\hat{\omega}$ as opposed to forcing it to be sparse.
+
+\subsection*{4.2: Too Large a $\lambda$}
+\subsubsection*{4.2.a}
+For both regression techniques, too large of a $\lambda$ will yield larger training set error as the regularization penalty will select for simpler models that could poorly fit the data.  For example, too large of a $\lambda$ could push both LASSO and RR to favor a linear model when the underlying data is quadratic.
+
+\subsubsection*{4.2.b}
+For both LASSO and RR, too large of a $\lambda$ will yield larger testing set error since the models again will be biased towards lower-than-optimal model complexity and hence will likely yield a poor fit to future data similar to why the error on the training set is also larger in this case.
+
+\subsubsection*{4.2.c}
+For both LASSO and RR, too large of a $\lambda$ will yield smaller $\hat{\omega}$ as the larger regularization penalty restricts the weight vector.  RR, however, will likely predict smaller $\hat{\omega}$ than LASSO as RR's $l_2$ norm penalty primarily seeks to control the magnitude of the weight vector, hence biasing towards smaller values in this case, while LASSO seeks a sparse solution.
+
+\subsubsection*{4.2.d}
+For LASSO, a larger $\lambda$ will yield a sparser solution via its $l_1$ norm regularization penalty and hence will have fewer nonzero elements in $\hat{\omega}$ than RR.  In the large $\lambda$ limit, RR will also yield fewer nonzero elements in $\hat{\omega}$ only because its large regularization penalty makes coefficients in its weight vector small and hence potentially pushing some towards 0.
+
+
+
 
 \end{document}

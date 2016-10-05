@@ -75,7 +75,7 @@ def mnist_ridge_thresh(X, y, lam = 1):
     # Predict
     y_hat = ru.linear_model(X, w, w0)
     
-    # Make where 2s occur in truth
+    # Mask where 2s occur in truth
     mask = (y == 1)
         
     # Take median of corresponding predicted values
@@ -139,7 +139,7 @@ def mnist_ridge_lam(X, y, num = 20, minlam=1.0e-10, maxlam=1.0e10):
         print("Predicted Number of 2s:",np.sum(y_hat))
         print("Predicted threshold:",thresh[ii])
         
-        # Find minimum of loss to optimize threshold
+        # Find minimum of loss to optimize lambda
         loss[ii] = ru.loss_01(y, y_hat)
         print("0-1 Loss:",loss[ii])
     
@@ -153,7 +153,7 @@ def mnist_ridge_lam(X, y, num = 20, minlam=1.0e-10, maxlam=1.0e10):
     ax.set_xlabel(r"$\lambda$")
     ax.set_ylabel(r"0-1 Loss")
     
-    # Plot best fit and asymptotes
+    # Plot best fit
     plt.axvline(x=lams[best_ind], ymin=-100, ymax = 100, 
                 linewidth=3, color='k', ls="--")
     
@@ -210,7 +210,6 @@ if __name__ == "__main__":
     err_10_train = ru.loss_01(y_train_true, y_hat_train)
     
     # Load testing set
-    # Load in MNIST training data
     print("Loading MNIST Testing data...")
     X_test, y_test = mu.load_mnist(dataset='testing')
     y_test_true = mnist_two_filter(y_test)

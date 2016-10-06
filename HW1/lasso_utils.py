@@ -62,15 +62,12 @@ def fit_lasso_sparse(X,y,lam=1.0):
     d = X.shape[1]
         
     #Convergence condition
-    eps = 1.0e-6
-    w_old = np.zeros((d,1))
-    w_pred = np.copy(w)
-    
-    first_iter = True
+    eps = 1.0e-6*d
+    w_old = np.zeros((d,1)) + 10000000. # offset
+    w_pred = np.zeros_like(w_old)
     
     # While not converged, do
-    while first_iter or (np.sum(np.fabs(w_pred - w_old)) < eps):
-    	first_iter = False
+    while (np.sum(np.fabs(w_pred - w_old)) > eps):
     
         #Store for convergence test 
         w_old = np.copy(w_pred)
@@ -82,15 +79,15 @@ def fit_lasso_sparse(X,y,lam=1.0):
         a = np.zeros_like(w)
         c = np.zeros_like(w)
          
-        for k in range(0,d):
+        for k in range(d):
             
             # Compute a (d x 1)
             a[k] = 2.0 * X[:,k].T.dot(X[:,k])
             
-            alpha = np.zeros((d,d))
-            np.fill_diagonal(alpha, 1)
-            alpha[k,k] = 0 # Ignore where j != k
-            alpha = X.dot(alpha.dot(w_pred)) + w_0
+            # Ignore where j == k
+            w_pred_tmp = np.copy(w_pred)
+            w_pred_tmp[k] = 0.0
+            alpha = X.dot(w_pred_tmp) + w_0
             
             #Compute c (d x 1)
             c[k] = 2.0*X[:,k].T.dot((y-alpha))
@@ -108,9 +105,9 @@ def fit_lasso_sparse(X,y,lam=1.0):
     #end while
     
     #Return as row array
-    y_hat = np.zeros(y.shape)
-    y_hat = X.dot(w_pred) + w_0
-    return w_pred, w_0, y_hat
+    #y_hat = np.zeros(y.shape)
+    #y_hat = X.dot(w_pred) + w_0
+    return w_0, w_pred
 # end function
 
 
@@ -272,8 +269,8 @@ def check_solution(X,y,w_pred,w_0_pred,lam):
     
     test = 2.0*X.T.dot(X.dot(w_pred) + w_0_pred - y)
     
-    #Mask values 
-    mask = (np.fabs(w_pred) < eps) # Find 0s
+    #Mask values to find 0s
+    mask = (np.fabs(w_pred) < eps) 
     
     # If you predict all 0s, you're probably wrong
     if int(np.sum(mask)) == len(mask):
@@ -288,8 +285,11 @@ def check_solution(X,y,w_pred,w_0_pred,lam):
     	check1 =  True
     	
     # Check2: Non-zero entries should take the value -lambda * sign(w_pred)
-    # In practice, check to see if they're within ~5% of each other
-    test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask])/np.fabs(test[~mask]) > 0.05
+    # In practice, check to see if they're within ~10% of each other
+    c = 0.05
+    test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask])/np.fabs(test[~mask]) > c
+    print(test)
+    
     if np.sum(test2_mask) > 0:
     	check2 = False
     else:
@@ -304,7 +304,7 @@ def check_solution(X,y,w_pred,w_0_pred,lam):
 if __name__ == "__main__":
     
     # Generate some fake data
-    lam = 300.0
+    lam = 100.0
     w, X, y = ru.generate_norm_data(10000,5,10)
     
     # What's its shape?
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     print("Lambda_max:",compute_max_lambda(X,y))
         
     print("Performing LASSO regression...")
-    w_pred, w_0_pred, y_hat = fit_lasso_sparse(X,y,lam=lam)
+    w_0_pred, w_pred = fit_lasso_sparse(X,y,lam=lam)
     print("w_pred:",w_pred)
     print(w)
     

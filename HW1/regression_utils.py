@@ -185,7 +185,63 @@ def sign(x):
 	else:
 		return -1.0
 # end function
-sign = np.vectorize(sign) # Vectorize it!    
+sign = np.vectorize(sign) # Vectorize it!
+
+
+def precision_lasso(w_true, w_pred, eps = 1.0e-3): 
+	"""
+	Calculate number of correct non-zeros in w_pred divided by the
+	total number of zeros in w_pred for the lasso algorithm.
+	
+	Parameters
+	----------
+	w_true : array (d x 1)
+		true weight array
+	w_pred : array (d x 1)
+		predicted weight array
+	eps : float (optional)
+		equality threshold
+		
+	Returns
+	-------
+	prec : int
+		Number of correct estimated parameters
+	"""
+	
+	# Find non-zeros in predictions, true
+	true_nzero_mask = (np.fabs(w_true) > eps)
+	pred_nzero_mask = (np.fabs(w_pred) > eps)
+	
+	# number of correct non-zeros / total non-zeros in predictions
+	return np.sum(true_nzero_mask & pred_nzero_mask) / np.sum(pred_nzero_mask)
+# end function
+
+
+def recall_lasso(w_true, w_pred, eps = 1.0e-3):
+	"""
+	Number of correct non-zeros in w_pred divided by number of true non-zeros
+	for the lasso algorithm.
+	
+	Parameters
+	----------
+	w_true : array (d x 1)
+		true weight array
+	w_pred : array (d x 1)
+		predicted weight array
+	eps : float (optional)
+		equality threshold
+		
+	Returns
+	-------
+	rec : int
+		Number of correct non-zeros in w_pred divided by number of true non-zeros.
+	"""
+	
+	# Find non-zeros in predictions, true
+	true_nzero_mask = (np.fabs(w_true) > eps)
+	pred_nzero_mask = (np.fabs(w_pred) > eps)
+	
+	return np.sum(true_nzero_mask & pred_nzero_mask) / np.sum(true_nzero_mask)
     
     
     

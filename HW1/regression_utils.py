@@ -246,6 +246,7 @@ def recall_lasso(w_true, w_pred, eps = 1.0e-3):
 	pred_nzero_mask = (np.fabs(w_pred) > eps)
 	
 	return np.sum(true_nzero_mask & pred_nzero_mask) / np.sum(true_nzero_mask)
+# end function
     
     
     

@@ -18,7 +18,7 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 
-def fit_lasso(X,y,lam=1.0, sparse = True):
+def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500):
     """
     Implimentation of the naive (un-optimized) lasso regression 
     algorithm.
@@ -42,10 +42,12 @@ def fit_lasso(X,y,lam=1.0, sparse = True):
     	matrix of input data
     y : array (n x 1)
     	vector of response variables
-    lam : float
+    lam : float (optional)
     	regularization tuning parameter
-    sparse : bool
+    sparse : bool (optional)
     	whether or not X is scipy.sparse.csc. defaults to True
+    max_iter : int (optional)
+    	maximum number of while loop iterations
     
     All matrices X assumed to be sparse and of the form given by 
     scipy.sparse.csc matrix
@@ -69,7 +71,15 @@ def fit_lasso(X,y,lam=1.0, sparse = True):
     w_pred = np.zeros_like(w_old)
     
     # While not converged, do
+    iters = 0
     while (np.sum(np.fabs(w_pred - w_old)) > eps):
+    
+    	# Too many iterations!
+    	if iters >= max_iter:
+    		print("Maximum iteration threshold hit %d." % iters)
+    		print("Returning current solution: Convergence not guarenteed.")
+    		print("lambda = %.3lf" % lam)
+    		return w_0, w_pred
     
         #Store for convergence test 
         w_old = np.copy(w_pred)
@@ -109,6 +119,7 @@ def fit_lasso(X,y,lam=1.0, sparse = True):
             else:
                 print("Error! Shouldn't ever happen.")
         #end for
+        iters += 1
     #end while
     
     #Return as row array
@@ -260,11 +271,16 @@ def check_solution(X,y,w_pred,w_0_pred,lam, eps = 5.0e-7):
     
     Parameters
     ----------
-    X : n x d matrix of data
-    y : N x 1 vector of response variables
-    w_pred : predicted d dimensions weight vector
-    w_0_pred : scalar offset term
-    lam : regularization tuning parameter
+    X : array (n x d)
+    	 matrix of data
+    y : array
+    	(n x 1) vector of response variables
+    w_pred : array (d x 1)
+    	predicted d dimensions weight vector
+    w_0_pred :  array (d x 1)
+    	scalar offset term
+    lam : float
+    	regularization tuning parameter
     
     Returns
     -------
@@ -304,13 +320,77 @@ def check_solution(X,y,w_pred,w_0_pred,lam, eps = 5.0e-7):
 # end function
 
 
+def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_lam = None):
+	"""
+	Perform a regularization path to find the proper lambda regularization penalty
+	for the lasso algorithm on a particular dataset.
+	
+	Parameters
+    ----------
+    X : array (n x d)
+    	matrix of input data
+    y : array (n x 1)
+    	vector of response variables
+    num : float (optional)
+    	each iteration, lambda decreases by 1/scale
+    sparse : bool (optional)
+    	whether or not X is scipy.sparse.csc. defaults to True
+    max_iter : int
+    	Number of iterations
+    max_lam : float (optional)
+    	Maximum/start lambda for reg path.  Defaults to None
+
+    Returns
+    -------
+    lam_hat : float
+    	optimal regularization penalty
+    lams : array
+    	lams over regularization path
+    recall : array
+    	recall as a function of lambda
+    prec : array
+    	precision as a function of lambda
+	"""
+	
+	# Init empty lists
+	recall = []
+	prec = []
+	lams = []
+	
+	# Find max lambda to start reg path
+	if max_lam is None:
+		lam = compute_max_lambda(X,y)
+	else:
+		lam = max_lam
+	
+	for ii in range(max_iter):
+		print("Fit iteration, lambda:",ii,lam)
+		# Fit model
+		w_0, w_pred = fit_lasso(X,y,lam=lam, sparse = sparse)
+		
+		# Store lam, prec, recall
+		recall.append(ru.recall_lasso(w_true, w_pred))
+		prec.append(ru.precision_lasso(w_true, w_pred))
+		lams.append(lam)
+		
+		# Scale lam for next iteration
+		lam /= scale
+		
+	# Done!
+	return np.array(lams), np.array(recall), np.array(prec)
+# end function
+
+
 # Test it out!
 if __name__ == "__main__":
     
     # Generate some fake data
-    lam = 500.
+    n = 50
+    d = 75
+    k = 5
+    lam = 25.0
     sparse = False
-    w, X, y = ru.generate_norm_data(10000,5,10,sparse=sparse)
+    w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse)
     
     # What should the maximum lambda in a regularization step be?
     print("Lambda_max:",compute_max_lambda(X,y))

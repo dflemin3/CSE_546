@@ -18,7 +18,7 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 
-def fit_lasso_sparse(X,y,lam=1.0, sparse = True):
+def fit_lasso(X,y,lam=1.0, sparse = True):
     """
     Implimentation of the naive (un-optimized) lasso regression 
     algorithm.
@@ -44,6 +44,8 @@ def fit_lasso_sparse(X,y,lam=1.0, sparse = True):
     	vector of response variables
     lam : float
     	regularization tuning parameter
+    sparse : bool
+    	whether or not X is scipy.sparse.csc. defaults to True
     
     All matrices X assumed to be sparse and of the form given by 
     scipy.sparse.csc matrix
@@ -307,14 +309,14 @@ if __name__ == "__main__":
     
     # Generate some fake data
     lam = 500.
-    sparse = True
+    sparse = False
     w, X, y = ru.generate_norm_data(10000,5,10,sparse=sparse)
     
     # What should the maximum lambda in a regularization step be?
     print("Lambda_max:",compute_max_lambda(X,y))
         
     print("Performing LASSO regression...")
-    w_0_pred, w_pred = fit_lasso_sparse(X,y,lam=lam,sparse=sparse)
+    w_0_pred, w_pred = fit_lasso(X,y,lam=lam,sparse=sparse)
     print("w_pred:",w_pred)
     print(w)
     

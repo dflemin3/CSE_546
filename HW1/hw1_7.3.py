@@ -25,21 +25,20 @@ n = 50
 d = 75
 k = 5
 sigma = 1
+sparse = True
 
 # Generate synthetic data (sparse for the lasso function)
-w_true, X_train, y_true = ru.generate_norm_data(n,k,d,sigma,sparse=True)
-print("w_true:",w_true)
+w_true, X_train, y_true = ru.generate_norm_data(n,k,d,sigma,sparse=sparse)
 
 print("lam_max:",lu.compute_max_lambda(X_train,y_true))
 
 # Train lasso
 lam = 100.0 
-w_0_pred, w_pred = lu.fit_lasso_sparse(X_train,y_true,lam=lam)
+w_0_pred, w_pred = lu.fit_lasso(X_train,y_true,lam=lam, sparse=sparse)
 
 # Make Prediction
-y_hat = ru.linear_model(X_train, w_pred, w_0_pred)
+y_hat = ru.linear_model(X_train, w_pred, w_0_pred, sparse=sparse)
 
 # Test precision, recall
 print("Precision:",ru.precision_lasso(w_true,w_pred))
 print("Recall:",ru.recall_lasso(w_true,w_pred))
-

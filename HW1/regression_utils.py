@@ -81,7 +81,7 @@ def generate_norm_data(n,k,d,sigma=1,sparse=False, w0 = 0):
 # end function
 
 
-def linear_model(X, w, w0):
+def linear_model(X, w, w0, sparse=False):
     """
     Evaluate a simple linear model of the form
     y = w0+ Xw
@@ -94,14 +94,18 @@ def linear_model(X, w, w0):
         feature weight array
     w0 : float
         constant offset term
+    sparse : bool
+    	whether or not X is scipy.sparse.csc. defaults to True
         
     Returns
     -------
     y : array (n x 1)
         prediction vector
     """
-    
-    return w0 + np.dot(X,w)
+    if sparse:
+    	return w0 + X.dot(w)
+    else:
+    	return w0 + np.dot(X,w)
 # end function
 
 

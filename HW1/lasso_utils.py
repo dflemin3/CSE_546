@@ -18,7 +18,7 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 
-def fit_lasso_sparse(X,y,lam=1.0):
+def fit_lasso_sparse(X,y,lam=1.0, sparse = True):
     """
     Implimentation of the naive (un-optimized) lasso regression 
     algorithm.
@@ -76,13 +76,18 @@ def fit_lasso_sparse(X,y,lam=1.0):
         w_0 = np.sum(y - X.dot(w_pred))/n
             
         #Compute a_k: d x 1 summing over columns
-        a = np.zeros_like(w)
-        c = np.zeros_like(w)
+        a = np.zeros_like(w_pred)
+        c = np.zeros_like(w_pred)
          
         for k in range(d):
             
             # Compute a (d x 1)
-            a[k] = 2.0 * X[:,k].T.dot(X[:,k])
+            # Note: different behavior whether or not you're assuming
+            # X is a sparse array (via scipy implementation)
+            if sparse:
+            	a[k] = (2.0 * X[:,k].T.dot(X[:,k]))[0,0]
+            else:
+            	a[k] = (2.0 * X[:,k].T.dot(X[:,k]))
             
             # Ignore where j == k
             w_pred_tmp = np.copy(w_pred)
@@ -242,7 +247,7 @@ def compute_max_lambda(X,y):
 # end function
 
 
-def check_solution(X,y,w_pred,w_0_pred,lam):
+def check_solution(X,y,w_pred,w_0_pred,lam, eps = 5.0e-7):
     """    
     See if the computed solution w_pred, w_0_pred for a given lambda l
     is correct.  That occurs when:
@@ -257,16 +262,14 @@ def check_solution(X,y,w_pred,w_0_pred,lam):
     y : N x 1 vector of response variables
     w_pred : predicted d dimensions weight vector
     w_0_pred : scalar offset term
-    l : regularization tuning parameter
+    lam : regularization tuning parameter
     
     Returns
     -------
     ans : bool
         whether or not the solution passes the test criteria
     """
-    
-    eps = 1.0e-5
-    
+        
     test = 2.0*X.T.dot(X.dot(w_pred) + w_0_pred - y)
     
     #Mask values to find 0s
@@ -285,10 +288,9 @@ def check_solution(X,y,w_pred,w_0_pred,lam):
     	check1 =  True
     	
     # Check2: Non-zero entries should take the value -lambda * sign(w_pred)
-    # In practice, check to see if they're within ~10% of each other
-    c = 0.05
-    test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask])/np.fabs(test[~mask]) > c
-    print(test)
+    # In practice, check to see if they're close to each other
+    eps = eps * len(w_pred)
+    test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask]) > eps
     
     if np.sum(test2_mask) > 0:
     	check2 = False
@@ -304,17 +306,15 @@ def check_solution(X,y,w_pred,w_0_pred,lam):
 if __name__ == "__main__":
     
     # Generate some fake data
-    lam = 100.0
-    w, X, y = ru.generate_norm_data(10000,5,10)
-    
-    # What's its shape?
-    print(w.shape,X.shape,y.shape)
+    lam = 500.
+    sparse = True
+    w, X, y = ru.generate_norm_data(10000,5,10,sparse=sparse)
     
     # What should the maximum lambda in a regularization step be?
     print("Lambda_max:",compute_max_lambda(X,y))
         
     print("Performing LASSO regression...")
-    w_0_pred, w_pred = fit_lasso_sparse(X,y,lam=lam)
+    w_0_pred, w_pred = fit_lasso_sparse(X,y,lam=lam,sparse=sparse)
     print("w_pred:",w_pred)
     print(w)
     

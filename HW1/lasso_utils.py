@@ -223,20 +223,20 @@ def fast_lasso_sparse(X,y,l=10,w=-999,w_0=-999):
 
 
 def compute_max_lambda(X,y):
-    """
-    
-    XXX Does this work? XXX
-    
+    """    
     Compute the smallest lambda for which the solution w is entirely zero
+    aka the maximum lambda in a regularization path
     
     Parameters
     ----------
-    X : n x d matrix of data (scipy sparse matrix)
-    y : n x 1 vector of response variables
+    X : array (n x d)
+    	matrix of data (scipy sparse matrix)
+    y : vector (n x 1) 
+        vector of response variables
     
     Returns
     -------
-    l : float
+    lam : float
         Smallest value of lambda for which the solution w is entirely zero
     """
     y_mean = np.mean(y)
@@ -245,16 +245,14 @@ def compute_max_lambda(X,y):
 # end function
 
 
-def check_solution(X,y,w_pred,w_0_pred,l):
-    """
-    XXX Does this work? XXX
-    
+def check_solution(X,y,w_pred,w_0_pred,lam):
+    """    
     See if the computed solution w_pred, w_0_pred for a given lambda l
     is correct.  That occurs when:
     
     test = 2X^T(Xw_pred + w_0_pred - y)
-    test_j = -lambda*sign(w_pred_j) for each j that is nonzero
-    Otherwise, each j value should be lesser in magnitude that lambda
+    
+    and the zero indicies are lesser in magnitude than lambda
     
     Parameters
     ----------
@@ -269,36 +267,33 @@ def check_solution(X,y,w_pred,w_0_pred,l):
     ans : bool
         whether or not the solution passes the test criteria
     """
+    
     eps = 1.0e-8
-    condition = False
+    test = 2.0*X.T.dot(X.dot(w_pred) + w_0_pred - y)
     
-    test = 2.0*X.T*(X.dot(w_pred) + w_0_pred - y)
+    #Mask values 
+    mask = (np.fabs(w_pred) < eps) # Find 0s
     
-    #Mask values corresponding to w_pred == 0
-    mask = np.fabs(w_pred) < eps
-    mask2 = np.fabs(test) < l
-    mask = np.ones(len(w_pred))[mask]
-            
-    if np.array_equal(mask2,mask) and np.sum(mask) != len(w_pred):
-        w_j = test[np.logical_not(mask)]
-        if np.allclose(w_j,-l*np.sign(w_j),atol=1.0e-10, rtol=1.0e-1) and w_j != []:
-            condition = True
-        else:
-            condition = False
+    # Solution correct if |non-zero entries| < lam for all non-zero entries
+    test_mask = np.fabs(test[~mask]) > lam
+    
+    if np.sum(test_mask) > 0:
+    	return False
     else:
-        condition = False
-    
-    return condition
+    	return True
 # end function
 
 
 # Test it out!
 if __name__ == "__main__":
     
-    w, X, y = ru.generate_norm_data(1000000,5,10)
+    # Generate some fake data
+    w, X, y = ru.generate_norm_data(10000,5,10)
     
+    # What's its shape?
     print(w.shape,X.shape,y.shape)
     
     print("Performing LASSO regression...")
-    print(fit_lasso_sparse(X,y,lam=10000.0))
+    print(fit_lasso_sparse(X,y,lam=500.0))
     print(w)
+    print(check_solution(X,y,w,0,lam=500.0))

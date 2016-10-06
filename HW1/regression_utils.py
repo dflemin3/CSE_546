@@ -13,7 +13,7 @@ from __future__ import print_function, division
 import numpy as np
 import scipy.sparse as sp
 
-def generate_norm_data(n,k,d,sigma=1,sparse=False):
+def generate_norm_data(n,k,d,sigma=1,sparse=False, w0 = 0):
     """
     Generates independent data pairs (x_i,y_i) according to the following model:
     
@@ -38,6 +38,8 @@ def generate_norm_data(n,k,d,sigma=1,sparse=False):
         Gaussian error standard deviation
     sparse : bool
         Whether or not to consider input data matrix X is sparse
+    w0 : float
+    	constant offset
         
     Returns
     -------
@@ -71,9 +73,9 @@ def generate_norm_data(n,k,d,sigma=1,sparse=False):
     #Finally, generate a Gaussian noise vector eps with variance sigma^2 and 
     #form y = Xw* + w*_0 + eps for w*_0 assumed to be 0
     if sparse:    
-        y = X.dot(w) + eps
+        y = X.dot(w) + eps + w0
     else:
-        y = np.dot(X,w) + eps
+        y = np.dot(X,w) + eps + w0
         
     return w, X, y.reshape((len(y),1))
 # end function

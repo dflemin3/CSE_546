@@ -165,8 +165,27 @@ def loss_01(y, y_hat):
     return np.sum(y != y_hat)
 # end function
     
-    
-    
+
+def sign(x):
+	"""
+	If x > 0, return 1, else, return -1
+	
+	Parameters
+	----------
+	x : float, array
+	
+	Returns
+	-------
+	sign : int
+		+/- 1
+	"""
+	
+	if x >= 0:
+		return 1.0
+	else:
+		return -1.0
+# end function
+sign = np.vectorize(sign) # Vectorize it!    
     
     
     

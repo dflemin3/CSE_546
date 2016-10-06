@@ -268,19 +268,35 @@ def check_solution(X,y,w_pred,w_0_pred,lam):
         whether or not the solution passes the test criteria
     """
     
-    eps = 1.0e-8
+    eps = 1.0e-5
+    
     test = 2.0*X.T.dot(X.dot(w_pred) + w_0_pred - y)
     
     #Mask values 
     mask = (np.fabs(w_pred) < eps) # Find 0s
     
-    # Solution correct if |non-zero entries| < lam for all non-zero entries
-    test_mask = np.fabs(test[~mask]) > lam
-    
-    if np.sum(test_mask) > 0:
+    # If you predict all 0s, you're probably wrong
+    if int(np.sum(mask)) == len(mask):
     	return False
+    
+    # Check1: Solution correct if |zero entries| < lam for all non-zero entries
+    test1_mask = np.fabs(test[mask]) > lam
+    
+    if np.sum(test1_mask) > 0:
+    	check1 = False
     else:
-    	return True
+    	check1 =  True
+    	
+    # Check2: Non-zero entries should take the value -lambda * sign(w_pred)
+    # In practice, check to see if they're within ~5% of each other
+    test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask])/np.fabs(test[~mask]) > 0.05
+    if np.sum(test2_mask) > 0:
+    	check2 = False
+    else:
+    	check2 = True
+        
+    return (check1 & check2)
+    
 # end function
 
 
@@ -288,12 +304,19 @@ def check_solution(X,y,w_pred,w_0_pred,lam):
 if __name__ == "__main__":
     
     # Generate some fake data
+    lam = 300.0
     w, X, y = ru.generate_norm_data(10000,5,10)
     
     # What's its shape?
     print(w.shape,X.shape,y.shape)
     
+    # What should the maximum lambda in a regularization step be?
+    print("Lambda_max:",compute_max_lambda(X,y))
+        
     print("Performing LASSO regression...")
-    print(fit_lasso_sparse(X,y,lam=500.0))
+    w_pred, w_0_pred, y_hat = fit_lasso_sparse(X,y,lam=lam)
+    print("w_pred:",w_pred)
     print(w)
-    print(check_solution(X,y,w,0,lam=500.0))
+    
+    # Was the predicted solution correct?
+    print(check_solution(X,y,w_pred,w_0_pred,lam=lam))

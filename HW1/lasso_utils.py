@@ -260,7 +260,7 @@ def compute_max_lambda(X,y):
 # end function
 
 
-def check_solution(X,y,w_pred,w_0_pred,lam, eps = 5.0e-7):
+def check_solution(X,y,w_pred,w_0_pred,lam, eps = 1.0e-6):
     """    
     See if the computed solution w_pred, w_0_pred for a given lambda l
     is correct.  That occurs when:
@@ -308,7 +308,7 @@ def check_solution(X,y,w_pred,w_0_pred,lam, eps = 5.0e-7):
     # Check2: Non-zero entries should take the value -lambda * sign(w_pred)
     # In practice, check to see if they're close to each other
     eps = eps * len(w_pred)
-    test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask]) > eps
+    test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask])/np.fabs(w_pred[~mask]) > 0.01
     
     if np.sum(test2_mask) > 0:
     	check2 = False
@@ -388,7 +388,7 @@ if __name__ == "__main__":
     n = 50
     d = 75
     k = 5
-    lam = 25.0
+    lam = 50.0
     sparse = False
     w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse)
     

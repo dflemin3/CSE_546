@@ -8,53 +8,49 @@ Created on Mon Oct  3 11:26:17 2016
 """
 
 from __future__ import print_function, division
-import os, struct
-from array import array as pyarray
-import numpy as np
-from numpy import array, int8, uint8, zeros
+import os
+import pickle
 
-def load_mnist(dataset="training", digits=np.arange(10),
+def load_mnist(dataset="training",
                path="/Users/dflemin3/Desktop/Career/Grad_Classes/CSE_546/Data"):
     """
-    Loads MNIST files into 3D numpy arrays
+    Loads MNIST files into numpy arrays
 
-    Credit: http://g.sweyla.com/blog/2012/mnist-numpy/
+	Parameters
+	----------
+	dataset : str
+		Which set you wish to load: training or testing
+	path : str
+		directory where MNIST .pkl files are located
 
-    Adapted from: http://abel.ee.ucla.edu/cvxopt/_downloads/mnist.py
+	Returns
+	-------
+	images : array
+		MNIST image arryas (n x d)
+	labels : array
+		MNIST label arrays (n x 1)
     """
-
-    if dataset == "training":
-        fname_img = os.path.join(path, 'train-images-idx3-ubyte')
-        fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte')
-    elif dataset == "testing":
-        fname_img = os.path.join(path, 't10k-images-idx3-ubyte')
-        fname_lbl = os.path.join(path, 't10k-labels-idx1-ubyte')
+    if dataset.lower() == "training":
+        images = os.path.join(path, 'mnist_training_images.pkl')
+        labels = os.path.join(path, 'mnist_training_labels.pkl')
+    elif dataset.lower() == "testing":
+        images = os.path.join(path, 'mnist_testing_images.pkl')
+        labels = os.path.join(path, 'mnist_testing_labels.pkl')
     else:
-        raise ValueError("dataset must be 'testing' or 'training'")
+    	raise ValueError("Dataset must be 'testing' or 'training'")
 
-    flbl = open(fname_lbl, 'rb')
-    magic_nr, size = struct.unpack(">II", flbl.read(8))
-    lbl = pyarray("b", flbl.read())
-    flbl.close()
+    # Open pickle files
+    with open(images, "rb") as handle:
+    	images = pickle.load(handle)
+    with open(labels, "rb") as handle:
+    	labels = pickle.load(handle)
 
-    fimg = open(fname_img, 'rb')
-    magic_nr, size, rows, cols = struct.unpack(">IIII", fimg.read(16))
-    img = pyarray("B", fimg.read())
-    fimg.close()
+    return images, labels
+# end function
 
-    ind = [ k for k in range(size) if lbl[k] in digits ]
-    N = len(ind)
-
-    images = zeros((N, rows, cols), dtype=uint8)
-    labels = zeros((N, 1), dtype=int8)
-    for i in range(len(ind)):
-        images[i] = array(img[ ind[i]*rows*cols : (ind[i]+1)*rows*cols ]).reshape((rows, cols))
-        labels[i] = lbl[ind[i]]
-
-    return images.reshape(len(images),(28*28)), labels
 
 if __name__ == "__main__":
     # Test data loading, make sure shape is correct
     images, labels = load_mnist(dataset='training')
-    
+
     print(images.shape,labels.shape)

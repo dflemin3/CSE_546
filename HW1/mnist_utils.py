@@ -14,7 +14,7 @@ import pickle
 def load_mnist(dataset="training",
                path="/Users/dflemin3/Desktop/Career/Grad_Classes/CSE_546/Data"):
     """
-    Loads MNIST files into numpy arrays
+    Loads MNIST files into numpy arrays from pickle files.
 
 	Parameters
 	----------

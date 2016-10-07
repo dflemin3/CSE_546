@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct  5 2016
@@ -18,13 +17,13 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 
-def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500):
+def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500, eps = 1.0e-10):
     """
-    Implimentation of the naive (un-optimized) lasso regression 
+    Implimentation of the naive (un-optimized) lasso regression
     algorithm.
-    
+
     Algorithm 1: Coordinate Descent Algorithm for Lasso
-    
+
     while not converged do:
         w_0 <- sum_i=1_N[y_i - sum_j[w_j X_ij]]/N
         for(k [1,d]) do:
@@ -35,7 +34,7 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500):
                     (c_k - lambda)/a_k if c_k > lambda
         end
     end
-    
+
     Parameters
     ----------
     X : array (n x d)
@@ -48,8 +47,10 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500):
     	whether or not X is scipy.sparse.csc. defaults to True
     max_iter : int (optional)
     	maximum number of while loop iterations
-    
-    All matrices X assumed to be sparse and of the form given by 
+    eps : float (optional)
+    	convergence tolerance
+
+    All matrices X assumed to be sparse and of the form given by
     scipy.sparse.csc matrix
 
     Returns
@@ -64,35 +65,35 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500):
     #Define values
     n = y.shape[0]
     d = X.shape[1]
-        
+
     #Convergence condition
-    eps = 1.0e-6*d
     w_old = np.zeros((d,1)) + 10000000. # offset
     w_pred = np.zeros_like(w_old)
-    
+
     # While not converged, do
     iters = 0
-    while (np.sum(np.fabs(w_pred - w_old)) > eps):
-    
+    converged = False
+
+    while not converged:
     	# Too many iterations!
     	if iters >= max_iter:
     		print("Maximum iteration threshold hit %d." % iters)
     		print("Returning current solution: Convergence not guarenteed.")
     		print("lambda = %.3lf" % lam)
     		return w_0, w_pred
-    
-        #Store for convergence test 
+
+        #Store for convergence test
         w_old = np.copy(w_pred)
-        
+
         #Compute w_0
         w_0 = np.sum(y - X.dot(w_pred))/n
-            
+
         #Compute a_k: d x 1 summing over columns
         a = np.zeros_like(w_pred)
         c = np.zeros_like(w_pred)
-         
+
         for k in range(d):
-            
+
             # Compute a (d x 1)
             # Note: different behavior whether or not you're assuming
             # X is a sparse array (via scipy implementation)
@@ -100,15 +101,15 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500):
             	a[k] = (2.0 * X[:,k].T.dot(X[:,k]))[0,0]
             else:
             	a[k] = (2.0 * X[:,k].T.dot(X[:,k]))
-            
+
             # Ignore where j == k
             w_pred_tmp = np.copy(w_pred)
             w_pred_tmp[k] = 0.0
             alpha = X.dot(w_pred_tmp) + w_0
-            
+
             #Compute c (d x 1)
             c[k] = 2.0*X[:,k].T.dot((y-alpha))
-                        
+
             #Compute w_k
             if(c[k] < -lam):
                 w_pred[k] = (c[k] + lam)/a[k]
@@ -119,9 +120,17 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500):
             else:
                 print("Error! Shouldn't ever happen.")
         #end for
+
         iters += 1
+
+        # Is it converged?
+        if np.any(np.fabs(w_pred - w_old) > eps):
+        	converged = False
+        else:
+        	converged = True
+
     #end while
-    
+
     #Return as row array
     #y_hat = np.zeros(y.shape)
     #y_hat = X.dot(w_pred) + w_0
@@ -131,9 +140,9 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500):
 
 def fast_lasso_sparse(X,y,l=10,w=-999,w_0=-999):
     """
-    Implimentation of the naive (un-optimized) lasso regression 
+    Implimentation of the naive (un-optimized) lasso regression
     algorithm.
-    
+
     Parameters
     ----------
     X : n x d matrix of data
@@ -142,12 +151,12 @@ def fast_lasso_sparse(X,y,l=10,w=-999,w_0=-999):
     w : d dimensions weight vector (optional)
     w_0 : scalar offset term (optional)
     l : regularization tuning parameter
-    
-    All matrices X assumed to be sparse and of the form given by 
+
+    All matrices X assumed to be sparse and of the form given by
     scipy.sparse.csc matrix
-    
+
     Algorithm 1: Coordinate Descent Algorithm for Lasso
-    
+
     while not converged do:
         w_0 <- sum_i=1_N[y_i - sum_j[w_j X_ij]]/N
         for(k [1,d]) do:
@@ -172,41 +181,41 @@ def fast_lasso_sparse(X,y,l=10,w=-999,w_0=-999):
     N = y.shape[0]
     d = X.shape[1]
     y = y.reshape(N,1)
-    
+
     #If no initial conditions, assume Gaussian
     if not hasattr(w, "__len__") and w == -999:
         w = np.random.randn(d)
     if w_0 == -999:
         w_0 = np.random.randn(1)
-    
+
     #Convergence condition
     eps = 1.0e-6
     w_old = np.zeros(w.shape).reshape(d,1)
     w_pred = np.copy(w).reshape(d,1)
-    
+
     while(np.sqrt((w_pred - w_old).dot((w_pred - w_old).T)[0][0]) > eps):
-        #Store for convergence test 
+        #Store for convergence test
         w_old = np.copy(w_pred)
-        
+
         #Compute w_0
         w_0 = np.sum(y)
         w_0 -= X.dot(w_pred).sum()
         w_0 /= N
-            
+
         #Compute a_k: d x 1 summing over columns
         a = 2.0*np.asarray((X.power(2).sum(axis=0).T))
         c = np.zeros(d)
-         
+
         for k in range(0,d):
-            
+
             alpha = np.zeros((d,d))
             np.fill_diagonal(alpha, 1)
             alpha[k,k] = 0
             alpha = X.dot(alpha.dot(w_pred)) + w_0
-            
+
             #Compute c: d x 1
             c[k] = 2.0*X[:,k].T.dot((y-alpha))
-            
+
             """
             #Compute c_k: d x 1
             c_sum = 0.0
@@ -216,7 +225,7 @@ def fast_lasso_sparse(X,y,l=10,w=-999,w_0=-999):
                 c_sum += X[i,k]*(y[i] - (X[i,ind].dot(w_pred[ind]) + w_0))
             c[k] = 2.0*c_sum
             """
-            
+
             #Compute w_k
             if(c[k] < -l):
                 w_pred[k] = (c[k] + l)/a[k]
@@ -229,7 +238,7 @@ def fast_lasso_sparse(X,y,l=10,w=-999,w_0=-999):
         #end for
         #print w_pred
     #end while
-    
+
     #Return as row array
     y_hat = np.zeros(y.shape)
     y_hat = X.dot(w_pred) + w_0
@@ -238,17 +247,17 @@ def fast_lasso_sparse(X,y,l=10,w=-999,w_0=-999):
 
 
 def compute_max_lambda(X,y):
-    """    
+    """
     Compute the smallest lambda for which the solution w is entirely zero
     aka the maximum lambda in a regularization path
-    
+
     Parameters
     ----------
     X : array (n x d)
     	matrix of data (scipy sparse matrix)
-    y : vector (n x 1) 
+    y : vector (n x 1)
         vector of response variables
-    
+
     Returns
     -------
     lam : float
@@ -261,14 +270,14 @@ def compute_max_lambda(X,y):
 
 
 def check_solution(X,y,w_pred,w_0_pred,lam, eps = 1.0e-6):
-    """    
+    """
     See if the computed solution w_pred, w_0_pred for a given lambda l
     is correct.  That occurs when:
-    
+
     test = 2X^T(Xw_pred + w_0_pred - y)
-    
+
     and the zero indicies are lesser in magnitude than lambda
-    
+
     Parameters
     ----------
     X : array (n x d)
@@ -281,42 +290,42 @@ def check_solution(X,y,w_pred,w_0_pred,lam, eps = 1.0e-6):
     	scalar offset term
     lam : float
     	regularization tuning parameter
-    
+
     Returns
     -------
     ans : bool
         whether or not the solution passes the test criteria
     """
-        
+
     test = 2.0*X.T.dot(X.dot(w_pred) + w_0_pred - y)
-    
+
     #Mask values to find 0s
-    mask = (np.fabs(w_pred) < eps) 
-    
+    mask = (np.fabs(w_pred) < eps)
+
     # If you predict all 0s, you're probably wrong
     if int(np.sum(mask)) == len(mask):
     	return False
-    
+
     # Check1: Solution correct if |zero entries| < lam for all non-zero entries
     test1_mask = np.fabs(test[mask]) > lam
-    
+
     if np.sum(test1_mask) > 0:
     	check1 = False
     else:
     	check1 =  True
-    	
+
     # Check2: Non-zero entries should take the value -lambda * sign(w_pred)
     # In practice, check to see if they're close to each other
     eps = eps * len(w_pred)
     test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask])/np.fabs(w_pred[~mask]) > 0.01
-    
+
     if np.sum(test2_mask) > 0:
     	check2 = False
     else:
     	check2 = True
-        
+
     return (check1 & check2)
-    
+
 # end function
 
 
@@ -324,7 +333,7 @@ def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_
 	"""
 	Perform a regularization path to find the proper lambda regularization penalty
 	for the lasso algorithm on a particular dataset.
-	
+
 	Parameters
     ----------
     X : array (n x d)
@@ -351,31 +360,31 @@ def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_
     prec : array
     	precision as a function of lambda
 	"""
-	
+
 	# Init empty lists
 	recall = []
 	prec = []
 	lams = []
-	
+
 	# Find max lambda to start reg path
 	if max_lam is None:
 		lam = compute_max_lambda(X,y)
 	else:
 		lam = max_lam
-	
+
 	for ii in range(max_iter):
 		print("Fit iteration, lambda:",ii,lam)
 		# Fit model
 		w_0, w_pred = fit_lasso(X,y,lam=lam, sparse = sparse)
-		
+
 		# Store lam, prec, recall
 		recall.append(ru.recall_lasso(w_true, w_pred))
 		prec.append(ru.precision_lasso(w_true, w_pred))
 		lams.append(lam)
-		
+
 		# Scale lam for next iteration
 		lam /= scale
-		
+
 	# Done!
 	return np.array(lams), np.array(recall), np.array(prec)
 # end function
@@ -383,22 +392,22 @@ def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_
 
 # Test it out!
 if __name__ == "__main__":
-    
+
     # Generate some fake data
-    n = 50
-    d = 75
+    n = 100000
+    d = 10
     k = 5
-    lam = 50.0
+    lam = 1000.0
     sparse = False
     w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse)
-    
+
     # What should the maximum lambda in a regularization step be?
     print("Lambda_max:",compute_max_lambda(X,y))
-        
+
     print("Performing LASSO regression...")
     w_0_pred, w_pred = fit_lasso(X,y,lam=lam,sparse=sparse)
     print("w_pred:",w_pred)
     print(w)
-    
+
     # Was the predicted solution correct?
     print(check_solution(X,y,w_pred,w_0_pred,lam=lam))

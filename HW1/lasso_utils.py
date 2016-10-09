@@ -17,7 +17,7 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 
-def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w0 = None, max_iter = 500,
+def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
 			  eps = 1.0e-5):
     """
     Implimentation of the naive (un-optimized) lasso regression
@@ -81,6 +81,8 @@ def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w0 = None, max_iter = 500,
 		w_pred = w
 		w_old = np.copy(w_pred) + 10000000. # offset
 
+    if w_0 is None:
+		w_0 = 0.0
 
     # While not converged, do
     iters = 0
@@ -148,12 +150,12 @@ def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w0 = None, max_iter = 500,
 # end function
 
 
-def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w0 = None, max_iter = 500,
+def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
 			  eps = 1.0e-5):
     """
     Implimentation optimized lasso regression algorithm.
 
-    Algorithm 2: Coordinate Descent Algorithm for Lasso (see HW1 Question 7.1)
+    Algorithm 2: Fast Coordinate Descent Algorithm for Lasso (see HW1 Question 7.1)
 
     Parameters
     ----------
@@ -195,12 +197,13 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w0 = None, max_iter = 
     	# No initial conditions given, assume 0s
     	w_pred = np.zeros((d,1))
     	w_old = np.copy(w_pred) + 10000000. # offset
-    	w_0 = 0.0
     else:
     	# Initial conditions given, use those as first w_pred
 		w_pred = w
 		w_old = np.copy(w_pred) + 10000000. # offset
 
+    if w_0 is None:
+		w_0 = 0.0
 
     # While not converged, do
     iters = 0
@@ -242,7 +245,11 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w0 = None, max_iter = 
             # Compute c[k] using update rule derived in 7.1.1
 
             #Compute c (d x 1)
-            ck = 2.0*X[:,k].T.dot(y - y_hat + X[:,k].multiply(w_pred[k]))
+            if sparse:
+            	ck = 2.0*X[:,k].T.dot(y - y_hat + X[:,k].multiply(w_pred[k]))
+            else:
+            	ck = 2.0*X[:,k].T.dot(y - y_hat + (w_pred[k]*X[:,k]).reshape(n,1))[0]
+
             #Compute w_k
             if(ck < -lam):
                 w_pred[k] = (ck + lam)/ak
@@ -254,7 +261,11 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w0 = None, max_iter = 
                 print("Error! Shouldn't ever happen.")
 
             # Update y_hat using rule derived in 7.1.6
-            y_hat = y_hat + (X[:,k].multiply(w_pred[k] - w_old[k])).toarray()
+            if sparse:
+            	y_hat = y_hat + (X[:,k].multiply(w_pred[k] - w_old[k])).toarray()
+            else:
+            	y_hat = y_hat + (X[:,k] * (w_pred[k] - w_old[k])).reshape(n,1)
+
 
         #end for
 
@@ -358,7 +369,8 @@ def check_solution(X,y,w_pred,w_0_pred,lam, eps = 1.0e-6):
 # end function
 
 
-def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_lam = None):
+def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_lam = None,
+				   fast = True):
 	"""
 	Perform a regularization path to find the proper lambda regularization penalty
 	for the lasso algorithm on a particular dataset.
@@ -379,7 +391,8 @@ def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_
     	Number of iterations
     max_lam : float (optional)
     	Maximum/start lambda for reg path.  Defaults to None
-
+    fast : bool (optional)
+    	Whether or not to use the quicker implemention of coordinate descent
     Returns
     -------
     lam_hat : float
@@ -410,7 +423,10 @@ def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_
 	for ii in range(max_iter):
 		print("Fit iteration, lambda:",ii,lam)
 		# Fit model using previous fit
-		w_0, w_pred = fit_lasso(X, y, w=w_pred, w0=w_0, lam=lam, sparse=sparse)
+		if fast:
+			w_0, w_pred = fit_lasso_fast(X, y, w=w_pred, w_0=w_0, lam=lam, sparse=sparse)
+		else:
+			w_0, w_pred = fit_lasso(X, y, w=w_pred, w_0=w_0, lam=lam, sparse=sparse)
 
 		# Store lam, prec, recall
 		lams.append(lam)
@@ -436,7 +452,7 @@ if __name__ == "__main__":
     n = 1000
     d = 10
     k = 5
-    lam = 100.0
+    lam = 200.0
     sparse = True
     w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse)
 
@@ -445,6 +461,7 @@ if __name__ == "__main__":
 
     print("Performing LASSO regression...")
     w_0_pred, w_pred = fit_lasso_fast(X,y,lam=lam,sparse=sparse)
+
     print("w_pred:",w_pred)
     print(w)
 

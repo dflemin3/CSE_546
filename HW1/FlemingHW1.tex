@@ -1,6 +1,9 @@
 
 \documentclass[12pt]{amsart}
 \usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+\usepackage{graphicx}	% Including figure files
+\usepackage{amsmath}	% Advanced maths commands
+\usepackage{amssymb}	% Extra maths symbols
 \geometry{a4paper} % or letter or a5paper or ... etc
 % \geometry{landscape} % rotated page geometry
 
@@ -199,5 +202,35 @@ Linear regression is a poor idea for classification since the slope of the predi
 TODO
 
 Note: For this question, I collaborated with Matt Wilde.
+
+%%% QUESTION 7 %%%
+
+\section*{Question 7}
+
+\subsection*{7.1}
+TODO
+
+\subsection*{7.2}
+TODO: Discuss how I implemented code, where it is, etc
+
+\subsection*{7.3}
+
+\subsubsection*{7.3.1}
+
+In the file {\tt regression$\_$utils.py}, the function {\tt generate$\_$norm$\_$data} generates the synthetic data set according to the procedure outlines in Question 7.3.  To optimize over $\lambda$, I ran a regularization path starting at $\lambda_{max} = 5000$.  This value of  $\lambda_{max}$ was a factor of 3 or so larger than $\lambda_{max} = 2 ||X^{T}(y - \bar{y}) ||_{\infty}$ in order to demonstrate that too large of a regularization penalty yields a null weight vector.  For each iteration, I decreased $\lambda$ by a factor of 2 and initialized my LASSO algorithm with the results of the previous iteration.  For the first iteration, I assumed that $\omega$ was null.  For each iteration, I compared the sparsity pattern of my solution $\hat{w}$ to the true value I generated, $\omega_{true}$ by recording the precision and recall. The results of this regularization path for data generated with $\sigma = 1$ and for data with $\sigma = 10$ is shown in Fig.~\ref{fig:synth_reg}.
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{synthetic_prec_rec.pdf}
+    \caption{Precision (red curves) and recall (blue curves) as a function of the regularization coefficient $\lambda$ over a regularization path.  Solid curves represent data generated with $\sigma = 1$ while dashed curves represent noisy data generated assuming $\sigma = 10$.  For a given $\lambda$, the fitting the noisy $\sigma = 10$ data using the LASSO algorithm yields less precise answers but comparable recall relative to the $\sigma = 1$ data}
+    \label{fig:synth_reg}
+\end{figure}
+
+For data generated with $\sigma = 1$ (solid curves in Fig.~\ref{fig:synth_reg}), a $\lambda \sim 10^3$ gives perfect precision and recall.  Larger $\lambda$s yield a larger regularization penalty which enforces a sparser solution, causing correct non-zero values to go to 0 resulting in worse recall and precision.  Smaller $\lambda$s have little effect on recall.  The LASSO algorithm tends towards ordinary least squares regression for smaller $\lambda$ and hence is still able to correctly determine the true non-zero values giving the observed perfect recall.  In this regime, however, the reduce penalty term also allows terms in $\hat{\omega}$ that should be 0 to become non-zero due to the regression algorithm overfitting the inherent noise in the data.  The additional non-zero terms arising from overfitting the noise drives the precision down as $\lambda$ decreases as the number of correct non-zeros in $\hat{\omega}$ stays the same while the total number of non-zero terms grows.
+
+\subsection*{7.3.2}
+
+I reran the same regularization analysis for the data generated with $\sigma = 10$ (dashed curves in Fig.~\ref{fig:synth_reg}) as I did for the $\sigma = 1$ data over the same $\lambda$ regularization path allowing for a direct comparison of the algorithm's performance for a given $\lambda$.  In general, I found that the recall was relatively unchanged between the two fits for all $\lambda$.  This makes sense since too large a $\lambda$ drives all $\hat{\omega}$ to 0 while smaller $\lambda$ allows for the linear regression to recover the correct non-zero values of $\omega_{true}$.  The precision for the fits on the data generated with $\sigma = 10$, however, was much worse than the fits over the $\sigma = 1$ data for almost all values of $\lambda$.  The enhanced noise in that synthetic dataset makes overfitting an issue and hence underscores the importance of regularization.  At larger $\lambda$, the precision is reasonable as the regularization penalty prevents the LASSO algorithm from overfitting and producing more incorrect non-zero terms in $\hat{\omega}$.  Smaller $\lambda$, however, yield a weaker regularization penalty and hence the algorithm overfits, producing many incorrect non-zero terms in $\hat{\omega}$ in giving poor precision.  
+
+In order to achieve the optimal precision and recall for this noisy data, one should run a regularization path as before while monitoring recall.  Once recall has increased to 1, that $\lambda_{best}$ should be returned as the optimal regularization coefficient.  For $\lambda < \lambda_{best}$, the regularization penalty would be too low allowing noise to produce spurious features yielding incorrect non-zero terms in $\hat{\omega}$.  For the general case where $\omega_{true}$ is not known, one should bias towards larger $\lambda$ for noisy data to prevent overfitting.
 
 \end{document}

@@ -13,7 +13,7 @@ from __future__ import print_function, division
 import numpy as np
 import scipy.sparse as sp
 
-def generate_norm_data(n,k,d,sigma=1,sparse=False, w0 = 0):
+def generate_norm_data(n,k,d,sigma=1.0,sparse=False, w0 = 0):
     """
     Generates independent data pairs (x_i,y_i) according to the following model:
 
@@ -49,10 +49,10 @@ def generate_norm_data(n,k,d,sigma=1,sparse=False, w0 = 0):
         data matrix
     y : n x 1 vector
     """
-    assert(k < d), "k < d must hold for k: %lf, d: %lf" % (k,d)
+    assert(k < d), "k < d must hold for k: %d, d: %d" % (k,d)
 
     # Create w vector
-    # Create a w∗ by setting the first k elements to ±10
+    # Create a w* by setting the first k elements to +/-10
     # (choose any sign pattern) and the remaining elements to 0
     w = np.zeros(d).reshape((d,1))
     for i in range(k):
@@ -61,17 +61,16 @@ def generate_norm_data(n,k,d,sigma=1,sparse=False, w0 = 0):
         else:
             w[i] = -10
 
-    #Generate n x d data matrix X for each element from N(0,1)
+    # Generate n x d data matrix X for each element from N(0,1)
     X = np.random.randn(n, d)
 
     if sparse:
         X = sp.csc_matrix(X)
 
-    #Generate n x 1 array of Gaussian error samples from N(0,sigma^2)
-    eps = np.random.randn(n).reshape(n,1)
+    # Generate n x 1 array of Gaussian error samples from N(0,sigma)
+    eps = sigma * np.random.randn(n).reshape(n,1)
 
-    #Finally, generate a Gaussian noise vector eps with variance sigma^2 and
-    #form y = Xw* + w*_0 + eps for w*_0 assumed to be 0
+    # Form y = Xw* + w*_0 + eps for w*_0 assumed to be 0
     if sparse:
         y = X.dot(w) + eps + w0
     else:

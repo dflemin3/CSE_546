@@ -17,7 +17,8 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 
-def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500, eps = 1.0e-10):
+def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w0 = None, max_iter = 500,
+			  eps = 1.0e-10):
     """
     Implimentation of the naive (un-optimized) lasso regression
     algorithm.
@@ -45,6 +46,10 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500, eps = 1.0e-10):
     	regularization tuning parameter
     sparse : bool (optional)
     	whether or not X is scipy.sparse.csc. defaults to True
+    w : array (d x 1) (optional)
+    	optional initial conditions for weight vector
+    w0 : float (optional)
+    	optional initial condition for constant offset
     max_iter : int (optional)
     	maximum number of while loop iterations
     eps : float (optional)
@@ -66,9 +71,16 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500, eps = 1.0e-10):
     n = y.shape[0]
     d = X.shape[1]
 
-    #Convergence condition
-    w_old = np.zeros((d,1)) + 10000000. # offset
-    w_pred = np.zeros_like(w_old)
+    # Init weight array and holder for convergence checks
+    if w is None:
+    	# No initial conditions given, assume 0s
+    	w_pred = np.zeros((d,1))
+    	w_old = np.copy(w_pred) + 10000000. # offset
+    else:
+    	# Initial conditions given, use those as first w_pred
+		w_pred = w
+		w_old = np.copy(w_pred) + 10000000. # offset
+
 
     # While not converged, do
     iters = 0
@@ -97,6 +109,8 @@ def fit_lasso(X,y,lam=1.0, sparse = True, max_iter = 500, eps = 1.0e-10):
             # Compute a (d x 1)
             # Note: different behavior whether or not you're assuming
             # X is a sparse array (via scipy implementation)
+            # For sparse matricies (scipy.sparse ones), X.dot(w) is MUCH
+            # faster than np.dot(X,w)...like 10^4 times faster
             if sparse:
             	a[k] = (2.0 * X[:,k].T.dot(X[:,k]))[0,0]
             else:
@@ -340,6 +354,8 @@ def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_
     	matrix of input data
     y : array (n x 1)
     	vector of response variables
+    w_true : array (d x 1) (optional)
+    	true weight vector for computing precision, recall
     num : float (optional)
     	each iteration, lambda decreases by 1/scale
     sparse : bool (optional)
@@ -372,21 +388,29 @@ def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_
 	else:
 		lam = max_lam
 
+	# Assume first w, w_0 are zeros
+	w_0 = 0.0
+	w_pred = np.zeros((X.shape[-1],1))
+
 	for ii in range(max_iter):
 		print("Fit iteration, lambda:",ii,lam)
-		# Fit model
-		w_0, w_pred = fit_lasso(X,y,lam=lam, sparse = sparse)
+		# Fit model using previous fit
+		w_0, w_pred = fit_lasso(X, y, w=w_pred, w0=w_0, lam=lam, sparse=sparse)
 
 		# Store lam, prec, recall
-		recall.append(ru.recall_lasso(w_true, w_pred))
-		prec.append(ru.precision_lasso(w_true, w_pred))
 		lams.append(lam)
+		if w_true is not None:
+			recall.append(ru.recall_lasso(w_true, w_pred))
+			prec.append(ru.precision_lasso(w_true, w_pred))
 
 		# Scale lam for next iteration
 		lam /= scale
 
 	# Done!
-	return np.array(lams), np.array(recall), np.array(prec)
+	if w_true is not None:
+		return np.array(lams), np.array(recall), np.array(prec)
+	else:
+		return np.array(lams)
 # end function
 
 

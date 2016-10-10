@@ -16,7 +16,7 @@ from __future__ import print_function, division
 import numpy as np
 import regression_utils as ru
 
-def fit_ridge(X, y, lam=1):
+def fit_ridge(X, y, lam=1, sparse=False):
     """
     Given data x and labels y and optional penalty lam(bda), fit a ridge linear
     regression model using the algorithm described in Section 7.5.2 in Murphy.
@@ -31,6 +31,9 @@ def fit_ridge(X, y, lam=1):
         labels
     lam : float (optional)
         regularization constant
+	sparse : bool (optional)
+		Whether or not data is sparse.  This does not change functionality but exists for
+		compatibility.
 
     Returns
     -------
@@ -113,10 +116,12 @@ def ridge_bin_class(X, w, w0, thresh=1):
 # Test it out!
 if __name__ == "__main__":
 
-    w, X, y = ru.generate_norm_data(10000,7,10)
+	seed = 1
+	sparse = False
+	w, X, y = ru.generate_norm_data(10000,7,10,sparse=sparse,seed=seed)
 
-    print(w.shape,X.shape,y.shape)
+	print(w.shape,X.shape,y.shape)
 
-    print("Performing ridge regression...")
-    print(fit_ridge(X,y,lam=10.0))
-    print(w)
+	print("Performing ridge regression...")
+	print(fit_ridge(X,y,lam=10.0))
+	print(w)

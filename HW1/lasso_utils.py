@@ -16,6 +16,7 @@ from __future__ import print_function, division
 import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
+import validation as val
 
 def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
 			  eps = 1.0e-5):
@@ -350,7 +351,7 @@ def check_solution(X,y,w_pred,w_0_pred,lam, eps = 1.0e-6):
     # Check2: Non-zero entries should take the value -lambda * sign(w_pred)
     # In practice, check to see if they're close to each other
     eps = eps * len(w_pred)
-    test2_mask=np.fabs(-lam*ru.sign(w_pred[~mask])-test[~mask])/np.fabs(w_pred[~mask]) > 0.01
+    test2_mask=np.fabs(-lam*val.sign(w_pred[~mask])-test[~mask])/np.fabs(w_pred[~mask]) > 0.01
 
     if np.sum(test2_mask) > 0:
     	check2 = False
@@ -362,11 +363,11 @@ def check_solution(X,y,w_pred,w_0_pred,lam, eps = 1.0e-6):
 # end function
 
 
-def lasso_reg_path(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_lam = None,
+def lasso_reg_path_true(X, y, w_true, scale = 10., sparse = True, max_iter = 10, max_lam = None,
 				   fast = True):
 	"""
 	Perform a regularization path to find the proper lambda regularization penalty
-	for the lasso algorithm on a particular dataset.
+	for the lasso algorithm on a particular dataset when the true weight vector is known.
 
 	Parameters
     ----------
@@ -447,7 +448,8 @@ if __name__ == "__main__":
     k = 5
     lam = 200.0
     sparse = True
-    w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse)
+    seed = 1
+    w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse,seed=seed)
 
     # What should the maximum lambda in a regularization step be?
     print("Lambda_max:",compute_max_lambda(X,y))

@@ -46,7 +46,7 @@ print("Generating synthetic data for sigma = %.1lf" % sigma)
 w_true, X_train, y_train = ru.generate_norm_data(n,k,d,sigma,sparse=sparse)
 
 print("Running lasso regularization path for sigma = %.1lf" % sigma)
-lams_1, recall_1, prec_1 = lu.lasso_reg_path(X_train, y_train, w_true, sparse = sparse,
+lams_1, recall_1, prec_1 = lu.lasso_reg_path_true(X_train, y_train, w_true, sparse = sparse,
 									   scale = 2., max_iter = max_iter, max_lam=max_lam,
 									         fast=fast)
 
@@ -55,7 +55,7 @@ print("Generating synthetic data for sigma = %.1lf" % (10*sigma))
 w_true, X_train, y_train = ru.generate_norm_data(n,k,d,(10*sigma),sparse=sparse)
 
 print("Running lasso regularization path for sigma = %.1lf" % sigma * 10)
-lams_10, recall_10, prec_10 = lu.lasso_reg_path(X_train, y_train, w_true, sparse = sparse,
+lams_10, recall_10, prec_10 = lu.lasso_reg_path_true(X_train, y_train, w_true, sparse = sparse,
 									   scale = 2., max_iter = max_iter, max_lam=max_lam)
 # Sigma = 1, 10 plot
 if show_plots:

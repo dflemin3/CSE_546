@@ -13,7 +13,7 @@ from __future__ import print_function, division
 import numpy as np
 import scipy.sparse as sp
 
-def generate_norm_data(n,k,d,sigma=1.0,sparse=False, w0 = 0):
+def generate_norm_data(n,k,d,sigma=1.0,sparse=False, w0 = 0, seed = None):
     """
     Generates independent data pairs (x_i,y_i) according to the following model:
 
@@ -40,7 +40,8 @@ def generate_norm_data(n,k,d,sigma=1.0,sparse=False, w0 = 0):
         Whether or not to consider input data matrix X is sparse
     w0 : float
     	constant offset
-
+    seed : float
+    	Numpy RNG seed (only set if given)
     Returns
     -------
     w : vector
@@ -50,6 +51,9 @@ def generate_norm_data(n,k,d,sigma=1.0,sparse=False, w0 = 0):
     y : n x 1 vector
     """
     assert(k < d), "k < d must hold for k: %d, d: %d" % (k,d)
+
+    if seed is not None:
+		np.random.seed(seed)
 
     # Create w vector
     # Create a w* by setting the first k elements to +/-10
@@ -106,89 +110,6 @@ def linear_model(X, w, w0, sparse=False):
     else:
     	return w0 + np.dot(X,w)
 # end function
-
-
-def MSE(y, y_hat):
-    """
-    Compute the mean squared error of a prediction
-
-    Parameters
-    ----------
-    y : array (n x 1)
-        array of observations
-    y_hat : array (n x 1)
-        array of predictions
-
-    Returns
-    -------
-    mse : float
-        mean squared error
-    """
-
-    return np.sum(np.power(y - y_hat,2))/len(y)
-# end function
-
-
-def square_loss(y, y_hat):
-    """
-    Compute the square loss of a binary classifier
-
-    Parameters
-    ----------
-    y : array (n x 1)
-        array of observations
-    y_hat : array (n x 1)
-        array of predictions
-
-    Returns
-    -------
-    sl : float
-        square loss
-    """
-    return np.sum(np.power(y - y_hat,2))
-# end function
-
-
-def loss_01(y, y_hat):
-    """
-    Compute the 0-1 loss of a binary classifier
-
-    Parameters
-    ----------
-    y : array (n x 1)
-        array of observations
-    y_hat : array (n x 1)
-        array of predictions
-
-    Returns
-    -------
-    loss : float
-        0-1 loss
-    """
-    return np.sum(y != y_hat)
-# end function
-
-
-def sign(x):
-	"""
-	If x > 0, return 1, else, return -1
-
-	Parameters
-	----------
-	x : float, array
-
-	Returns
-	-------
-	sign : int
-		+/- 1
-	"""
-
-	if x >= 0:
-		return 1.0
-	else:
-		return -1.0
-# end function
-sign = np.vectorize(sign) # Vectorize it!
 
 
 def precision_lasso(w_true, w_pred, eps = 1.0e-3):

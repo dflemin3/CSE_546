@@ -126,7 +126,77 @@ Note: For this question, I collaborated with Matt Wilde.
 
 \section*{Question 3}
 
+\subsection*{3.1}
+
 TODO
+
+\subsection*{3.2}
+
+Since in matrix notation we have $\hat{Y} = HY$, I can write 
+\begin{equation}
+\hat{y_i} = \sum_{j=1}^N H_{ij}y_j
+\end{equation}
+where $\hat{y}$ has length $N$.
+
+\subsection*{3.3}
+
+To show that $\hat{Y}^{(-i)}$ is the estimator which minimizes SSE for the given $Z_j$, first I substitute $Z_j$ for $y_i$ in the given expression for SSE to get the following
+\begin{equation}
+SSE = \sum_{j=1}^N (Z_j - \hat{y_j})^2.
+\end{equation} 
+
+Now, I expand the above expression for SSE using the definition of $Z_j$
+
+\begin{equation}
+\begin{split}
+SSE & = \sum_{j \neq i}^N (y_j - \hat{y_j})^2  + (\hat{y}_i^{(-i)} - \hat{y_i})^2
+\end{split}
+\end{equation}
+which reduces to the original SSE with an additional $i = j$ term.  Therefore $\hat{Y}^{(-i)}$ must be the estimator which minimizes the SSE for $Z$.
+
+\subsection*{3.4}
+
+Analogous to the answer to Question 3.2, I can write $\hat{Y}^{(-i)} = HZ$ or in summation notation,
+\begin{equation}
+\hat{y}_i^{(-i)} = \sum_{j = 1}^N H_{ij}Z_j
+\end{equation}
+
+\subsection*{3.5}
+
+To show that $\hat{y}_i - \hat{y}_i^{(-i)} = H_{ii}y_i - H_{ii}\hat{y}_i^{(-i)} $, I will take the left-hand side (LHS) of the equation and expand it with my definitions for $\hat{y}_i $ and $\hat{y}_i^{(-i)}$ from my answers to 3.2 and 3.4 as follows
+
+\begin{equation}
+\begin{split}
+\hat{y}_i - \hat{y}_i^{(-i)}  & = \\
+\sum_{j = 1}^N H_{ij}y_j - \sum_{j = 1}^N H_{ij}Z_j & = \\
+\sum_{j \neq i}^N H_{ij}y_j + H_{ii}y_i - \sum_{j \neq i}^N H_{ij}y_j - H_{ii}\hat{y}_i^{(-i)} & = \\
+H_{ii}y_i - H_{ii}\hat{y}_i^{(-i)} & = RHS
+\end{split}
+\end{equation}
+as the $j \neq i$ term in $Z_j$ allows us to cancel the summation terms, giving us the RHS as posited.
+
+\subsection*{3.6}
+
+To derive the expected result, first I will rearrange $\hat{y}_i - \hat{y}_i^{(-i)} = H_{ii}y_i - H_{ii}\hat{y}_i^{(-i)}$ as follows
+\begin{equation}
+\begin{split}
+\hat{y}_i - \hat{y}_i^{(-i)} & = H_{ii}y_i - H_{ii}\hat{y}_i^{(-i)}  \\
+\hat{y}_i - H_{ii}y_i & =  \hat{y}_i^{(-i)} - H_{ii}\hat{y}_i^{(-i)} \\
+\hat{y}_i - H_{ii}y_i & =  (1 - H_{ii})\hat{y}_i^{(-i)} \\
+\hat{y}_i^{(-i)} & = (\hat{y}_i - H_{ii}y_i) \frac{1}{1 - H_{ii}}.
+\end{split}
+\end{equation} 
+I now insert this expression for $\hat{y}_i^{(-i)}$ into the expression for LOOCV and reduce to derive the following
+\begin{equation}
+\begin{split}
+LOOVC & = \sum_{i = 1}^N (y_i - \hat{y}_i^{(-i)})^2 \\
+& = \sum_{i = 1}^N \left( y_i -  (\hat{y}_i - H_{ii}y_i) \frac{1}{1 - H_{ii}} \right)^2 \\
+& = \sum_{i = 1}^N \left( y_i\frac{1 - H_{ii}}{1 - H_{ii}} -  \frac{\hat{y}_i}{1 - H_{ii}}  + \frac{H_{ii}y_i}{1 - H_{ii}}  \right)^2 \\
+& = \sum_{i = 1}^N \left( \frac{y_i - \hat{y_i}}{1 - H_{ii}} \right)^2.
+\end{split}
+\end{equation}
+
+The algorithmic complexity is TODO.
 
 %%% QUESTION 4 %%%
 
@@ -208,10 +278,94 @@ Note: For this question, I collaborated with Matt Wilde.
 \section*{Question 7}
 
 \subsection*{7.1}
-TODO
+
+\subsubsection*{7.1.1}
+If we define
+\begin{equation}
+\hat{y_i} = X_i \omega + w_0,
+\end{equation}
+we can rearrange that to get 
+\begin{equation}
+X_i \omega = \hat{y_i} - w_0.
+\end{equation}
+Combining that expression with the update rule for $w_0$ from Algorithm 1, we find
+\begin{equation}
+w_0^{(t+1)} = \sum_{i = 1}^N (y_i - \hat{y_i}^{(t)})/N + w_0^{(t)}
+\end{equation}
+by substituting out the $X_i \omega$ term in favor of the expression with $\hat{y_i} - w_0$ since $X_i \omega = \sum_j \omega_j X_{ij}$.
+
+Similarly for the new $c_k$ update rule, we can insert
+\begin{equation}
+w_0 = \hat{y_i} - X_i \omega.
+\end{equation}
+into the following expression for $c_k$
+\begin{equation}
+c_k = 2 \sum_{i=1}^N X_{ik}(y_i - (w_0 + \sum_{j \neq k}\omega_j X_{ij}))
+\end{equation}
+where 
+\begin{equation}
+-\sum_j X_{ij}\omega_j + \sum_{j \neq k}\omega_j X_{ij} = -X_{ik}\omega_k
+\end{equation}
+allows us to simplify the expression into 
+\begin{equation}
+c_k = 2 \sum_{i=1}^N X_{ik}(y_i - \hat{y_i} + X_{ik}\omega_k).
+\end{equation}
+This final expression no longer includes the summation over $j$.
+
+\subsubsection*{7.1.2}
+The dot product of a sparse matrix and a vector takes time proportional to the number of nonzero entries in said sparse matrix.  Therefore if $||X||_0$ is the number of nonzero entries in X, the time complexity to compute $\hat{y} = X\omega + w_0$ is $\mathcal{O}(||X||_0 + N)$.
+
+\subsubsection*{7.1.3}
+
+If $\hat{y}$ is not already computed, it takes $\mathcal{O}(N ||X||_0)$ to compute $\hat{y}$ then $\mathcal{O}(N)$ to loop over all entries of $y$ and $\hat{y}$ to compute $w_0$ yielding a total complexity $\mathcal{O}(N + N||X||_0)$ since we still need only to compute $\hat{y}$ once.  If $\hat{y}$ has already been computed, the time complexity is only $\mathcal{O}(N)$. 
+
+\subsubsection*{7.1.4}
+
+Define $z_j$ to be the number of nonzero elements in the $j-th$ column of X.  If $\hat{y}$ is already computed, the time complexity to compute $\hat{\omega}$ is $\mathcal{O}(N)$ as one needs to loop over N elements while computing both $a_k$ and $c_k$ while computing $w_k$.
+
+\subsubsection*{7.1.5}
+
+I can rearrange the expression for $\hat{y}_i^{(t)}$ to get the following
+\begin{equation}
+X_i \omega^{(t)} = \hat{y}_i^{(t)} - w_0^{(t)}.
+\end{equation}
+I insert the above expression for $X_i \omega^{(t)}$ into the equation for $\hat{y}_i^{(t+1)}$ to find the corresponding update rule for the new prediction
+\begin{equation}
+\hat{y}_i^{(t+1)} = \hat{y}_i^{(t)} + w_0^{(t+1)} - w_0^{(t)}
+\end{equation}
+where $w_0^{(t+1)}$ was found via the update rule derived in Question 7.1.1 and $w_0^{(t)}$ was the value of $w_0$ at the start of the current iteration.  
+
+If $\hat{y}^{(t)}$ is already computed, the complexity to calculate $\hat{y}^{(t+1)}$ is simply $\mathcal{O}(N)$ as one must loop over the N elements of $\hat{y}^{(t+1)}$ for the computation.
+
+\subsubsection*{7.1.6}
+
+First, define
+\begin{equation}
+\hat{y}_i^{(t+1)} = \sum_{j \neq k} \omega_j^{(t)}X_{ij} + \omega_k^{(t+1)}X_{ik} + w_0^{(t)}
+\end{equation}
+to be the new prediction after updating.
+Again, I note that 
+\begin{equation}
+X_i \omega^{(t)} = \hat{y}_i^{(t)} - w_0^{(t)}
+\end{equation}
+which we can insert that into the above new prediction since $\sum_{j} \omega_j^{(t)}X_{ij} = X_i \omega^{(t)} $ to get 
+\begin{equation}
+\hat{y}_i^{(t+1)} = \hat{y_i}^{(t)} - w_0^{(t)} - \omega_k^{(t)}X_{ik} + \omega_k^{(t+1)}X_{ik} + w_0^{(t)}
+\end{equation}
+to be the new prediction after updating.  This expression reduces to the new update rule for $\hat{y}_i^{(t+1)}$ in terms of $\hat{y}_i^{(t)}$
+\begin{equation}
+\hat{y}_i^{(t+1)} = \hat{y_i}^{(t)} + X_{ik}(\omega_k^{(t+1)} - \omega_k^{(t)}).
+\end{equation}
+
+If $\hat{y}_i^{(t)}$ is already computed, the time complexity required to compute $\hat{y}_i^{(t+1)}$ is $\mathcal{O}(N)$ as one must loop over all $N$ elements in $\hat{y}_i^{(t+1)}$.
+
+\subsubsection*{7.1.7}
+
+Combining all the rules derived in 7.1.1 - 7.1.6, we have the Efficient Coordinate Descent Algorithm for LASSO regression.  To estimate the per iteration complexity of the algorithm, we note that within the while loop there are two regimes to consider: within the for loop over all $d$ features and outside said loop.  Outside the loop, the first calculation of $\hat{y}$ is $\mathcal{O}(||X||_0 + N)$ as shown in 7.1.2.  The update rules for $w_0$ and the second update of $\hat{y}$ both take $\mathcal{O}(N)$ yielding a net $\mathcal{O}(||X||_0 + N)$ for the operations outside of the for loop.  Within the for loop over all $d$ features, each operations is $\mathcal{O}(N)$ (see 7.1.1, 7.1.6) as each operation involves looping over $N$ elements to perform simple arithmetic operations.  Since for each loop iteration operations with complexity $\mathcal{O}(N)$ occur, these all occur $d$ times over the course of the loop yielding a net for loop complexity of $\mathcal{O}(Nd)$.  This complexity then combines with the outside of the loop complexity to yield a per iteration complexity of $\mathcal{O}(Nd + ||X||_0 + N)$.  When we only consider the highest power term, this gives a per iteration complexity of the algorithm of $\mathcal{O}(Nd)$.
 
 \subsection*{7.2}
-TODO: Discuss how I implemented code, where it is, etc
+
+My {\tt python} implementations of both Algorithm 1 and Algorithm 2 are in the attached file {\tt lasso$\_$utils.py} and are named {\tt fit$\_$lasso and fit$\_$lasso$\_$fast}, respectively.  Each function includes the offset term $w_0$ that is not regularized, have the option to take initial conditions for both $\omega$ and $w_0$ and can handle dense or sparse $X$ using the {\tt scipy.sparse} package.
 
 \subsection*{7.3}
 
@@ -232,5 +386,7 @@ For data generated with $\sigma = 1$ (solid curves in Fig.~\ref{fig:synth_reg}),
 I reran the same regularization analysis for the data generated with $\sigma = 10$ (dashed curves in Fig.~\ref{fig:synth_reg}) as I did for the $\sigma = 1$ data over the same $\lambda$ regularization path allowing for a direct comparison of the algorithm's performance for a given $\lambda$.  In general, I found that the recall was relatively unchanged between the two fits for all $\lambda$.  This makes sense since too large a $\lambda$ drives all $\hat{\omega}$ to 0 while smaller $\lambda$ allows for the linear regression to recover the correct non-zero values of $\omega_{true}$.  The precision for the fits on the data generated with $\sigma = 10$, however, was much worse than the fits over the $\sigma = 1$ data for almost all values of $\lambda$.  The enhanced noise in that synthetic dataset makes overfitting an issue and hence underscores the importance of regularization.  At larger $\lambda$, the precision is reasonable as the regularization penalty prevents the LASSO algorithm from overfitting and producing more incorrect non-zero terms in $\hat{\omega}$.  Smaller $\lambda$, however, yield a weaker regularization penalty and hence the algorithm overfits, producing many incorrect non-zero terms in $\hat{\omega}$ in giving poor precision.  
 
 In order to achieve the optimal precision and recall for this noisy data, one should run a regularization path as before while monitoring recall.  Once recall has increased to 1, that $\lambda_{best}$ should be returned as the optimal regularization coefficient.  For $\lambda < \lambda_{best}$, the regularization penalty would be too low allowing noise to produce spurious features yielding incorrect non-zero terms in $\hat{\omega}$.  For the general case where $\omega_{true}$ is not known, one should bias towards larger $\lambda$ for noisy data to prevent overfitting.
+
+Note: On this question, I collaborated with Matt Wilde, Serena Liu, and Janet Matsen.
 
 \end{document}

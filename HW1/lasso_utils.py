@@ -143,9 +143,6 @@ def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
 
     #end while
 
-    #Return as row array
-    #y_hat = np.zeros(y.shape)
-    #y_hat = X.dot(w_pred) + w_0
     return w_0, w_pred
 # end function
 
@@ -266,7 +263,6 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
             else:
             	y_hat = y_hat + (X[:,k] * (w_pred[k] - w_old[k])).reshape(n,1)
 
-
         #end for
 
         iters += 1
@@ -279,9 +275,6 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
 
     #end while
 
-    #Return as row array
-    #y_hat = np.zeros(y.shape)
-    #y_hat = X.dot(w_pred) + w_0
     return w_0, w_pred
 # end function
 

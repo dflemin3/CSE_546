@@ -1,16 +1,12 @@
-
 \documentclass[12pt]{amsart}
 \usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
 \usepackage{graphicx}	% Including figure files
 \usepackage{amsmath}	% Advanced maths commands
 \usepackage{amssymb}	% Extra maths symbols
 \geometry{a4paper} % or letter or a5paper or ... etc
-% \geometry{landscape} % rotated page geometry
-
-% See the ``Article customise'' template for come common customisations
 
 \title{CSE 546 HW1}
-\author{David Fleming}
+\author{David P. Fleming}
 \date{October 14$^{th}$, 2016}
 
 %%% BEGIN DOCUMENT
@@ -242,7 +238,7 @@ TODO
 
 \section*{Question 6}
 
-Note: The following scripts (attached) include all code used to solve this question: {\tt hw1$\_$6.py, mnist$\_$utils.py, regression$\_$utils.py, ridge$\_$utils.py}.
+Note: The following scripts (attached) include all code used to solve this question: {\tt hw1$\_$6.py, mnist$\_$utils.py, regression$\_$utils.py, ridge$\_$utils.py, validation.py}.
 
 Here, the I build a linear classifier by minimizing the following Ridge Regression Loss:
 \begin{equation} \label{eqn:RR_loss}
@@ -259,19 +255,29 @@ however the matrix inversion required is not only computationally expensive but 
 
 \subsection*{6.1}
 
+The hyperparameters of my model, the regularization parameter $\lambda$ and the threshold parameter $c$, were simultaneously fit for along a regularization grid.  Since my training set was sufficiently large with $N = 60,000$ samples, I randomly partitioned it into a validation set with $N_{val} = 6,000$ and a training set with $N_{train} = 54,000$.  I iterated over a two-dimensional grid of thresholds $c \in [-0.2,1]$ in 20 linear bins and $\lambda \in [10^{-5},10^{10}]$ in 20 logarithmic bins.  For each $(c,\lambda)$ pair, I fit the ridge regression on the training set then tested it on the validation data.  I used the validation predictions to compute the 0-1 loss and stored it for each grid point.  I found the optimal $c = 0.368$ and $\lambda = 4.3 \times 10^7$ from the minimum value of the 0-1 loss grid.  With these optimal hyperparameters, I then fit the ridge regression model on the entire $N = 60,000$ sample training set.
 
-TODO: How I compute different loses
+For estimating the losses, I compute the 0-1 loss as
+\begin{equation} \label{eqn:01_loss}
+\sum_{i=1}^N I(y_i \neq \hat{y_i})
+\end{equation}
+where $y_i$ is the label for if the digit is a 2 (1) or not (0) and $\hat{y_i}$ is the predicted label of whether the digit is a 2 (1) or not (0).  The predicted label is set to 1 if $X_iw > c$ and 0 otherwise for a threshold value $c$ I estimated above.  I compute the square loss as
+\begin{equation} \label{eqn:square_loss}
+\sum_{i=1}^N (y_i - \hat{y_i})^2
+\end{equation}
+where $y_i$ is the label for if the digit is a 2 (1) or not (0) and $\hat{y_i}$ is the predicted $X_i \omega + w_0$ floating point value produced by the linear model.
 
-After training my model, I find a 0/1 loss of XXX and a square loss of YYY on the training set.  Note that these losses do not seem terribly high for my classifier given that there are of order 6,000 2's in the MNIST training set.  However, even a naive classifier that says everything is not a 2 would be correct roughly $90\%$ of the time, therefore I expect my model that does a simple prediction with a poor linear Ridge Regression to do slightly better.
+After training my model, I find a 0/1 loss of 1892 and a square loss of 2290.8 on the training set.  Note that these losses do not seem terribly high for my classifier given that there are of order 6,000 2's in the MNIST training set.  However, even a naive classifier that says everything is not a 2 would be correct roughly $90\%$ of the time, therefore I expect my model that does a simple linear regression to do slightly better.
 
 \subsection*{6.2}
-On the testing set, I evaluated my model from fitting the training set and apply it to the testing input images to find a 0/1 and a square loss of 545.  Note that it appears that my error on the testing set is actually less than that of the training set!  This, however, is not the case since the training set contains 60,000 samples while the testing set contains 10,000.  If the size of the set over which the model is evaluated is taken into account, my model performs worse on the testing set and hence the testing error is larger as is expected for classifying with a linear regression model.
+On the testing set, I evaluated my model from fitting the training set and apply it to the testing input images to find a 0/1 loss of 316 and a square loss of 383.4.  Note that it appears that my error on the testing set is actually less than that of the training set!  This, however, is not the case since the training set contains 60,000 samples while the testing set contains 10,000.  If the size of the set over which the model is evaluated is taken into account, my model performs worse on the testing set and hence the testing error is larger as is expected for classifying with a linear regression model.
 
 \subsection*{6.3}
-Linear regression is a poor idea for classification since the slope of the predicted line decides which input vector is labeled a 0 and which is labeled a 1.  Instead of ascribing a probability to each estimate, it instead checks to see if it's above or below a given threshold.  This model does not successfully generalize to new data at all since new data points since the slope of the classifying line is so dependent on the training data and new points could dramatically shift the slope of that line, changing which class a given point belongs to.
+Linear regression is a poor idea for classification since the slope of the predicted line decides which input vector is labeled a 0 and which is labeled a 1.  Instead of ascribing a probability to each estimate, it instead checks to see if it's above or below a given threshold.  This model does not successfully generalize to new data since the slope of the classifying line is dependent on the training data and new points could dramatically shift the slope of that line, changing which class a given point belongs to.  Instead when using a linear classifier, one should use logistic regression as it has the desirable outcome of predicting the label via a probability.  That is, if the logistic regressor predicts a probability $p > 0.5$, the sample is assigned a label of 1.
 
 \subsection*{6.4}
-TODO
+
+Recalling what my answer for the Bayes optimal predictor for the square loss, the Bayes optimal predictor using square loss for classification is $E[y|x,D]$.  Since I used a linear regressor in this question, I can replace $y$ to get $X^TE[\omega|x,D]$ where X can be removed from the expectation value since it is constant over the integral.
 
 Note: For this question, I collaborated with Matt Wilde.
 
@@ -323,7 +329,7 @@ If $\hat{y}$ is not already computed, it takes $\mathcal{O}(N ||X||_0)$ to compu
 
 \subsubsection*{7.1.4}
 
-Define $z_j$ to be the number of nonzero elements in the $j-th$ column of X.  If $\hat{y}$ is already computed, the time complexity to compute $\hat{\omega}$ is $\mathcal{O}(N)$ as one needs to loop over N elements while computing both $a_k$ and $c_k$ while computing $w_k$.
+Define $z_j$ to be the number of nonzero elements in the $j-th$ column of X.  If $\hat{y}$ is already computed, the time complexity to compute $\hat{\omega}$ is $\mathcal{O}(z_j)$ as one needs to loop over only $z_j$ elements while computing both $a_k$ and $c_k$ while computing $w_k$ since the dot product takes time proportional to the number of nonzero entries, $z_j$.
 
 \subsubsection*{7.1.5}
 
@@ -363,7 +369,7 @@ If $\hat{y}_i^{(t)}$ is already computed, the time complexity required to comput
 
 \subsubsection*{7.1.7}
 
-Combining all the rules derived in 7.1.1 - 7.1.6, we have the Efficient Coordinate Descent Algorithm for LASSO regression.  To estimate the per iteration complexity of the algorithm, we note that within the while loop there are two regimes to consider: within the for loop over all $d$ features and outside said loop.  Outside the loop, the first calculation of $\hat{y}$ is $\mathcal{O}(||X||_0 + N)$ as shown in 7.1.2.  The update rules for $w_0$ and the second update of $\hat{y}$ both take $\mathcal{O}(N)$ yielding a net $\mathcal{O}(||X||_0 + N)$ for the operations outside of the for loop.  Within the for loop over all $d$ features, each operations is $\mathcal{O}(N)$ (see 7.1.1, 7.1.6) as each operation involves looping over $N$ elements to perform simple arithmetic operations.  Since for each loop iteration operations with complexity $\mathcal{O}(N)$ occur, these all occur $d$ times over the course of the loop yielding a net for loop complexity of $\mathcal{O}(Nd)$.  This complexity then combines with the outside of the loop complexity to yield a per iteration complexity of $\mathcal{O}(Nd + ||X||_0 + N)$.  When we only consider the highest power term, this gives a per iteration complexity of the algorithm of $\mathcal{O}(Nd)$.
+Combining all the rules derived in 7.1.1 - 7.1.6, we have the Efficient Coordinate Descent Algorithm for LASSO regression.  To estimate the per iteration complexity of the algorithm, we note that within the while loop there are two regimes to consider: within the for loop over all $d$ features and outside said loop.  Outside the loop, the first calculation of $\hat{y}$ is $\mathcal{O}(||X||_0 + N)$ as shown in 7.1.2.  The update rules for $w_0$ and the second update of $\hat{y}$ both take $\mathcal{O}(N)$ yielding a net $\mathcal{O}(||X||_0 + N)$ for the operations outside of the for loop.  Within the for loop over all $d$ features, the complexity for updating $\hat{y}$ is $\mathcal{O}(N)$ as this operation involves looping over $N$ elements to perform simple arithmetic operations.  The complexity to update $\hat{\omega_k}$ is $\mathcal{O}(z_j)$.  Given that a maximum number of non-zero elements for a given column $X_i$ is $N$, the asymptotic complexity to update $\hat{\omega}$ is $\mathcal{O}(N)$.  Therefore, the operations within the loop have a complexity of $\mathcal{O}(2N)$ which asymptotes to $\mathcal{O}(N)$.  These loop operations occur $d$ times over the course of the loop yielding a net for loop complexity of $\mathcal{O}(Nd)$.  This complexity then combines with the outside of the loop complexity to yield a per iteration complexity of $\mathcal{O}(Nd + ||X||_0 + N)$.  When we only consider the behavior for large $dN$ or large $||X||_0$, this gives a per iteration complexity of the algorithm of $\mathcal{O}(Nd + ||X||_0)$.
 
 \subsection*{7.2}
 

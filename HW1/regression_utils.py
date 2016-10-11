@@ -13,7 +13,7 @@ from __future__ import print_function, division
 import numpy as np
 import scipy.sparse as sp
 
-def generate_norm_data(n,k,d,sigma=1.0,sparse=False, w0 = 0, seed = None):
+def generate_norm_data(n, k, d, sigma=1.0,sparse=False, w0 = 0, seed = None):
     """
     Generates independent data pairs (x_i,y_i) according to the following model:
 

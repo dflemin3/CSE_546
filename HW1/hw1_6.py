@@ -53,6 +53,8 @@ def mnist_ridge_thresh(X, y, lam = 1):
     everything else -> 0.  Computed simply by taking median of predictions
     corresponding to indicies of 1's in truth vector (only use on training data!)
 
+	DEPRECATED -- DO NOT USE
+
     Parameters
     ----------
     X : array (n x d)
@@ -92,6 +94,8 @@ def mnist_ridge_lam(X, y, num = 20, minlam=1.0e-10, maxlam=1.0e10):
     for labeling a MNIST digit as a 2.  For the purposes of this classification,
     2 -> 1, while everything else -> 0.  Optimize over lam by minimizing the
     0-1 loss.
+
+	DEPRECATED -- DO NOT USE
 
     Parameters
     ----------
@@ -186,49 +190,42 @@ if __name__ == "__main__":
     # Load in MNIST training data
     print("Loading MNIST Training data...")
     X_train, y_train = mu.load_mnist(dataset='training')
+
     y_train_true = mnist_two_filter(y_train)
     print("True number of twos in training set:",np.sum(y_train_true))
 
-    # Perform grid search to find best regularization constant?
+    # Perform grid search to find best regularization constant and threshold?
     if find_best_lam:
         print("Finding optimal lambda and threshold via regularization path.")
         num = 20
         thresh_arr = np.linspace(-0.2,1.,num)
-        err = np.zeros((num,num))
+        err_val = np.zeros((num,num))
+        err_train = np.zeros((num,num))
 
-        for i in range(num): # Loop over errors
-			# Internally loop over lambdas
-			err[i,:], lams = val.linear_reg_path(X_train, y_train_true, ri.fit_ridge,
+		# Loop over thresholds
+        for i in range(num):
+			# Internally loop over lambdas in regularization path
+			err_val[i,:], err_train[i,:], lams = val.linear_reg_path(X_train, y_train_true,
+												ri.fit_ridge,
 												lammax=1.0e10, lammin=1.0e-5, num=num,
 												error_func = val.loss_01, thresh=thresh_arr[i],
 												seed=seed,**kwargs)
 
         # Find minimum threshold, lambda from minimum validation error
-        ind_t,ind_l = np.unravel_index(err.argmin(), err.shape)
+        ind_t,ind_l = np.unravel_index(err_val.argmin(), err_val.shape)
         best_lambda = lams[ind_l]
         best_thresh = thresh_arr[ind_t]
         print("Best lambda:",best_lambda)
         print("Best threshold:",best_thresh)
 
-
-
-		# Find the best lambda based on 0/1 training error
-        #best_lambda, best_sl, best_thresh = mnist_ridge_lam(X_train, y_train_true)
-        #print("Best lambda: %e" % best_lambda)
-        #print("Best Square Loss: %.3lf" % best_sl)
-        #print("Best wx: %.3lf" % best_thresh)
-    else:
-    	pass
-        #best_thresh = mnist_ridge_thresh(X_train, y_train_true, lam=best_lambda)
-        #print("Best wx: %.3lf" % best_thresh)
-
-    # Fit training set for model parameters
+    # Fit training set for model parameters using best fit lambda
     w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
 
-    # Classify, then get square loss, 1/0 error
-    y_hat_train = ri.ridge_bin_class(X_train, w, w0, thresh=best_thresh)
+    # Predict, then get square loss, 1/0 error on training data
+    y_hat_train = ru.linear_model(X_train, w, w0)
+    y_hat_train_class = ri.ridge_bin_class(X_train, w, w0, thresh=best_thresh)
     sl_train = val.square_loss(y_train_true, y_hat_train)
-    err_10_train = val.loss_01(y_train_true, y_hat_train)
+    err_10_train = val.loss_01(y_train_true, y_hat_train_class)
 
     # Load testing set
     print("Loading MNIST Testing data...")
@@ -236,10 +233,11 @@ if __name__ == "__main__":
     y_test_true = mnist_two_filter(y_test)
     print("True number of twos in testing set:",np.sum(y_test_true))
 
-    # Classify using training set fit, get square loss, 1/0 error
-    y_hat_test = ri.ridge_bin_class(X_test, w, w0, thresh=best_thresh)
+    # Predict, then get square loss, 1/0 error on testing data
+    y_hat_test = ru.linear_model(X_test, w, w0)
+    y_hat_test_class = ri.ridge_bin_class(X_test, w, w0, thresh=best_thresh)
     sl_test = val.square_loss(y_test_true, y_hat_test)
-    err_10_test = val.loss_01(y_test_true, y_hat_test)
+    err_10_test = val.loss_01(y_test_true, y_hat_test_class)
 
     # Output!
     print("Square Loss on training, testing set: %.3lf, %.3lf" % (sl_train, sl_test))

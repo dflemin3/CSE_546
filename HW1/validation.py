@@ -156,7 +156,8 @@ def linear_reg_path(X_train, y_train, model, val_frac=0.1, lammax=1.0e3, lammin=
 
 	# Generate lambda array, empty error array
 	lams = np.logspace(np.log10(lammin),np.log10(lammax),num)
-	error = np.zeros_like(lams)
+	error_val = np.zeros_like(lams)
+	error_train = np.zeros_like(lams)
 
 	# Loop over lambdas
 	for ii in range(len(lams)):
@@ -165,15 +166,18 @@ def linear_reg_path(X_train, y_train, model, val_frac=0.1, lammax=1.0e3, lammin=
 
 		# Threshold prediction for classification?
 		if thresh is not None:
-			y_hat = ri.ridge_bin_class(X_val, w, w_0, thresh=thresh)
+			y_hat_val = ri.ridge_bin_class(X_val, w, w_0, thresh=thresh)
+			y_hat_train = ri.ridge_bin_class(X_train, w, w_0, thresh=thresh)
 		else:
 			# Evaluate model on validation to get predictions
-			y_hat = ru.linear_model(X_val, w, w_0, sparse=sparse)
+			y_hat_val = ru.linear_model(X_val, w, w_0, sparse=sparse)
+			y_hat_train = ru.linear_model(X_train, w, w_0, sparse=sparse)
 
-		# Evaluate error
-		error[ii] = error_func(y_val, y_hat)
+		# Evaluate error on validation and training set
+		error_val[ii] = error_func(y_val, y_hat_val)
+		error_train[ii] = error_func(y_val, y_hat_train)
 
-	return error, lams
+	return error_val, error_train, lams
 # end function
 
 

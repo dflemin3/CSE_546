@@ -17,6 +17,7 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 import validation as val
+from sklearn import linear_model
 
 def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
 			  eps = 1.0e-5):
@@ -256,7 +257,7 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
             elif(ck  > lam):
                 w_pred[k] = (ck - lam)/ak
             else:
-                print("Error! Shouldn't ever happen.")
+                print("Error! Shouldn't ever happen.") # For NaN diagnosing...
 
             # Update y_hat using rule derived in 7.1.6
             if sparse:

@@ -60,15 +60,10 @@ def fit_ridge(X, y, lam=1, sparse=False):
     yc = np.vstack((y/sigma,np.zeros((Xc.shape[-1],1))))
     Xc = np.vstack((Xc/sigma,delta))
 
-    # Perform QR Decomposition
-    #Q, R = np.linalg.qr(Xc)
-
     # Compute weight vector
     w = np.linalg.inv(np.dot(np.transpose(Xc),Xc))
     w = np.dot(w,np.transpose(Xc))
     w = np.dot(w,yc)
-    #w = np.dot(np.linalg.inv(R),Q.T)
-    #w = np.dot(w,yc)
 
     # Compute w0
     w0 = np.mean(y) - np.dot(np.transpose(np.mean(X,axis=0)),w)
@@ -77,7 +72,7 @@ def fit_ridge(X, y, lam=1, sparse=False):
 # end function
 
 
-def ridge_bin_class(X, w, w0, thresh=1):
+def ridge_bin_class(X, w, w0, thresh=0.5):
     """
     Use a ridge regression model computed in fit_ridge to use as a binary
     classifier.  In this case, if w dot x >= threshold, return 1, else return

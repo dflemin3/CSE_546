@@ -181,11 +181,15 @@ if __name__ == "__main__":
     #
     # From a previous grid search on training data:
 
-    best_lambda = 42813323.9872
-    best_thresh = 0.368421052632
-
+	# Define constants
+    best_lambda = 1.0e4
+    best_thresh = 0.4
     seed = 1
+    frac = 0.1
+    num = 5
     kwargs = {}
+    lammax = 1.0e7
+    scale = 10.0
 
     # Load in MNIST training data
     print("Loading MNIST Training data...")
@@ -197,19 +201,27 @@ if __name__ == "__main__":
     # Perform grid search to find best regularization constant and threshold?
     if find_best_lam:
         print("Finding optimal lambda and threshold via regularization path.")
-        num = 20
+
         thresh_arr = np.linspace(-0.2,1.,num)
         err_val = np.zeros((num,num))
         err_train = np.zeros((num,num))
 
-		# Loop over thresholds
+        # Split training data into subtraining set, validation set
+        X_tr, y_tr, X_val, y_val = val.split_data(X_train, y_train, frac=frac, seed=seed)
+
+        # Filter y values to 0, 1 labels
+        y_tr_true = mnist_two_filter(y_tr)
+        y_val_true = mnist_two_filter(y_val)
+
+        # Loop over thresholds
         for i in range(num):
-			# Internally loop over lambdas in regularization path
-			err_val[i,:], err_train[i,:], lams = val.linear_reg_path(X_train, y_train_true,
-												ri.fit_ridge,
-												lammax=1.0e10, lammin=1.0e-5, num=num,
-												error_func = val.loss_01, thresh=thresh_arr[i],
-												seed=seed,**kwargs)
+            # Internally loop over lambdas in regularization path
+            err_val[i,:], err_train[i,:], lams = val.linear_reg_path(X_tr, y_tr_true, X_val,
+            														 y_val_true, ri.fit_ridge,
+            														 lammax=lammax,
+            														 scale=scale,
+																	 num=num, error_func=val.loss_01,
+																	 thresh=thresh_arr[i], **kwargs)
 
         # Find minimum threshold, lambda from minimum validation error
         ind_t,ind_l = np.unravel_index(err_val.argmin(), err_val.shape)
@@ -219,7 +231,7 @@ if __name__ == "__main__":
         print("Best threshold:",best_thresh)
 
     # Fit training set for model parameters using best fit lambda
-    w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
+    w0, w = ri.fit_ridge(X_train, y_train_true, lam=1)#best_lambda)
 
     # Predict, then get square loss, 1/0 error on training data
     y_hat_train = ru.linear_model(X_train, w, w0)

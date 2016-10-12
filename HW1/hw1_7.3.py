@@ -84,9 +84,3 @@ if show_plots:
 	fig.savefig("synthetic_prec_rec.pdf")
 
 	plt.show()
-
-
-
-
-
-

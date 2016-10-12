@@ -16,7 +16,7 @@ from __future__ import print_function, division
 import numpy as np
 import regression_utils as ru
 
-def fit_ridge(X, y, lam=1, sparse=False):
+def fit_ridge(X, y, lam=1, sparse=False, w=None, w_0=None):
     """
     Given data x and labels y and optional penalty lam(bda), fit a ridge linear
     regression model using the algorithm described in Section 7.5.2 in Murphy.
@@ -34,6 +34,13 @@ def fit_ridge(X, y, lam=1, sparse=False):
 	sparse : bool (optional)
 		Whether or not data is sparse.  This does not change functionality but exists for
 		compatibility.
+	w : array (d x 1) (optional)
+    	optional initial conditions for weight vector
+    w_0 : float (optional)
+    	optional initial condition for constant offset
+
+    Note: Passing w, w_0 to this function does nothing as the ridge regression estimator
+    is analytic but is included for backwards compatibility.
 
     Returns
     -------

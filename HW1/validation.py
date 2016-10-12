@@ -34,6 +34,26 @@ def MSE(y, y_hat):
 # end function
 
 
+def RMSE(y, y_hat):
+    """
+    Compute the root mean squared error of a prediction
+
+    Parameters
+    ----------
+    y : array (n x 1)
+        array of observations
+    y_hat : array (n x 1)
+        array of predictions
+
+    Returns
+    -------
+    rmse : float
+        root mean squared error
+    """
+    return np.sqrt(MSE(y, y_hat))
+# end function
+
+
 def square_loss(y, y_hat):
     """
     Compute the square loss of a binary classifier
@@ -96,8 +116,46 @@ def sign(x):
 sign = np.vectorize(sign) # Vectorize it!
 
 
-def linear_reg_path(X_train, y_train, model, val_frac=0.1, lammax=1.0e3, lammin=1.0e-3, num=10,
-					error_func = MSE, thresh=None, seed=None, **kwargs):
+def split_data(X_train, y_train, frac=0.1, seed=None):
+	"""
+	Randomly partition the data into two sets, i.e., a training set and a validation set,
+	where the latter is a fraction frac of the former.
+
+	Parameters
+	----------
+	X_train : array (n x d)
+		input data
+	y_train : array (n x 1)
+		input labels
+	frac : float (optional)
+		fraction of data to set aside for validation/other set. Defaults to 0.1
+	seed : int (optional)
+		Number to seed the RNG
+
+	Returns
+	-------
+	X_tr : array ((1-frac)*n x d)
+	y_tr : array ((1-frac)*n x 1)
+	X_val : array (frac*n x d)
+	y_val : array (frac*n x 1)
+	"""
+	# If seed set, pick the same validation set
+	if seed is not None:
+		np.random.seed(seed)
+
+	# Randomly partition training input into training and validation
+	ind = int(frac * X_train.shape[0])
+	indices = np.random.permutation(X_train.shape[0])
+	training_idx, val_idx = indices[ind:], indices[:ind]
+	X_tr, X_val = X_train[training_idx,:], X_train[val_idx,:]
+	y_tr, y_val = y_train[training_idx], y_train[val_idx]
+
+	return X_tr, y_tr, X_val, y_val
+# end function
+
+
+def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2.0,
+					num=10, error_func=MSE, thresh=None, **kwargs):
 	"""
 	Perform a regularization path for either Ridge Regression or LASSO regression by spliting
 	the training test into training and validation and evaluating the error on the
@@ -109,10 +167,12 @@ def linear_reg_path(X_train, y_train, model, val_frac=0.1, lammax=1.0e3, lammin=
 		training input data
 	y_train : array (n x 1)
 		training labels
+	X_val : array (m x d)
+		validation input data
+	y_val : array (m x 1)
+		validation labels
 	model : function
 		linear model
-	val_frac : float (optional)
-		fraction of training data to set aside for validation. Defaults to 0.1
 	lammax : float (optional)
 		maximum regularization lambda.  Defaults to 1.0e3
 	lammin : float (optional)
@@ -121,8 +181,6 @@ def linear_reg_path(X_train, y_train, model, val_frac=0.1, lammax=1.0e3, lammin=
 		number of lambdas to search over.  Defaults to 10
 	error_func : function (optional)
 		error function.  Defaults to mean square error (MSE)
-	seed : float (optional)
-		RNG seed
 	kwargs : dict
 		any additional parameters required by the linear model
 
@@ -143,26 +201,21 @@ def linear_reg_path(X_train, y_train, model, val_frac=0.1, lammax=1.0e3, lammin=
 	else:
 		sparse = False
 
-	# If seed set, pick the same validation set
-	if seed is not None:
-		np.random.seed(seed)
+	# Init lambda at lammax
+	lam = lammax
+	lams = []
+	error_val = np.zeros(num)
+	error_train = np.zeros(num)
 
-	# Randomly partition training input into training and validation
-	ind = int(val_frac * X_train.shape[0])
-	indices = np.random.permutation(X_train.shape[0])
-	training_idx, val_idx = indices[:ind], indices[ind:]
-	X_tr, X_val = X_train[training_idx,:], X_train[val_idx,:]
-	y_tr, y_val = y_train[training_idx], y_train[val_idx]
-
-	# Generate lambda array, empty error array
-	lams = np.logspace(np.log10(lammin),np.log10(lammax),num)
-	error_val = np.zeros_like(lams)
-	error_train = np.zeros_like(lams)
+	# Assume null solution to begin with
+	w = np.zeros((X_train.shape[-1],1))
+	w_0 = 0.0
 
 	# Loop over lambdas
-	for ii in range(len(lams)):
-		# Fit on training data
-		w_0, w = model(X_tr, y_tr, lam=lams[ii], **kwargs)
+	for ii in range(num):
+		print("Regularization path iteration: %d" % ii)
+		# Fit on training data using previous w, w_0 as initial condition
+		w_0, w = model(X_train, y_train, lam=lam, w=w, w_0=w_0, **kwargs)
 
 		# Threshold prediction for classification?
 		if thresh is not None:
@@ -175,9 +228,13 @@ def linear_reg_path(X_train, y_train, model, val_frac=0.1, lammax=1.0e3, lammin=
 
 		# Evaluate error on validation and training set
 		error_val[ii] = error_func(y_val, y_hat_val)
-		error_train[ii] = error_func(y_val, y_hat_train)
+		error_train[ii] = error_func(y_train, y_hat_train)
 
-	return error_val, error_train, lams
+		# Save, scale lambda
+		lams.append(lam)
+		lam /= scale
+
+	return error_val, error_train, np.array(lams)
 # end function
 
 

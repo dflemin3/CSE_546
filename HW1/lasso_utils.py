@@ -17,10 +17,9 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 import validation as val
-from sklearn import linear_model
 
 def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
-			  eps = 1.0e-5):
+			  eps = 1.0e-3):
     """
     Implimentation of the naive (un-optimized) lasso regression
     algorithm.
@@ -150,7 +149,7 @@ def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
 
 
 def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
-			  eps = 1.0e-5):
+			  eps = 1.0e-3):
     """
     Implimentation optimized lasso regression algorithm.
 
@@ -208,13 +207,23 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
     iters = 0
     converged = False
 
+    # COMPUTE AK here
+    ak = np.zeros(d).reshape(d,1)
+    for k in range(d):
+    	if sparse:
+        	ak[k] = (2.0 * X[:,k].T.dot(X[:,k]))[0,0]
+    	else:
+        	ak[k] = (2.0 * X[:,k].T.dot(X[:,k]))
+
     while not converged:
-    	# Too many iterations!
+    # Too many iterations
     	if iters >= max_iter:
     		print("Maximum iteration threshold hit %d." % iters)
     		print("Returning current solution: Convergence not guarenteed.")
     		print("lambda = %.3lf" % lam)
     		return w_0, w_pred
+
+    	print("Iteration: %d." % iters)
 
         #Store for convergence test
         w_old = np.copy(w_pred) # w^(t)
@@ -236,10 +245,10 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
             # X is a sparse array (via scipy implementation)
             # For sparse matricies (scipy.sparse ones), X.dot(w) is MUCH
             # faster than np.dot(X,w)...like 10^4 times faster
-            if sparse:
-            	ak = (2.0 * X[:,k].T.dot(X[:,k]))[0,0]
-            else:
-            	ak = (2.0 * X[:,k].T.dot(X[:,k]))
+            #if sparse:
+            #	ak = (2.0 * X[:,k].T.dot(X[:,k]))[0,0]
+            #else:
+            #	ak = (2.0 * X[:,k].T.dot(X[:,k]))
 
             # Compute c[k] using update rule derived in 7.1.1
 
@@ -251,11 +260,11 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
 
             #Compute w_k
             if(ck < -lam):
-                w_pred[k] = (ck + lam)/ak
+                w_pred[k] = (ck + lam)/ak[k]
             elif(ck >= -lam and ck <= lam):
                 w_pred[k] = 0.0
             elif(ck  > lam):
-                w_pred[k] = (ck - lam)/ak
+                w_pred[k] = (ck - lam)/ak[k]
             else:
                 print("Error! Shouldn't ever happen.") # For NaN diagnosing...
 
@@ -444,10 +453,10 @@ def lasso_reg_path_true(X, y, w_true, scale = 10., sparse = True, max_iter = 10,
 if __name__ == "__main__":
 
     # Generate some fake data
-    n = 1000
-    d = 10
-    k = 5
-    lam = 200.0
+    n = 4000
+    d = 100
+    k = 20
+    lam = 400.0
     sparse = True
     seed = 1
     w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse,seed=seed)

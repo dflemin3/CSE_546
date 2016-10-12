@@ -158,9 +158,9 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 					num=10, error_func=MSE, thresh=None, save_nonzeros=False, best_w=False,
 					**kwargs):
 	"""
-	Perform a regularization path for either Ridge Regression or LASSO regression by spliting
-	the training test into training and validation and evaluating the error on the
-	validation set.
+	Perform a regularization path for a regularized linear regression technique by fitting
+	the model on the training data and evaluating it on the validation data to determine
+	the best regularization constant.
 
 	Parameters
 	----------
@@ -197,17 +197,19 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 	if thresh is not None:
 		assert(error_func is loss_01)
 
+	# Using sparse data?
 	if "sparse" in kwargs:
 		sparse = kwargs["sparse"]
 	else:
 		sparse = False
 
-	# Init lambda at lammax
+	# Init lambda at lammax, init storage arrays
 	lam = lammax
 	lams = []
 	error_val = np.zeros(num)
 	error_train = np.zeros(num)
 
+	# If using LASSO, can be useful to save number of nonzero weights
 	if save_nonzeros:
 		nonzeros = np.zeros(num)
 
@@ -215,14 +217,15 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 	w = np.zeros((X_train.shape[-1],1))
 	w_0 = 0.0
 
+	# Save the best fitting weight vector?
 	if best_w:
 		best_w0 = np.zeros(num)
 		best_w = np.zeros((n,len(w)))
 
-	# Loop over lambdas
+	# Main loop over lambdas
 	for ii in range(num):
 		print("Regularization path iteration: %d" % ii)
-		# Fit on training data using previous w, w_0 as initial condition
+		# Fit on training data using previous w, w_0 as initial conditions
 		w_0, w = model(X_train, y_train, lam=lam, w=w, w_0=w_0, **kwargs)
 
 		# Threshold prediction for classification?
@@ -247,11 +250,11 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 		error_val[ii] = error_func(y_val, y_hat_val)
 		error_train[ii] = error_func(y_train, y_hat_train)
 
-		# Save, scale lambda
+		# Save, scale lambda for next iteration
 		lams.append(lam)
 		lam /= scale
 
-	# Find best of the best
+	# Find best weight vector?
 	if best_w:
 		ind = np.argmin(error_val)
 

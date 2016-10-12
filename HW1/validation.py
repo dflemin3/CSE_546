@@ -155,7 +155,8 @@ def split_data(X_train, y_train, frac=0.1, seed=None):
 
 
 def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2.0,
-					num=10, error_func=MSE, thresh=None, **kwargs):
+					num=10, error_func=MSE, thresh=None, save_nonzeros=False, best_w=False,
+					**kwargs):
 	"""
 	Perform a regularization path for either Ridge Regression or LASSO regression by spliting
 	the training test into training and validation and evaluating the error on the
@@ -207,9 +208,16 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 	error_val = np.zeros(num)
 	error_train = np.zeros(num)
 
+	if save_nonzeros:
+		nonzeros = np.zeros(num)
+
 	# Assume null solution to begin with
 	w = np.zeros((X_train.shape[-1],1))
 	w_0 = 0.0
+
+	if best_w:
+		best_w0 = np.zeros(num)
+		best_w = np.zeros((n,len(w)))
 
 	# Loop over lambdas
 	for ii in range(num):
@@ -226,6 +234,15 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 			y_hat_val = ru.linear_model(X_val, w, w_0, sparse=sparse)
 			y_hat_train = ru.linear_model(X_train, w, w_0, sparse=sparse)
 
+		# Save number of nonzeros in predicted weight vector?
+		if save_nonzeros:
+			nonzeros[ii] = np.sum((w != 0))
+
+		# Save w, w0s?
+		if best_w:
+			best_w0[ii] = w_0
+			best_w[ii] = w
+
 		# Evaluate error on validation and training set
 		error_val[ii] = error_func(y_val, y_hat_val)
 		error_train[ii] = error_func(y_train, y_hat_train)
@@ -234,7 +251,18 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 		lams.append(lam)
 		lam /= scale
 
-	return error_val, error_train, np.array(lams)
+	# Find best of the best
+	if best_w:
+		ind = np.argmin(error_val)
+
+	if save_nonzeros and not best_w:
+		return error_val, error_train, np.array(lams), nonzeros
+	elif not save_nonzeros and best_w:
+		return error_val, error_train, np.array(lams), best_w0[ind], best_w[ind]
+	elif save_nonzeros and best_w:
+		return error_val, error_train, np.array(lams), best_w0[ind], best_w[ind], nonzeros
+	else:
+		return error_val, error_train, np.array(lams)
 # end function
 
 

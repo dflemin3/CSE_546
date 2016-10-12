@@ -17,9 +17,10 @@ import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
 import validation as val
+import time
 
 def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
-			  eps = 1.0e-3):
+			  eps = 1.0e-2):
     """
     Implimentation of the naive (un-optimized) lasso regression
     algorithm.
@@ -79,7 +80,7 @@ def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
     	w_old = np.copy(w_pred) + 10000000. # offset
     else:
     	# Initial conditions given, use those as first w_pred
-		w_pred = w
+		w_pred = np.copy(w)
 		w_old = np.copy(w_pred) + 10000000. # offset
 
     if w_0 is None:
@@ -149,7 +150,7 @@ def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
 
 
 def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
-			  eps = 1.0e-3):
+			  eps = 1.0e-2):
     """
     Implimentation optimized lasso regression algorithm.
 
@@ -197,7 +198,7 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
     	w_old = np.copy(w_pred) + 10000000. # offset
     else:
     	# Initial conditions given, use those as first w_pred
-		w_pred = w
+		w_pred = np.copy(w)
 		w_old = np.copy(w_pred) + 10000000. # offset
 
     if w_0 is None:
@@ -207,7 +208,7 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
     iters = 0
     converged = False
 
-    # COMPUTE AK here
+    # Compute a_k here since X doesn't change
     ak = np.zeros(d).reshape(d,1)
     for k in range(d):
     	if sparse:
@@ -222,8 +223,6 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
     		print("Returning current solution: Convergence not guarenteed.")
     		print("lambda = %.3lf" % lam)
     		return w_0, w_pred
-
-    	print("Iteration: %d." % iters)
 
         #Store for convergence test
         w_old = np.copy(w_pred) # w^(t)
@@ -288,6 +287,112 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
 
     return w_0, w_pred
 # end function
+
+
+def naive_lasso(X,y,l=10,w=-999,w_0=-999):
+    """
+    Implimentation of the naive (un-optimized) lasso regression
+    algorithm.
+
+    Parameters
+    ----------
+    X : n x d matrix of data
+    X_i : the ith row of X
+    y : N x 1 vector of response variables
+    w : d dimensions weight vector (optional)
+    w_0 : scalar offset term (optional)
+    l : regularization tuning parameter
+
+    All matrices X assumed to be sparse and of the form given by
+    scipy.sparse.csc matrix
+
+    Algorithm 1: Coordinate Descent Algorithm for Lasso
+
+    while not converged do:
+        w_0 <- sum_i=1_N[y_i - sum_j[w_j X_ij]]/N
+        for(k [1,d]) do:
+            a_k <- 2 * sum_i=1_N[X_ik ^2]
+            c_k <- 2 * sum_i=1_N[X_ik (y_i - (w_0 + sum_j!=k[w_j X_ij]))]
+            w_k <- (c_k + lambda)/a_k if c_k < -lambda
+                    0 if c_k is between [-lambda,lambda]
+                    (c_k - lambda)/a_k if c_k > lambda
+        end
+    end
+
+    Returns
+    -------
+    w : numpy array
+        d x 1 weight vector
+    w_0 : float
+        offset
+    y_hat : numpy array (n x 1)
+        predictions
+    """
+    #Define values
+    N = y.shape[0]
+    d = X.shape[1]
+    y = y.reshape(N,1)
+
+    #If no initial conditions, assume Gaussian
+    if not hasattr(w, "__len__") and w == -999:
+        w = np.random.randn(d)
+    if w_0 == -999:
+        w_0 = np.random.randn(1)
+
+    #Convergence condition
+    eps = 1.0e-6
+    w_old = np.zeros(w.shape).reshape(d,1)
+    w_pred = np.copy(w).reshape(d,1)
+
+    while(np.sqrt((w_pred - w_old).dot((w_pred - w_old).T)[0][0]) > eps):
+        #Store for convergence test
+        w_old = np.copy(w_pred)
+
+        #Compute w_0
+        w_0 = np.sum(y)
+        w_0 -= X.dot(w_pred).sum()
+        w_0 /= N
+
+        #Compute a_k: d x 1 summing over columns
+        a = 2.0*np.asarray((X.power(2).sum(axis=0).T))
+        c = np.zeros(d)
+
+        for k in range(0,d):
+
+            alpha = np.zeros((d,d))
+            np.fill_diagonal(alpha, 1)
+            alpha[k,k] = 0
+            alpha = X.dot(alpha.dot(w_pred)) + w_0
+
+            #Compute c: d x 1
+            c[k] = 2.0*X[:,k].T.dot((y-alpha))
+
+            """
+            #Compute c_k: d x 1
+            c_sum = 0.0
+            for i in range(0,N):
+                #Select not k columns
+                ind = [x for x in range(0,d) if x != k]
+                c_sum += X[i,k]*(y[i] - (X[i,ind].dot(w_pred[ind]) + w_0))
+            c[k] = 2.0*c_sum
+            """
+
+            #Compute w_k
+            if(c[k] < -l):
+                w_pred[k] = (c[k] + l)/a[k]
+            elif(c[k] >= -l and c[k] <= l):
+                w_pred[k] = 0.0
+            elif(c[k]  > l):
+                w_pred[k] = (c[k] - l)/a[k]
+            else:
+                print("Error! Shouldn't ever happen.")
+        #end for
+    #end while
+
+    #Return as row array
+    #y_hat = np.zeros(y.shape)
+    #y_hat = X.dot(w_pred) + w_0
+    return w_0, w_pred.T
 
 
 def compute_max_lambda(X,y):
@@ -454,9 +559,9 @@ if __name__ == "__main__":
 
     # Generate some fake data
     n = 4000
-    d = 100
-    k = 20
-    lam = 400.0
+    d = 1000
+    k = 50
+    lam = 100.0
     sparse = True
     seed = 1
     w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse,seed=seed)
@@ -465,10 +570,17 @@ if __name__ == "__main__":
     print("Lambda_max:",compute_max_lambda(X,y))
 
     print("Performing LASSO regression...")
+    start = time.time()
     w_0_pred, w_pred = fit_lasso_fast(X,y,lam=lam,sparse=sparse)
+    end = time.time()
+    print("fast:",end-start)
+    start = time.time()
+    w_0_pred, w_pred = naive_lasso(X,y,l=lam)
+    end = time.time()
+    print("slow:",end-start)
 
-    print("w_pred:",w_pred)
-    print(w)
+    #print("w_pred:",w_pred)
+    #print(w)
 
     # Was the predicted solution correct?
-    print(check_solution(X,y,w_pred,w_0_pred,lam=lam))
+    #print(check_solution(X,y,w_pred,w_0_pred,lam=lam))

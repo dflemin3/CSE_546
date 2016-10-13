@@ -307,6 +307,8 @@ This expression for $L(f_{Bayes})$ represents the inherent uncertainty in the da
 
 \subsection*{5.2}
 
+\subsubsection*{5.2.1}
+
 For this proof I will use, in addition to the Eqns.~\ref{eqn:exp_rule_1,eqn:exp_rule_2}, the following given expression
 \begin{equation} \label{eqn:fhat_fbar}
 \bar{f}(X) = E_T[\hat{f}(X)]
@@ -389,10 +391,14 @@ which is the answer minus an additional term.  Below, I show that the additional
 \end{equation}
 which completes the proof.
 
+\subsubsection*{5.2.2}
+The bias term which represents the difference between what you expect to learn, $\bar{f}$, and the the true solution, $E[Y|X]$, is given by the following term: $E_X[(E[Y|X] - \bar{f})^2]$.  Variance, or the difference between what you expect to learn, $\bar{f}$, and what you actually learn from a dataset, $\hat{f}$, is given by $E_TE_X[(\hat{f} - \bar{f})^2]$.  Finally the error term given by $E_{X,Y}[(Y-E[Y|X])^2]$ is the difference between the dependent variable and the true solution.
 
+\subsubsection*{5.2.3}
+For the empirical risk minimizer (ERM), $f^{*} = \bar{f}$ for suitably large samples since the ERM is unbiased.
 
-
-
+\subsubsection*{5.2.4}
+In the large sample size limit, I expect $\hat{f}$ to converge to $\bar{f}$ since $E_T[\hat{f}] = \bar{f}$ since sampling over large number of points will effectively marginalize over the randomness of the training sets.  Also, I expect $\bar{f}$ to converge towards $f^{*}$ since in the large sample limit, the expected value will tend towards the truth.
 
 Note: For this question, I collaborated with Matt Wilde and Serena Liu.
 

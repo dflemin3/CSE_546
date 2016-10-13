@@ -196,6 +196,8 @@ LOOVC & = \sum_{i = 1}^N (y_i - \hat{y}_i^{(-i)})^2 \\
 
 With the updated formula, we can estimate the naive algorithmic complexity of computing the LOOCV by noting that we need only compute $\hat{Y_{OLS}}$ once this time.  We get the $H$ term as a part of the $\hat{Y}$ computation.  Therefore, the algorithmic complexity of the LOOCV using the new formula is equal to that of the OLS I derived above and is given by $\mathcal{O}(d^3 + dN^2 + Nd^2)$.
 
+Note for this question, I collaborated with Matt Wilde and Serena Liu.
+
 %%% QUESTION 4 %%%
 
 \section*{Question 4}
@@ -236,6 +238,8 @@ Note: For this question, I collaborated with Matt Wilde.
 \section*{Question 5}
 
 \subsection*{5.1}
+
+\subsubsection*{5.1.1}
 
 For the following derivation, I will make use of the following conditional probability identities
 
@@ -290,8 +294,8 @@ where I used the fact that both $f$ and $E[Y|X]$ do not depend on $Y$ and hence 
 \end{equation}
 and completing the proof.
 
-\subsection*{5.2}
-Given the expression derived above for the square loss for a function $f$, the Bayes optimal regressor $f_{Bayes} = E[Y|X]$.  This expression for $f_{Bayes}$ is the optimal regressor because the best function one can learn from the data is the expected value of the label given the data, $E[Y|X]$ .  With the expression for $f_{Bayes}$, I get 
+\subsubsection*{5.1.2}
+Given the expression derived above for the square loss for a function $f$, the Bayes optimal regressor $f_{Bayes} = E[Y|X]$.  This expression for $f_{Bayes}$ is the optimal regressor because the best function one can learn from the data given a class of learnable functions is the expected value of the label given the data, $E[Y|X]$ .  With the expression for $f_{Bayes}$, I get 
 \begin{equation}
 \begin{split}
 L(f_{Bayes}) & = E_X[E[Y|X] - f_{Bayes}^2] + E_{X,Y}[(Y - E[Y|X])^2] \\
@@ -301,6 +305,97 @@ L(f_{Bayes}) & = E_X[E[Y|X] - f_{Bayes}^2] + E_{X,Y}[(Y - E[Y|X])^2] \\
 \end{equation}
 This expression for $L(f_{Bayes})$ represents the inherent uncertainty in the data which sets the error limit a model cannot improve upon.
 
+\subsection*{5.2}
+
+For this proof I will use, in addition to the Eqns.~\ref{eqn:exp_rule_1,eqn:exp_rule_2}, the following given expression
+\begin{equation} \label{eqn:fhat_fbar}
+\bar{f}(X) = E_T[\hat{f}(X)]
+\end{equation}
+where $\bar{f}(X)$ is the expected function wrt the randomness in our training set T.  $E_T[L(\hat{f})]$ us then the expected square loss of our estimation procedure wrt to the training set T.
+
+To derive the final result I first foil the expression and expand
+\begin{equation} \label{eqn:et_lf_0}
+\begin{split}
+E_T[L(\hat{f})] & = E_TE_{X,Y}[(Y - \hat{f})^2] \\
+& = E_TE_{X,Y}[Y^2 - 2y\hat{f} + \hat{f}^2] \\
+& = E_TE_{X,Y}[Y^2] - 2E_TE_{X,Y}[Y\hat{f}] + E_TE_{X,Y}[\hat{f}^2]
+\end{split}
+\end{equation}
+where $\hat{f} = \hat{f}(X)$ for brevity.  To simplify, I will tackle this expression piece-wise and regroup later.  First, I manipulate the 3rd term as follows
+\begin{equation} \label{eqn:fhat_var}
+\begin{split}
+& E_TE_{X,Y}[\hat{f}^2] \\
+& = E_TE_{X,Y}[(\hat{f} - E_{X,Y}E_T[\hat{f}])^2] + E_TE_{X,Y}[\hat{f}]^2 \\
+& = E_TE_{X,Y}[(\hat{f} - \bar{f})^2] + E_TE_{X,Y}[\hat{f}]^2 \\
+& = E_TE_{X,Y}[(\hat{f} - \bar{f})^2] + E_{X,Y}E_T[\hat{f}]^2 \\
+& = E_TE_{X,Y}[(\hat{f} - \bar{f})^2] + E_{X,Y}[\bar{f}]^2 \\
+& = E_TE_{X,Y}[(\hat{f} - \bar{f})^2] + \bar{f}^2
+\end{split}
+\end{equation}
+since $Var[X] = E[(X - E[X])^2] = E[X^2] - E[X]^2$ and given Eqn.~\ref{eqn:fhat_fbar}.  Also, I used the fact that $\bar{f}$ is constant wrt any integration over the underlying distribution and hence any expectation of $\bar{f}$ over $X,Y$ is just $\bar{f}$.  In addition, I note that $E_T$ is taking the expectation with respect the the randomness in the training set via the variance from sampling X and Y. This variance between draws is independent of the underlying distribution allowing me to treat T and X,Y as independent random variables allowing me to switch the order of expectations from $E_T E_{X,Y}$ to $E_{X,Y}E_T$.
+
+Now in the above Eqn.~\ref{eqn:fhat_var}, we see that the first term, $E_TE_{X,Y}[(\hat{f} - \bar{f})^2]$, is the first term in the answer, so we will suggestively denote it as $Var$ for now for brevity.  Recombining Eqn.~\ref{eqn:fhat_var} and Eqn.~\ref{eqn:et_lf_0} and simplifying yields
+\begin{equation} \label{eqn:et_lf_1}
+\begin{split}
+& E_TE_{X,Y}[Y^2] - 2E_TE_{X,Y}[Y\hat{f}]  + \bar{f}^2 + Var \\
+& = E_TE_{X,Y}[Y^2] - 2E_{X,Y}[YE_T[\hat{f}]] + E_{X,Y}[\bar{f}^2] + Var \\
+& = E_{X,Y}E_T[Y^2] - 2E_{X,Y}[YE_T[\hat{f}]] + E_{X,Y}[\bar{f}^2] + Var \\
+& = E_{X,Y}[Y^2 - 2Y\bar{f} +  \bar{f}^2] + Var \\
+& = E_{X,Y}[(Y - \bar{f})^2] + Var \\
+\end{split}
+\end{equation}
+where I also used $E_T[Y] = Y$.  Now, I add a form of 0 and expand again
+\begin{equation} \label{eqn:et_lf_02}
+\begin{split}
+& E_{X,Y}[((Y - E[Y|X]) + (E[Y|X] - \bar{f}))^2] + Var \\
+& = E_{X,Y}[(Y-E[Y|X])^2] + E_{X,Y}[(E[Y|X] - \bar{f})^2] - 2E_{X,Y}[(Y-E[Y|X])((E[Y|X] - \bar{f})] + Var \\
+& = E_{X,Y}[(Y-E[Y|X])^2] + E_{X,Y}[(E[Y|X] - \bar{f})^2]  + E_TE_{X,Y}[(\hat{f} - \bar{f})^2]  \\
+& - 2E_{X,Y}[(Y-E[Y|X])((E[Y|X] - \bar{f})].
+\end{split}
+\end{equation}
+Note that the first term in this expression, $E_{X,Y}[(Y-E[Y|X])^2]$, appears in the answer so I will leave it as-in.  The second and third terms, $E_{X,Y}[(E[Y|X] - \bar{f})^2]  + E_TE_{X,Y}[(\hat{f} - \bar{f})^2]$, are close to terms in the answer so I will simplify them next.
+
+\begin{equation} 
+\begin{split}
+& E_{X,Y}[(E[Y|X] - \bar{f})^2] \\
+& = E_X[E_{Y|X}[(E[Y|X] - \bar{f})^2]] \\
+& = E_X[(E[Y|X] - \bar{f})^2]
+\end{split}
+\end{equation}
+via Eqn.~\ref{eqn:exp_rule_1}.  This gives us another term from the final answer, so I will leave it as-in.  Now for the other term
+\begin{equation}
+\begin{split}
+& E_TE_{X,Y}[(\hat{f} - \bar{f})^2] \\
+& = E_TE_X[E_{Y|X}[(\hat{f} - \bar{f})^2]] \\
+& = E_TE_X[(\hat{f} - \bar{f})^2]
+\end{split}
+\end{equation}
+since both $\hat{f}$ and $\bar{f}$ are constant wrt integration over the underlying distribution in $Y$.  Collecting terms again, we have
+\begin{equation} \label{eqn:5.2almost_ans}
+\begin{split}
+&E_TE_X[(\hat{f} - \bar{f})^2] + E_X[(E[Y|X] - \bar{f})^2] + E_{X,Y}[(Y-E[Y|X])^2] \\
+& - 2E_{X,Y}[(Y-E[Y|X])((E[Y|X] - \bar{f})]
+\end{split}
+\end{equation}
+which is the answer minus an additional term.  Below, I show that the additional term goes to 0, completing the proof.  Expanding the final term and noting that $E_{X,Y}[Y] = E[Y|X]$, 
+\begin{equation}
+\begin{split}
+& E_{X,Y}[(Y-E[Y|X])((E[Y|X] - \bar{f})] \\
+& = E_{X,Y}[YE[Y|X] - Y\bar{f} - E[Y|X]^2 + \bar{f}E[Y|X]] \\
+& = E[Y|X]E_{X,Y}[Y] - \bar{f}E_{X,Y}[Y] - E[Y|X]^2 + \bar{f}E[Y|X] \\
+& = E[Y|X]^2 - \bar{f}E[Y|X] - E[Y|X]^2 + \bar{f}E[Y|X] \\
+& = 0
+\end{split}
+\end{equation}
+which completes the proof.
+
+
+
+
+
+
+Note: For this question, I collaborated with Matt Wilde and Serena Liu.
+
 %%% QUESTION 6 %%%
 
 \section*{Question 6}
@@ -309,7 +404,7 @@ Note: The following scripts (attached) include all code used to solve this quest
 
 Here, the I build a linear classifier by minimizing the following Ridge Regression Loss:
 \begin{equation} \label{eqn:RR_loss}
-\text{min}_{\omega} = \frac{1}{N} \Sigma_{i = 1}^N (y_i - \omega \cdot x_i)^2 + \lambda || \omega ||^2.
+\text{min}_{\omega} = \frac{1}{N} \sum_{i = 1}^N (y_i - \omega \cdot x_i)^2 + \lambda || \omega ||^2.
 \end{equation}
 In general, the RR regression weight vector can be solved for analytically via the following
 \begin{equation} \label{eqn:RR_w}

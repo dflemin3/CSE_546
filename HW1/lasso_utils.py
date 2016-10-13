@@ -558,13 +558,13 @@ def lasso_reg_path_true(X, y, w_true, scale = 10., sparse = True, max_iter = 10,
 if __name__ == "__main__":
 
     # Generate some fake data
-    n = 4000
-    d = 1000
-    k = 50
-    lam = 100.0
-    sparse = True
+    n = 10000
+    d = 75
+    k = 5
+    lam = 500.0
+    sparse = False
     seed = 1
-    w, X, y = ru.generate_norm_data(n,k,d,sparse=sparse,seed=seed)
+    w, X, y = ru.generate_norm_data(n,k,d,sigma=1,sparse=sparse,seed=seed)
 
     # What should the maximum lambda in a regularization step be?
     print("Lambda_max:",compute_max_lambda(X,y))
@@ -574,13 +574,9 @@ if __name__ == "__main__":
     w_0_pred, w_pred = fit_lasso_fast(X,y,lam=lam,sparse=sparse)
     end = time.time()
     print("fast:",end-start)
-    start = time.time()
-    w_0_pred, w_pred = naive_lasso(X,y,l=lam)
-    end = time.time()
-    print("slow:",end-start)
 
-    #print("w_pred:",w_pred)
-    #print(w)
+    print("w_pred:",w_pred)
+    print(w)
 
     # Was the predicted solution correct?
-    #print(check_solution(X,y,w_pred,w_0_pred,lam=lam))
+    print(check_solution(X,y,w_pred,w_0_pred,lam=lam))

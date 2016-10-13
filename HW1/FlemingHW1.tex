@@ -124,7 +124,9 @@ Note: For this question, I collaborated with Matt Wilde.
 
 \subsection*{3.1}
 
-TODO
+To compute the LOOCV score natively, one must compute $\hat{y}$ $N-1$ times where $\hat{y}$ is the prediction vector computed via Ordinary Least-Squares (OLS).  Therefore, the time complexity of computing LOOCV will be $\mathcal{O}(N * \mathcal{O}(OLS))$.  To compute $\mathcal{O}(OLS)$, I will assume the naive algorithm for matrix inversion which has complexity $\mathcal{O}(d^3)$ for a $d \times d$ matrix and assume the naive algorithm for matrix multiplication which has complexity $\mathcal{O}(nmp)$ for the matrix product of $n \times m$ and $m \times p$ matrices.
+
+For OLS, $\hat{Y_{OLS}} = X(X^T X)^{-1}X^T Y$ where $X$ is $N \times d$ and $Y$ is $N \times 1$.  The complexities of taking multiple matrix products sum since they happen sequentially.  If we take the pairwise matrix products to compute $\hat{Y_{OLS}}$, we get $\mathcal{O}(Nd^2)$ + $\mathcal{O}(Nd^2)$ + $\mathcal{O}(dN^2)$ + $\mathcal{O}(N^2)$.  Combining those terms with the $\mathcal{O}(d^3)$ complexity addition from matrix inversion, I get a total complexity of $\mathcal{O}(d^3 + (1+2d)N^2 + Nd^2)$ which asymptotes to $\mathcal{O}(d^3 + dN^2 + Nd^2)$.  If $N > d$, this term can be reduced further however I make no assumptions about whether $d$ or $N$ is larger.  To compute LOOCV, we must compute $\hat{Y}$ $N - 1$ times giving a total complexity of $\mathcal{O}(Nd^3 + dN^3 + N^2d^2)$.
 
 \subsection*{3.2}
 
@@ -192,7 +194,7 @@ LOOVC & = \sum_{i = 1}^N (y_i - \hat{y}_i^{(-i)})^2 \\
 \end{split}
 \end{equation}
 
-The algorithmic complexity is TODO.
+With the updated formula, we can estimate the naive algorithmic complexity of computing the LOOCV by noting that we need only compute $\hat{Y_{OLS}}$ once this time.  We get the $H$ term as a part of the $\hat{Y}$ computation.  Therefore, the algorithmic complexity of the LOOCV using the new formula is equal to that of the OLS I derived above and is given by $\mathcal{O}(d^3 + dN^2 + Nd^2)$.
 
 %%% QUESTION 4 %%%
 
@@ -232,7 +234,72 @@ Note: For this question, I collaborated with Matt Wilde.
 %%% QUESTION 5 %%%
 
 \section*{Question 5}
-TODO
+
+\subsection*{5.1}
+
+For the following derivation, I will make use of the following conditional probability identities
+
+\begin{equation} \label{eqn:exp_rule_1}
+E_{X,Y}[arg] = E_{X}[E_{Y|X}[arg]]
+\end{equation}
+for some arbitrary argument $arg$ and 
+\begin{equation} \label{eqn:exp_rule_2}
+E_{Y|X}[Y] = E[Y|X]
+\end{equation}
+which is the Law of Iterated Expectations.
+
+Now, I first write $L(f)$ and add a form of 0 and expand the terms as follows
+\begin{equation} \label{eqn:bayes_reg}
+\begin{split}
+L(f) & = E_{X,Y}[(Y - f(X))^2] \\
+& = E_{X,Y}[((Y - E[Y|X]) + (E[Y|X] - f(X)))^2] \\
+& = E_{X,Y}[(Y - E[Y|X])^2 + (E[Y|X] - f(X))^2 - 2(Y - E[Y|X])(E[Y|X] - f(X))] .
+\end{split}
+\end{equation}
+To simplify Eqn.~\ref{eqn:bayes_reg}, I will split it up into 3 terms.  Note that the first term, $E_{X,Y}[(Y - E[Y|X])^2]$ is the second term in the answer, so I will leave that be.  
+
+The second term can be simplified as follows
+\begin{equation}
+\begin{split}
+& E_{X,Y}[(E[Y|X] - f(X))^2] \\
+& = E_X[E_{Y|X}[(E[Y|X] - f(X))^2]] \\
+& = E_X[(E[Y|X] - f(X))^2]
+\end{split}
+\end{equation}
+via Eqn.~\ref{eqn:exp_rule_1} and since both $E[Y|X]$ and $f(X)$ are constant with respect to (wrt) integration over $Y$.  Now, we have
+\begin{equation}
+E_{X,Y}[(Y - E[Y|X])^2] + E_X[(E[Y|X] - f(X))^2] - E_{X,Y}[2(Y - E[Y|X])(E[Y|X] - f(X))]
+\end{equation}
+and need only shown that the third term in the above relation goes to 0 to complete the proof which I do below (Note: I use f instead of f(X) for brevity)
+\begin{equation}
+\begin{split}
+& E_{X,Y}[(Y - E[Y|X])(E[Y|X] - f(X))] \\
+& = E_{X,Y}[YE[Y|X] - Yf - E[Y|X]^2 + fE[Y|X]] \\
+& = E_{X,Y}[YE[Y|X] - E[Y|X]^2 + fE[Y|X] - Yf] \\
+& = E_X[E_{Y|X}[YE[Y|X]] - E_{Y|X}[E[Y|X]^2] + E_{Y|X}[fE[Y|X]] - E_{Y|X}[Yf]] \\
+& = E_X[E_{Y|X}[Y]E[Y|X] - E[Y|X]^2 + fE[Y|X] - E_{Y|X}[Y]f] 
+\end{split}
+\end{equation}
+where I used the fact that both $f$ and $E[Y|X]$ do not depend on $Y$ and hence $E_{Y|X}[E[Y|X]] = E[Y|X]$ and $E_{Y|X}[f] = f$.  Now using Eqn.~\ref{eqn:exp_rule_2}, 
+\begin{equation}
+\begin{split}
+& E_X[E_{Y|X}[Y]E[Y|X] - E[Y|X]^2 + fE[Y|X] - E_{Y|X}[Y]f] \\
+& = E_X[E[Y|X]^2 - E[Y|X]^2 + fE[Y|X] - E[Y|X]f] \\
+& = 0
+\end{split}
+\end{equation}
+and completing the proof.
+
+\subsection*{5.2}
+Given the expression derived above for the square loss for a function $f$, the Bayes optimal regressor $f_{Bayes} = E[Y|X]$.  This expression for $f_{Bayes}$ is the optimal regressor because the best function one can learn from the data is the expected value of the label given the data, $E[Y|X]$ .  With the expression for $f_{Bayes}$, I get 
+\begin{equation}
+\begin{split}
+L(f_{Bayes}) & = E_X[E[Y|X] - f_{Bayes}^2] + E_{X,Y}[(Y - E[Y|X])^2] \\
+& = E_X[(E[Y|X] - E[Y|X])^2] + E_{X,Y}[(Y - E[Y|X])^2] \\
+& = E_{X,Y}[(Y - E[Y|X])^2].
+\end{split}
+\end{equation}
+This expression for $L(f_{Bayes})$ represents the inherent uncertainty in the data which sets the error limit a model cannot improve upon.
 
 %%% QUESTION 6 %%%
 

@@ -175,7 +175,7 @@ def mnist_ridge_lam(X, y, num = 20, minlam=1.0e-10, maxlam=1.0e10):
 if __name__ == "__main__":
 
     # Flags to control functionality
-    find_best_lam = False
+    find_best_lam = True
 
     # Best threshold from previous running of script
     #

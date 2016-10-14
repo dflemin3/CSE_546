@@ -64,7 +64,7 @@ def fit_ridge(X, y, lam=1, sparse=False, w=None, w_0=None):
     delta = np.linalg.cholesky(delta)
 
     # Augment y, x
-    yc = np.vstack((y/sigma,np.zeros((Xc.shape[-1],1))))
+    yc = np.vstack((yc/sigma,np.zeros((Xc.shape[-1],1))))
     Xc = np.vstack((Xc/sigma,delta))
 
     # Compute weight vector

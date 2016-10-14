@@ -562,7 +562,7 @@ if __name__ == "__main__":
     d = 75
     k = 5
     lam = 500.0
-    sparse = False
+    sparse = True
     seed = 1
     w, X, y = ru.generate_norm_data(n,k,d,sigma=1,sparse=sparse,seed=seed)
 

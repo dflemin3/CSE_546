@@ -94,10 +94,10 @@ if fit_stars:
         err_val = np.zeros(num)
         err_train = np.zeros(num)
 
-        # Run a regularization path
+        # Run a regularization path 1.15
         print("Running regularization path for %d lambda bins." % num)
         err_val, err_train, lams, nonzeros = val.linear_reg_path(X_train, y_train, X_val, y_val,
-                                                       lu.fit_lasso_fast, lammax=lammax, scale=1.15,
+                                                       lu.fit_lasso_fast, lammax=lammax, scale=2,
                                                        num=num, error_func = val.RMSE,
                                                        save_nonzeros=True, **kwargs)
 

@@ -4,6 +4,7 @@
 \usepackage{amsmath}	% Advanced maths commands
 \usepackage{amssymb}	% Extra maths symbols
 \usepackage{hyperref}
+\usepackage{float}
 \geometry{a4paper} % or letter or a5paper or ... etc
 
 \title{CSE 546 HW1}
@@ -561,7 +562,7 @@ In both fitting routines, I declare a solution as converged once no elements of 
 
 In the file {\tt regression$\_$utils.py}, the function {\tt generate$\_$norm$\_$data} generates the synthetic data set according to the procedure outlines in Question 7.3.  To optimize over $\lambda$, I ran a regularization path starting at $\lambda_{max} = 5000$.  This value of  $\lambda_{max}$ was a factor of 3 or so larger than $\lambda_{max} = 2 ||X^{T}(y - \bar{y}) ||_{\infty}$ in order to demonstrate that too large of a regularization penalty yields a null weight vector.  For each iteration, I decreased $\lambda$ by a factor of 2 and initialized my LASSO algorithm with the results of the previous iteration.  For the first iteration, I assumed that $\omega$ was null.  For each iteration, I compared the sparsity pattern of my solution $\hat{w}$ to the true value I generated, $\omega_{true}$ by recording the precision and recall. The results of this regularization path for data generated with $\sigma = 1$ and for data with $\sigma = 10$ is shown in Fig.~\ref{fig:synth_reg}.
 
-\begin{figure}
+\begin{figure}[H]
 	\includegraphics[width=\columnwidth]{synthetic_prec_rec.pdf}
     \caption{Precision (red curves) and recall (blue curves) as a function of the regularization coefficient $\lambda$ over a regularization path.  Solid curves represent data generated with $\sigma = 1$ while dashed curves represent noisy data generated assuming $\sigma = 10$.  For a given $\lambda$, the fitting the noisy $\sigma = 10$ data using the LASSO algorithm yields less precise answers but comparable recall relative to the $\sigma = 1$ data}
     \label{fig:synth_reg}
@@ -583,17 +584,17 @@ To normalize the data for both the upvote and star datasets, for a given dataset
 
 \subsubsection*{7.4.1: Yelp Upvotes}
 
-Following the instructions, I randomly partitioned the data into a training set with $N_{train} = 4000$, a validation set with $N_{val} = 1000$ and a testing set with $N_{test} = 1000$.  For my regularization path, I started at $\lambda_{max} = 2 ||X^{T}(y - \bar{y}) ||_{\infty}$ and decreased $\lambda$ by a factor of 1.25 each iteration for 20 steps.  I found that 20 iterations allowed me to find the minimum of the validation error and also allowed me to see the subsequent validation error increase after its minimum as expected.  After the first step, I initialized each LASSO algorithm with the previous solution.  
+Following the instructions, I randomly partitioned the data into a training set with $N_{train} = 4000$, a validation set with $N_{val} = 1000$ and a testing set with $N_{test} = 1000$.  For my regularization path, I started at $\lambda_{max} = 2 ||X^{T}(y - \bar{y}) ||_{\infty}$ and decreased $\lambda$ by a factor of 1.3 each iteration for 20 steps.  I found that 20 iterations allowed me to find the minimum of the validation error and also allowed me to see the subsequent validation error increase after its minimum as expected.  After the first step, I initialized each LASSO algorithm with the previous solution.  
 
 Each iteration, I fit the training data with my implementation of the LASSO Coordinate Descent Algorithm 2 to find $\hat{w}$ and $w_0$.  Using the results of the fit, I evaluated the model on the training and validation data and computed the root-mean-squared-error (RMSE) for both.  I also computed the number of nonzeros in the fitted weight vector $\omega$.  The $\lambda$ that yields the minimum validation RMSE after fitting on the training data is the best $\lambda$ and will be used for subsequent model evaluation on the testing data.  The RMSE and number of nonzeros as a function of $\lambda$ along the regularization path are shown in Fig.~\ref{fig:yelp_upvote_rmse} and Fig.~\ref{fig:yelp_upvote_nonzeros}.
 
-\begin{figure}
+\begin{figure}[H]
 	\includegraphics[width=\columnwidth]{upvote_rmse.pdf}
     \caption{Upvote dataset: RMSE for the training set (green) and validation set (blue) as a function of regularization parameter $\lambda$.  The black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
     \label{fig:yelp_upvote_rmse}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 	\includegraphics[width=\columnwidth]{upvote_nonzeros.pdf}
     \caption{Upvote dataset: Number of nonzeros in the predicted weight vector $\hat{\omega}$ as a function of regularization parameter $\lambda$.  As before, the black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
     \label{fig:yelp_upvote_nonzeros}
@@ -603,76 +604,81 @@ As $\lambda$ decreases, the training error monotonically decreases, likely overf
 
 \subsubsection*{7.4.2}
 
-The best $\lambda$ was selected over the regularization path by fitting on the training set and testing on the validation set.  I found a minimal RMSE of A and B on the training and validation sets, respectively.  The best $\lambda$ was that which yielded the smallest validation set error.  From this procedure, I determined $\lambda_{best} = X$ for the Yelp upvote data.  Using this $\lambda_{best}$, I refit the training data and using the resultant weight vector, I evaluated the model on the testing data and got an RMSE of Z.  As expected, my training set error was less than my validation set error which was less than my testing set error.  This makes sense as any model will likely tend to preform worse on new data as during the training process, model parameters, e.g. $\omega$, $w_0$, are optimizing over the training data.
+The best $\lambda$ was selected over the regularization path by fitting on the training set and testing on the validation set.  I found a minimal RMSE of 1.55 and 1.581 on the training and validation sets, respectively.  The best $\lambda$ was that which yielded the smallest validation set error.  From this procedure, I determined $\lambda_{best} = 1.465$ for the Yelp upvote data.  Using this $\lambda_{best}$, I refit the training data and using the resultant weight vector, I evaluated the model on the testing data and got an RMSE of 3.35.  As expected, my training set error was less than my validation set error which was less than my testing set error.  This makes sense as any model will likely tend to preform worse on new data as during the training process, model parameters, e.g. $\omega$, $w_0$, are optimizing over the training data.
 
 \subsubsection*{7.4.3}
 
-In the table below, I shown the 10 features with weights largest in magnitude.
+In Table~\ref{tab:top_upvotes} below, I shown the 10 features with weights largest in magnitude for the upvote dataset.
 
-\begin{table}
+\begin{table}[H]
 	\centering
 	\caption{Top 10 Upvote Weights by Magnitude}
 	\begin{tabular}{ccc} 
 		\hline
 		Rank & Weight Name & Weight Coefficient \\
 		\hline
-		1 & 0 & 0.00383 \\
-		2 & 0.001 & 0.00383 \\
-		3 & 0.05 & 0.00383 \\
-		4 & 0.1032 & 0.00383 \\
-		5 & 0.25 & 0.00383  \\ 
-		6 & 0.1032 & 0.00766  \\
-		7 & 0.1032 & 0.00192  \\
-		8 & 0.1032 & 0.00574  \\
-		9 & 0.1032 & 0.00383 \\
-		10 & 0.1032 & 0.00383 \\
+		1 & sqrt(ReviewNumWords*UserUsefulVotes) & 68.01 \\
+		2 & sqrt(ReviewNumLineBreaks*UserCoolVotes) & 52.20 \\
+		3 & sqrt(UserCoolVotes*BusinessNumStars) & 45.59 \\
+		4 & sqrt(ReviewNumLineBreaks*UserNumReviews) & -39.82 \\
+		5 & sq(ReviewNumWords*UserNumReviews) & -29.39  \\ 
+		6 & sqrt(ReviewNumCharacters*UserCoolVotes) & 27.53  \\
+		7 & sqrt(UserNumReviews*UserFunnyVotes) & -27.33  \\
+		8 & sqrt(UserFunnyVotes*InPhoenix) & 22.97  \\
+		9 & log(UserNumReviews) & -20.07 \\
+		10 & ReviewNumLineBreaks*BusinessNumStars & 17.91 \\
 		\hline
 	\end{tabular}
 	\label{tab:top_upvotes}
 \end{table}
 
-Discussion.  What is an upvote?
+For a Yelp review, the number of upvotes corresponds to the number of users who thought a review was useful and voted on said review to voice that opinion.  Therefore, a positive weight corresponds to a feature producing more upvotes while a negative weight yields fewer upvotes.  Given this context, my top features sorted by weight magnitude seem to make sense.  Broadly, it seems like as if longer reviews yield more upvotes as features containing ReviewNumWords, ReviewerNumLineBreaks, and ReviewNumCharacters both proxies for review length, have large positive weight vectors.  This makes sense since a long, detailed review gives other users an in-depth look at the experience they are likely to receive at a business and hence are likely to be more useful to other users.  Additionally, features that reflect positively on the reviewer, UserCoolVotes and UserFunnyVotes, yield more upvotes indicating that popular users produce more upvoted reviewers.  One interesting pattern I noticed, however, is that the more reviews a user has written (the corresponding feature is UserNumReviews), the fewer upvotes that user's review receives.  This could be due to someone spamming massive amounts of reviews, perhaps a fake reviewer account, or someone who likens themselves to a food critic and regularly annoys other Yelp users leading to fewer upvotes.  Given these results, my LASSO regression picks out features that make qualitative sense for predicting the number of upvotes a review would receive.
 
-\subsubsection*{7.4.4}
+\subsubsection*{7.4.4: Yelp Stars}
 
-Repeat above.  What is a star?
+Following the instructions, I randomly partitioned the data into a training set with $N_{train} = 30,000$, a validation set with $N_{val} = 7,500$ and a testing set with $N_{test} = 7,500$.  For my regularization path, I started at $\lambda_{max} = 2 ||X^{T}(y - \bar{y}) ||_{\infty}$ and decreased $\lambda$ by a factor of 1.25 each iteration for 20 steps.  I found that 20 iterations allowed me to find the minimum of the validation error and also allowed me to see the subsequent validation error increase after its minimum as expected.  After the first step, I initialized each LASSO algorithm with the previous solution.  
 
-\begin{figure}
+Each iteration, I fit the training data with my implementation of the LASSO Coordinate Descent Algorithm 2 to find $\hat{w}$ and $w_0$.  Using the results of the fit, I evaluated the model on the training and validation data and computed the root-mean-squared-error (RMSE) for both.  I also computed the number of nonzeros in the fitted weight vector $\omega$.  The $\lambda$ that yields the minimum validation RMSE after fitting on the training data is the best $\lambda$ and will be used for subsequent model evaluation on the testing data.  The RMSE and number of nonzeros as a function of $\lambda$ along the regularization path are shown in Fig.~\ref{fig:yelp_star_rmse} and Fig.~\ref{fig:yelp_star_nonzeros}.
+
+\begin{figure}[H]
 	\includegraphics[width=\columnwidth]{star_rmse.pdf}
     \caption{Star dataset: RMSE for the training set (green) and validation set (blue) as a function of regularization parameter $\lambda$.  The black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
     \label{fig:yelp_star_rmse}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 	\includegraphics[width=\columnwidth]{star_nonzeros.pdf}
     \caption{Star dataset: Number of nonzeros in the predicted weight vector $\hat{\omega}$ as a function of regularization parameter $\lambda$.  As before, the black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
     \label{fig:yelp_star_nonzeros}
 \end{figure}
 
-DISCUSS trends in plots.
+As $\lambda$ decreases, the training error monotonically decreases, likely overfitting the training set at small $\lambda$.  The validation error also decreases with decreasing $\lambda$ but seems to reach a minimum at the best fit $\lambda$ before increasing at the iteration.  As expected, The number of nonzeros increase with decreasing $\lambda$.  The best fit $\lambda$ yields a solution with about 550 nonzero elements.  Given that the total number of features was 2,500, the LASSO was clearly selecting for the best features as expected.
 
-\begin{table}
+In Table~\ref{tab:top_stars} below, I shown the 10 features with weights largest in magnitude for the star dataset.
+
+\begin{table}[H]
 	\centering
 	\caption{Top 10 Stars Weights by Magnitude}
 	\begin{tabular}{ccc} 
 		\hline
 		Rank & Weight Name & Weight Coefficient \\
 		\hline
-		1 & 0 & 0.00383 \\
-		2 & 0.001 & 0.00383 \\
-		3 & 0.05 & 0.00383 \\
-		4 & 0.1032 & 0.00383 \\
-		5 & 0.25 & 0.00383  \\ 
-		6 & 0.1032 & 0.00766  \\
-		7 & 0.1032 & 0.00192  \\
-		8 & 0.1032 & 0.00574  \\
-		9 & 0.1032 & 0.00383 \\
-		10 & 0.1032 & 0.00383 \\
+		1 & great & 26.34 \\
+		2 & not & -24.81 \\
+		3 & best & 20.70 \\
+		4 & amazing & 18.86 \\
+		5 & awesome & 15.60  \\ 
+		6 & love & 15.52  \\
+		7 & delicious & 15.15  \\
+		8 & the worst & -13.87  \\
+		9 & rude & -13.50 \\
+		10 & horrible & -13.28 \\
 		\hline
 	\end{tabular}
 	\label{tab:top_stars}
 \end{table}
 
+In the context of a Yelp review, a star is a ranking a reviewer gives a business in said review.  Stars range from worst (1) to best (5).  In the context of fitting a model to predict the number of stars, a positive weight corresponds to more predicted stars while a negative weight corresponds to fewer stars.    Upon inspection, my largest features sorted by weight magnitude broadly seem to make sense.  Reviews that contain positive words like ``great", ``best", ``amazing", ``awesome", ``love", and ``delicious" yield more stars.  This obviously makes sense since if a user writes that he or she ``loves" a certain dish or business or that the experience was ``amazing" or that the atmosphere was ``great", the user would leave a review with a lot of stars.  On the other hand, reviews that contained negative words and phrases such as ``the worst", ``rude" and ``horrible" resulted in reviews with fewer stars.  This again makes sense since if the reviewer said that the service was ``horrible" or the staff was ``rude" of that his or her experience was one of ``the worst" that they have experience, they would give the business a poor star rating.  Given these results, my LASSO regression picks out features that make qualitative sense for predicting the number of stars a business would receive in a given review.
 
 Note: On this question, I collaborated with Matt Wilde, Serena Liu, and Janet Matsen.
 

@@ -230,6 +230,9 @@ if __name__ == "__main__":
         print("Best lambda:",best_lambda)
         print("Best threshold:",best_thresh)
 
+        plt.plot(lams,err_val[ind_t,:])
+        plt.show()
+
     # Fit training set for model parameters using best fit lambda
     w0, w = ri.fit_ridge(X_train, y_train_true, lam=1)#best_lambda)
 

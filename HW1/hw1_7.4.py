@@ -28,16 +28,16 @@ mpl.rc('text', usetex='true')
 # Flags to control functionality
 
 # Fit (including regularization path!) the Yelp review upvote data?
-fit_upvotes = True
+fit_upvotes = False
 
 # Fit (including regularization path!) the Yelp review star data?
-fit_stars = False
+fit_stars = True
 
 # Do you want to see the plots?
 make_plots = True
 
 # Do you want to save the plots?
-save_plots = False
+save_plots = True
 
 ###############################
 #
@@ -125,9 +125,9 @@ if fit_stars:
         # Errors as a function of lambda
         fig, ax = plt.subplots()
 
-        ax.plot(lams,err_val,color="blue",lw=3,label="Validation Error")
-        ax.plot(lams,err_train,color="green",lw=3,label="Training Error")
-        ax.axvline(x=lam_best, ymin=-10, ymax =10, linewidth=3, color='k',
+        ax.plot(lams,err_val,"o-",color="blue",lw=3,label="Validation Error")
+        ax.plot(lams,err_train,"o-",color="green",lw=3,label="Training Error")
+        ax.axvline(x=best_lam, ymin=-10, ymax =10, linewidth=3, color='k',
                     ls="--",label=r"Best $\lambda$")
 
         # Format
@@ -143,8 +143,8 @@ if fit_stars:
         # Nonzeros as a function of lambda
         fig, ax = plt.subplots()
 
-        ax.plot(lams,nonzeros,color="blue",lw=3)
-        ax.axvline(x=lam_best, ymin=-10, ymax =10, linewidth=3, color='k',
+        ax.plot(lams,nonzeros,"o-",color="blue",lw=3)
+        ax.axvline(x=best_lam, ymin=-10, ymax =10, linewidth=3, color='k',
                     ls="--",label=r"Best $\lambda$")
 
         # Format
@@ -181,7 +181,7 @@ if fit_stars:
 
     #Sort array smallest->largest, get indices
     sorted_w_args = np.argsort(np.fabs(weights))
-    for i in range(1,11):
+    for i in range(1,21):
         print("Feature: %s, weight: %.2lf" % (featureNames[sorted_w_args[-i]],
                                                 weights[sorted_w_args[-i]]))
 
@@ -272,9 +272,9 @@ if fit_upvotes:
         # Errors as a function of lambda
         fig, ax = plt.subplots()
 
-        ax.plot(lams,err_val,color="blue",lw=3,label="Validation Error")
-        ax.plot(lams,err_train,color="green",lw=3,label="Training Error")
-        ax.axvline(x=lam_best, ymin=-10, ymax =10, linewidth=3, color='k',
+        ax.plot(lams,err_val,"o-",color="blue",lw=3,label="Validation Error")
+        ax.plot(lams,err_train,"o-",color="green",lw=3,label="Training Error")
+        ax.axvline(x=best_lam, ymin=-10, ymax =10, linewidth=3, color='k',
                     ls="--",label=r"Best $\lambda$")
 
         # Format
@@ -290,8 +290,8 @@ if fit_upvotes:
         # Nonzeros as a function of lambda
         fig, ax = plt.subplots()
 
-        ax.plot(lams,nonzeros,color="blue",lw=3)
-        ax.axvline(x=lam_best, ymin=-10, ymax =10, linewidth=3, color='k',
+        ax.plot(lams,nonzeros,"o-",color="blue",lw=3)
+        ax.axvline(x=best_lam, ymin=-10, ymax =10, linewidth=3, color='k',
                     ls="--",label=r"Best $\lambda$")
 
         # Format
@@ -328,7 +328,7 @@ if fit_upvotes:
 
     #Sort array smallest->largest, get indices
     sorted_w_args = np.argsort(np.fabs(weights))
-    for i in range(1,11):
+    for i in range(1,21):
         print("Feature: %s, weight: %.2lf" % (featureNames[sorted_w_args[-i]],
                                                 weights[sorted_w_args[-i]]))
 

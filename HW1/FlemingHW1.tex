@@ -7,7 +7,7 @@
 \usepackage{float}
 \geometry{a4paper} % or letter or a5paper or ... etc
 
-\title{CSE 546 HW1}
+\title{CSE 546: Machine Learning Homework 1}
 \author{David P. Fleming}
 \date{October 14$^{th}$, 2016}
 
@@ -454,7 +454,7 @@ Linear regression is a poor idea for classification since the slope of the predi
 
 Recalling what my answer for the Bayes optimal predictor for the square loss, the Bayes optimal predictor using square loss for classification is $E[y|x,D]$.  Since I used a linear regressor in this question, I can replace $y$ to get $X^TE[\omega|x,D]$ where X can be removed from the expectation value since it is constant over the integral.
 
-Note: For this question, I collaborated with Matt Wilde.
+Note: For this question, I collaborated with Matt Wilde, Serena Liu and Janet Matsen.
 
 %%% QUESTION 7 %%%
 
@@ -552,11 +552,13 @@ Combining all the rules derived in 7.1.1 - 7.1.6, we have the Efficient Coordina
 
 \subsection*{7.2: Implement coordinate descent to solve the LASSO}
 
-My {\tt python} implementations of both Algorithm 1 and Algorithm 2 are in the attached file {\tt lasso$\_$utils.py} and are named {\tt fit$\_$lasso and fit$\_$lasso$\_$fast}, respectively.  Each function includes the offset term $w_0$ that is not regularized, have the option to take initial conditions for both $\omega$ and $w_0$ and can handle dense or sparse $X$ using the {\tt scipy.sparse} package.  Both of my LASSO solves extensively use the NumPy computing package to speed up all linear algebra computations.  
+My {\tt python} implementations of both Algorithm 1 and Algorithm 2 are in the attached file {\tt lasso$\_$utils.py} and are named {\tt fit$\_$lasso and fit$\_$lasso$\_$fast}, respectively.  Each function includes the offset term $w_0$ that is not regularized, have the option to take initial conditions for both $\omega$ and $w_0$ and can handle dense or sparse $X$ using the {\tt scipy.sparse} package.  Both of my LASSO solvers make extensive use of the NumPy computing package to speed up all linear algebra computations.  
 
 In both fitting routines, I declare a solution as converged once no elements of $\hat{w}$ change by more than $\epsilon$ after an iteration.  I set $\epsilon = 5.0 \times 10^{-3}$ unless noted otherwise to ensure that my algorithm converges quickly enough to make long regularization paths more feasible.  
 
 \subsection*{7.3: Try out your work on synthetic data}
+
+Note: My solution for this question is generated using the script {\tt hw1$\_$7.3.py} and other scripts used for this solution are {\tt lasso$\_$utils.py, validation.py \text{ and } regression$\_$utils.py}.
 
 \subsubsection*{7.3.1}
 
@@ -632,7 +634,7 @@ In Table~\ref{tab:top_upvotes} below, I shown the 10 features with weights large
 	\label{tab:top_upvotes}
 \end{table}
 
-For a Yelp review, the number of upvotes corresponds to the number of users who thought a review was useful and voted on said review to voice that opinion.  Therefore, a positive weight corresponds to a feature producing more upvotes while a negative weight yields fewer upvotes.  Given this context, my top features sorted by weight magnitude seem to make sense.  Broadly, it seems like as if longer reviews yield more upvotes as features containing ReviewNumWords, ReviewerNumLineBreaks, and ReviewNumCharacters both proxies for review length, have large positive weight vectors.  This makes sense since a long, detailed review gives other users an in-depth look at the experience they are likely to receive at a business and hence are likely to be more useful to other users.  Additionally, features that reflect positively on the reviewer, UserCoolVotes and UserFunnyVotes, yield more upvotes indicating that popular users produce more upvoted reviewers.  One interesting pattern I noticed, however, is that the more reviews a user has written (the corresponding feature is UserNumReviews), the fewer upvotes that user's review receives.  This could be due to someone spamming massive amounts of reviews, perhaps a fake reviewer account, or someone who likens themselves to a food critic and regularly annoys other Yelp users leading to fewer upvotes.  Given these results, my LASSO regression picks out features that make qualitative sense for predicting the number of upvotes a review would receive.
+For a Yelp review, the number of upvotes corresponds to the number of users who thought a review was useful and voted on said review to voice that opinion.  Therefore, a positive weight corresponds to a feature producing more upvotes while a negative weight yields fewer upvotes.  Given this context, my top features sorted by weight magnitude seem to make sense.  Broadly, it seems like as if longer reviews yield more upvotes as features containing ReviewNumWords, ReviewerNumLineBreaks, and ReviewNumCharacters, all proxies for review length, have large positive weight vectors.  This makes sense since a long, detailed review gives other users an in-depth look at the experience they are likely to receive at a business and hence are likely to be more useful to other users.  Additionally, features that reflect positively on the reviewer, UserCoolVotes and UserFunnyVotes, yield more upvotes indicating that popular users produce more upvoted reviewers.  One interesting pattern I noticed, however, is that the more reviews a user has written (the corresponding feature is UserNumReviews), the fewer upvotes that user's review receives.  This could be due to someone spamming massive amounts of reviews, perhaps a fake reviewer account, or someone who likens themselves to a food critic and regularly annoys other Yelp users leading to fewer upvotes.  Given these results, my LASSO regression picks out features that make qualitative sense for predicting the number of upvotes a review would receive.
 
 \subsubsection*{7.4.4: Yelp Stars}
 
@@ -678,7 +680,7 @@ In Table~\ref{tab:top_stars} below, I shown the 10 features with weights largest
 	\label{tab:top_stars}
 \end{table}
 
-In the context of a Yelp review, a star is a ranking a reviewer gives a business in said review.  Stars range from worst (1) to best (5).  In the context of fitting a model to predict the number of stars, a positive weight corresponds to more predicted stars while a negative weight corresponds to fewer stars.    Upon inspection, my largest features sorted by weight magnitude broadly seem to make sense.  Reviews that contain positive words like ``great", ``best", ``amazing", ``awesome", ``love", and ``delicious" yield more stars.  This obviously makes sense since if a user writes that he or she ``loves" a certain dish or business or that the experience was ``amazing" or that the atmosphere was ``great", the user would leave a review with a lot of stars.  On the other hand, reviews that contained negative words and phrases such as ``the worst", ``rude" and ``horrible" resulted in reviews with fewer stars.  This again makes sense since if the reviewer said that the service was ``horrible" or the staff was ``rude" of that his or her experience was one of ``the worst" that they have experience, they would give the business a poor star rating.  Given these results, my LASSO regression picks out features that make qualitative sense for predicting the number of stars a business would receive in a given review.
+In the context of a Yelp review, a star is a ranking a reviewer gives a business in said review.  Stars range from worst (1) to best (5).  In the context of fitting a model to predict the number of stars, a positive weight corresponds to more predicted stars while a negative weight corresponds to fewer stars.    Upon inspection, my largest features sorted by weight magnitude broadly seem to make sense.  Reviews that contain positive words like ``great", ``best", ``amazing", ``awesome", ``love", and ``delicious" yield more stars.  This obviously makes sense since if a user writes that he or she ``loves" a certain dish or business or that the experience was ``amazing" or that the atmosphere was ``great", the user would leave a review with a lot of stars.  On the other hand, reviews that contained negative words and phrases such as ``the worst", ``rude" and ``horrible" resulted in reviews with fewer stars.  This again makes sense since if the reviewer said that the service was ``horrible" or the staff was ``rude" of that his or her experience was one of ``the worst" that they have had, they would give the business a poor star rating.  Given these results, my LASSO regression picks out features that make qualitative sense for predicting the number of stars a business would receive in a given review.
 
 Note: On this question, I collaborated with Matt Wilde, Serena Liu, and Janet Matsen.
 

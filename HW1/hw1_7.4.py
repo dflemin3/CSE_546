@@ -31,10 +31,10 @@ mpl.rc('text', usetex='true')
 fit_upvotes = True
 
 # Fit (including regularization path!) the Yelp review star data?
-fit_stars = False
+fit_stars = True
 
 # Do you want to see the plots?
-make_plots = False
+make_plots = True
 
 # Do you want to save the plots?
 save_plots = False

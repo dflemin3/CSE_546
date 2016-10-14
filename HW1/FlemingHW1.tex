@@ -3,6 +3,7 @@
 \usepackage{graphicx}	% Including figure files
 \usepackage{amsmath}	% Advanced maths commands
 \usepackage{amssymb}	% Extra maths symbols
+\usepackage{hyperref}
 \geometry{a4paper} % or letter or a5paper or ... etc
 
 \title{CSE 546 HW1}
@@ -14,6 +15,10 @@
 
 \maketitle
 \tableofcontents
+
+\section*{Introduction}
+
+Please note that a copy of all the code I wrote to answer the questions in this assignment are included in my submission but also located online at \url{https://github.com/dflemin3/CSE_546/tree/master/HW1}.  Some scripts require data, be it MNIST or Yelp, to run to completion and were not included on my github or in my submission due to file size constraints.  If requested, I will happily send a compressed directory containing my homework and detailed instructions on how to reproduce my work.  My primary email is dflemin3 (at) uw (dot) edu.  Also for reproducibility, I set the random number generator seed near the top of each script such that rerunning my script will yield the same answers as presented here.
 
 %%% QUESTION 1 %%%
 
@@ -420,6 +425,7 @@ however the matrix inversion required is not only computationally expensive but 
 \begin{equation} \label{eqn:RR_w_murphy}
 \hat{\omega_{ridge}} = (\tilde{X}^T \tilde{X})^{-1} \tilde{X}^T \tilde{y}.
 \end{equation}
+This formula allows me to quickly solve the ridge regression problem for a given $\lambda$.
 
 \subsection*{6.1}
 
@@ -453,7 +459,11 @@ Note: For this question, I collaborated with Matt Wilde.
 
 \section*{Question 7}
 
+Note: The following scripts (attached) include all code used to solve this question: {\tt hw1$\_$7.3.py, hw1$\_$7.4.py, regression$\_$utils.py, lasso$\_$utils.py \text{ and } validation.py}.  The scripts {\tt hw1$\_$7.3.py \text{ and } hw1$\_$7.4.py} produces my answers for questions 7.3 and 7.4, respectively.  
+
 \subsection*{7.1}
+
+Below, I derive the update rules used for Algorithm 2: the Efficient Coordinate Descent Algorithm for solving the LASSO regression.
 
 \subsubsection*{7.1.1}
 If we define
@@ -541,7 +551,9 @@ Combining all the rules derived in 7.1.1 - 7.1.6, we have the Efficient Coordina
 
 \subsection*{7.2}
 
-My {\tt python} implementations of both Algorithm 1 and Algorithm 2 are in the attached file {\tt lasso$\_$utils.py} and are named {\tt fit$\_$lasso and fit$\_$lasso$\_$fast}, respectively.  Each function includes the offset term $w_0$ that is not regularized, have the option to take initial conditions for both $\omega$ and $w_0$ and can handle dense or sparse $X$ using the {\tt scipy.sparse} package.
+My {\tt python} implementations of both Algorithm 1 and Algorithm 2 are in the attached file {\tt lasso$\_$utils.py} and are named {\tt fit$\_$lasso and fit$\_$lasso$\_$fast}, respectively.  Each function includes the offset term $w_0$ that is not regularized, have the option to take initial conditions for both $\omega$ and $w_0$ and can handle dense or sparse $X$ using the {\tt scipy.sparse} package.  Both of my LASSO solves extensively use the NumPy computing package to speed up all linear algebra computations.  
+
+In both fitting routines, I declare a solution as converged once no elements of $\hat{w}$ change by more than $\epsilon$ after an iteration.  I set $\epsilon = 5.0 \times 10^{-3}$ unless noted otherwise to ensure that my algorithm converges quickly enough to make long regularization paths more feasible.  
 
 \subsection*{7.3}
 
@@ -557,11 +569,37 @@ In the file {\tt regression$\_$utils.py}, the function {\tt generate$\_$norm$\_$
 
 For data generated with $\sigma = 1$ (solid curves in Fig.~\ref{fig:synth_reg}), a $\lambda \sim 10^3$ gives perfect precision and recall.  Larger $\lambda$s yield a larger regularization penalty which enforces a sparser solution, causing correct non-zero values to go to 0 resulting in worse recall and precision.  Smaller $\lambda$s have little effect on recall.  The LASSO algorithm tends towards ordinary least squares regression for smaller $\lambda$ and hence is still able to correctly determine the true non-zero values giving the observed perfect recall.  In this regime, however, the reduce penalty term also allows terms in $\hat{\omega}$ that should be 0 to become non-zero due to the regression algorithm overfitting the inherent noise in the data.  The additional non-zero terms arising from overfitting the noise drives the precision down as $\lambda$ decreases as the number of correct non-zeros in $\hat{\omega}$ stays the same while the total number of non-zero terms grows.
 
-\subsection*{7.3.2}
+\subsubsection*{7.3.2}
 
 I reran the same regularization analysis for the data generated with $\sigma = 10$ (dashed curves in Fig.~\ref{fig:synth_reg}) as I did for the $\sigma = 1$ data over the same $\lambda$ regularization path allowing for a direct comparison of the algorithm's performance for a given $\lambda$.  In general, I found that the recall was relatively unchanged between the two fits for all $\lambda$.  This makes sense since too large a $\lambda$ drives all $\hat{\omega}$ to 0 while smaller $\lambda$ allows for the linear regression to recover the correct non-zero values of $\omega_{true}$.  The precision for the fits on the data generated with $\sigma = 10$, however, was much worse than the fits over the $\sigma = 1$ data for almost all values of $\lambda$.  The enhanced noise in that synthetic dataset makes overfitting an issue and hence underscores the importance of regularization.  At larger $\lambda$, the precision is reasonable as the regularization penalty prevents the LASSO algorithm from overfitting and producing more incorrect non-zero terms in $\hat{\omega}$.  Smaller $\lambda$, however, yield a weaker regularization penalty and hence the algorithm overfits, producing many incorrect non-zero terms in $\hat{\omega}$ in giving poor precision.  
 
 In order to achieve the optimal precision and recall for this noisy data, one should run a regularization path as before while monitoring recall.  Once recall has increased to 1, that $\lambda_{best}$ should be returned as the optimal regularization coefficient.  For $\lambda < \lambda_{best}$, the regularization penalty would be too low allowing noise to produce spurious features yielding incorrect non-zero terms in $\hat{\omega}$.  For the general case where $\omega_{true}$ is not known, one should bias towards larger $\lambda$ for noisy data to prevent overfitting.
+
+\subsection*{7.4}
+
+Note: The following scripts (attached) include all code used to solve this question: {\tt hw1$\_$7.4.py, regression$\_$utils.py, lasso$\_$utils.py \text{ and } validation.py}.  The script {\tt hw1$\_$7.4.py} produces my answers for this question.  I should note that the regularization path for both the Yelp upvote and star data took of order hours to run to completion so I cache the results as NumPy $.npz$ files that are available upon request.  
+
+To normalize the data for both the upvote and star datasets, for a given dataset, I divided each column (feature) vector by its $l_2$ norm such that each feature vector for the dataset had an $l_2$ norm of unity.  The script I used to normalize the data is {\tt normalize$\_$yelp.py}.
+
+\subsubsection*{7.4.1: Yelp Upvotes}
+
+Following the instructions, I randomly partitioned the data into a training set with $N_{train} = 4000$, a validation set with $N_{val} = 1000$ and a testing set with $N_{test} = 1000$.  For my regularization path, I started at $\lambda_{max} = 2 ||X^{T}(y - \bar{y}) ||_{\infty}$ and decreased $\lambda$ by a factor of 1.25 each iteration for 20 steps.  I found that 20 iterations allowed me to find the minimum of the validation error and also allowed me to see the subsequent validation error increase after its minimum as expected.
+
+Each iteration, I fit the training data with my implementation of the LASSO Coordinate Descent Algorithm 2 to produce $\hat{w}$ and $w_0$.  Using the results of the fit, I evaluated the model on the training and validation data and computed the root-mean-squared-error (RMSE).  I also computed the number of nonzeros in the fitted weight vector $\omega$.  The RMSE and number of nonzeros as a function of $\lambda$ along the regularization path are shown in Fig.~\ref{fig:yelp_upvote_rmse} and Fig.~\ref{fig:yelp_upvote_nonzeros}.
+
+DISCUSS
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{upvote_rmse.pdf}
+    \caption{RMSE for the training set (green) and validation set (blue) as a function of regularization parameter $\lambda$.  The black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
+    \label{fig:yelp_upvote_rmse}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{upvote_nonzeros.pdf}
+    \caption{Number of nonzeros in the predicted weight vector $\hat{\omega}$ as a function of regularization parameter $\lambda$.  As before, the black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
+    \label{fig:yelp_upvote_nonzeros}
+\end{figure}
 
 Note: On this question, I collaborated with Matt Wilde, Serena Liu, and Janet Matsen.
 

@@ -28,16 +28,18 @@ mpl.rc('text', usetex='true')
 # Flags to control functionality
 
 # Fit (including regularization path!) the Yelp review upvote data?
-fit_upvotes = False
+fit_upvotes = True
 
 # Fit (including regularization path!) the Yelp review star data?
-fit_stars = True
+fit_stars = False
 
 # Do you want to see the plots?
-make_plots = True
+make_plots = False
 
 # Do you want to save the plots?
-save_plots = True
+save_plots = False
+
+seed = 42
 
 ###############################
 #
@@ -51,7 +53,6 @@ if fit_stars:
     # Define constants for splitting up data
     test_frac = 1./6 # Fraction of total data to split into testing
     val_frac = 0.2 # Fraction of remaning training data to split up
-    seed = 1 # RNG seed for reproducibility
     kwargs = {"sparse" : True}
     num = 30 # Length of reg path
     cache = "../Data/hw1-data/star_cache.npz"
@@ -169,10 +170,17 @@ if fit_stars:
         w_0 = res["w_0"]
         w = res["w"]
 
+    r2_train = ru.r_squared(X_train, y_train, w, w_0, sparse=True)
+    print("r^2 on the training set: %.3lf" % r2_train)
+    r2_val = ru.r_squared(X_val, y_val, w, w_0, sparse=True)
+    print("r^2 on the validation set: %.3lf" % r2_val)
+
     # Compute error on testing set
     y_hat_test = ru.linear_model(X_test, w, w_0, sparse=True)
     RMSE_test = val.RMSE(y_test, y_hat_test)
+    r2_test = ru.r_squared(X_test, y_test, w, w_0, sparse=True)
     print("RMSE on the testing set: %.2lf" % RMSE_test)
+    print("r^2 on the testing set: %.3lf" % r2_test)
 
     # Inspect solution and output top 10 weights in magnitude and their corresponding name
     ind_list = np.where(np.fabs(w) != 0)[1]
@@ -198,7 +206,6 @@ if fit_upvotes:
     # Define constants for splitting up data
     test_frac = 1./6 # Fraction of total data to split into testing
     val_frac = 0.2 # Fraction of remaning training data to split up
-    seed = 1 # RNG seed for reproducibility
     kwargs = {"sparse" : True}
     num = 30 # Length of reg path
     cache = "../Data/hw1-data/upvote_cache.npz"
@@ -316,10 +323,17 @@ if fit_upvotes:
         w_0 = res["w_0"]
         w = res["w"]
 
+    r2_train = ru.r_squared(X_train, y_train, w, w_0, sparse=True)
+    print("r^2 on the training set: %.3lf" % r2_train)
+    r2_val = ru.r_squared(X_val, y_val, w, w_0, sparse=True)
+    print("r^2 on the validation set: %.3lf" % r2_val)
+
     # Compute error on testing set
     y_hat_test = ru.linear_model(X_test, w, w_0, sparse=True)
     RMSE_test = val.RMSE(y_test, y_hat_test)
+    r2_test = ru.r_squared(X_test, y_test, w, w_0, sparse=True)
     print("RMSE on the testing set: %.2lf" % RMSE_test)
+    print("r^2 on the testing set: %.3lf" % r2_test)
 
     # Inspect solution and output top 10 weights in magnitude and their corresponding name
     ind_list = np.where(np.fabs(w) != 0)[1]

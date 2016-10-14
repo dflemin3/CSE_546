@@ -112,6 +112,38 @@ def linear_model(X, w, w0, sparse=False):
 # end function
 
 
+def r_squared(X, y, w, w0, sparse=False):
+    """
+	Compute r^2 for a simple linear model of the form
+	y = w0+ Xw
+
+	Parameters
+	----------
+	X : array (n x d)
+		Data array (n observations, d features)
+	w : array (d x 1)
+		feature weight array
+	w0 : float
+		constant offset term
+	sparse : bool
+		whether or not X is scipy.sparse.csc. defaults to True
+
+	Returns
+	-------
+	y : array (n x 1)
+		prediction vector
+	"""
+    if sparse:
+    	y_hat = w0 + X.dot(w)
+    else:
+    	y_hat = w0 + np.dot(X,w)
+
+    SSres = np.sum(np.power(y - y_hat,2.0))
+    SStot = np.sum(np.power(y - np.mean(y),2.0))
+    return 1.0 - SSres/SStot
+# end function
+
+
 def precision_lasso(w_true, w_pred, eps = 1.0e-3):
 	"""
 	Calculate number of correct non-zeros in w_pred divided by the

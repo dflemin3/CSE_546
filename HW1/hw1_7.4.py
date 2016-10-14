@@ -34,7 +34,7 @@ fit_upvotes = True
 fit_stars = True
 
 # Do you want to see the plots?
-make_plots = True
+make_plots = False
 
 # Do you want to save the plots?
 save_plots = False
@@ -183,15 +183,10 @@ if fit_stars:
     print("r^2 on the testing set: %.3lf" % r2_test)
 
     # Inspect solution and output top 10 weights in magnitude and their corresponding name
-    ind_list = np.where(np.fabs(w) != 0)[1]
-    mask = np.fabs(w) != 0
-    weights = w[mask]
-
-    #Sort array smallest->largest, get indices
-    sorted_w_args = np.argsort(np.fabs(weights))
-    for i in range(1,21):
-        print("Feature: %s, weight: %.2lf" % (featureNames[sorted_w_args[-i]],
-                                                weights[sorted_w_args[-i]]))
+    sorted_w_args = np.array(np.fabs(w).flatten()).argsort()[::-1][:20]
+    for i in range(20):
+        print("Feature: %s, weight: %.2lf" % (featureNames[sorted_w_args[i]],
+                                                w[sorted_w_args[i]]))
 
 ###############################
 #
@@ -336,14 +331,9 @@ if fit_upvotes:
     print("r^2 on the testing set: %.3lf" % r2_test)
 
     # Inspect solution and output top 10 weights in magnitude and their corresponding name
-    ind_list = np.where(np.fabs(w) != 0)[1]
-    mask = np.fabs(w) != 0
-    weights = w[mask]
-
-    #Sort array smallest->largest, get indices
-    sorted_w_args = np.argsort(np.fabs(weights))
-    for i in range(1,21):
-        print("Feature: %s, weight: %.2lf" % (featureNames[sorted_w_args[-i]],
-                                                weights[sorted_w_args[-i]]))
+    sorted_w_args = np.array(np.fabs(w).flatten()).argsort()[::-1][:20]
+    for i in range(20):
+        print("Feature: %s, weight: %.2lf" % (featureNames[sorted_w_args[i]],
+                                                w[sorted_w_args[i]]))
 
 print("Done!")

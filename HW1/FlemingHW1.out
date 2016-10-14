@@ -1,32 +1,32 @@
 \BOOKMARK [1][-]{section*.2}{Introduction}{}% 1
-\BOOKMARK [1][-]{section*.3}{Question 1}{}% 2
+\BOOKMARK [1][-]{section*.3}{Question 1: Probability}{}% 2
 \BOOKMARK [2][-]{section*.4}{1.1}{section*.3}% 3
 \BOOKMARK [2][-]{section*.5}{1.2}{section*.3}% 4
 \BOOKMARK [2][-]{section*.6}{1.3}{section*.3}% 5
-\BOOKMARK [1][-]{section*.7}{Question 2}{}% 6
+\BOOKMARK [1][-]{section*.7}{Question 2: MLE}{}% 6
 \BOOKMARK [2][-]{section*.8}{2.1}{section*.7}% 7
 \BOOKMARK [2][-]{section*.9}{2.2}{section*.7}% 8
 \BOOKMARK [2][-]{section*.10}{2.3}{section*.7}% 9
-\BOOKMARK [1][-]{section*.11}{Question 3}{}% 10
+\BOOKMARK [1][-]{section*.11}{Question 3: Linear Regression and LOOCV}{}% 10
 \BOOKMARK [2][-]{section*.12}{3.1}{section*.11}% 11
 \BOOKMARK [2][-]{section*.13}{3.2}{section*.11}% 12
 \BOOKMARK [2][-]{section*.14}{3.3}{section*.11}% 13
 \BOOKMARK [2][-]{section*.15}{3.4}{section*.11}% 14
 \BOOKMARK [2][-]{section*.16}{3.5}{section*.11}% 15
 \BOOKMARK [2][-]{section*.17}{3.6}{section*.11}% 16
-\BOOKMARK [1][-]{section*.18}{Question 4}{}% 17
+\BOOKMARK [1][-]{section*.18}{Question 4: Regularization Constant}{}% 17
 \BOOKMARK [2][-]{section*.19}{4.1: Too Small a }{section*.18}% 18
 \BOOKMARK [2][-]{section*.24}{4.2: Too Large a }{section*.18}% 19
-\BOOKMARK [1][-]{section*.29}{Question 5}{}% 20
-\BOOKMARK [2][-]{section*.30}{5.1}{section*.29}% 21
-\BOOKMARK [2][-]{section*.33}{5.2}{section*.29}% 22
-\BOOKMARK [1][-]{section*.38}{Question 6}{}% 23
-\BOOKMARK [2][-]{section*.39}{6.1}{section*.38}% 24
+\BOOKMARK [1][-]{section*.29}{Question 5: Regression and Agnostic Learning}{}% 20
+\BOOKMARK [2][-]{section*.30}{5.1: Bayes Optimal Prediction}{section*.29}% 21
+\BOOKMARK [2][-]{section*.33}{5.2: Bias-Variance-Noise Error Decomposition}{section*.29}% 22
+\BOOKMARK [1][-]{section*.38}{Question 6: Classification Using Least Squares}{}% 23
+\BOOKMARK [2][-]{section*.39}{6.1: Binary Classification with Regression}{section*.38}% 24
 \BOOKMARK [2][-]{section*.40}{6.2}{section*.38}% 25
 \BOOKMARK [2][-]{section*.41}{6.3}{section*.38}% 26
 \BOOKMARK [2][-]{section*.42}{6.4}{section*.38}% 27
-\BOOKMARK [1][-]{section*.43}{Question 7}{}% 28
-\BOOKMARK [2][-]{section*.44}{7.1}{section*.43}% 29
-\BOOKMARK [2][-]{section*.52}{7.2}{section*.43}% 30
-\BOOKMARK [2][-]{section*.53}{7.3}{section*.43}% 31
-\BOOKMARK [2][-]{section*.56}{7.4}{section*.43}% 32
+\BOOKMARK [1][-]{section*.43}{Question 7: LASSO}{}% 28
+\BOOKMARK [2][-]{section*.44}{7.1: Time Complexity and making your code fast}{section*.43}% 29
+\BOOKMARK [2][-]{section*.52}{7.2: Implement coordinate descent to solve the LASSO}{section*.43}% 30
+\BOOKMARK [2][-]{section*.53}{7.3: Try out your work on synthetic data}{section*.43}% 31
+\BOOKMARK [2][-]{section*.56}{7.4: Become a data scientist at Yelp}{section*.43}% 32

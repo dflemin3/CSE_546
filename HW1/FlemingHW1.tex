@@ -22,7 +22,7 @@ Please note that a copy of all the code I wrote to answer the questions in this 
 
 %%% QUESTION 1 %%%
 
-\section*{Question 1}
+\section*{Question 1: Probability}
 
 \subsection*{1.1}
 The expectation value for $max(X_1, X_2)$ is given by
@@ -83,7 +83,7 @@ Cov[X,X_1] = E[X X_1] - E[X]E[X_1] = \frac{3}{8} - \frac{2}{3}\frac{1}{2} = \fra
 Note: For this question, I collaborated with Matt Wilde.
 
 %%% QUESTION 2 %%%
-\section*{Question 2}
+\section*{Question 2: MLE}
 
 \subsection*{2.1}
 
@@ -125,7 +125,7 @@ Note: For this question, I collaborated with Matt Wilde.
 
 %%% QUESTION 3 %%%
 
-\section*{Question 3}
+\section*{Question 3: Linear Regression and LOOCV}
 
 \subsection*{3.1}
 
@@ -205,7 +205,7 @@ Note for this question, I collaborated with Matt Wilde and Serena Liu.
 
 %%% QUESTION 4 %%%
 
-\section*{Question 4}
+\section*{Question 4: Regularization Constant}
 
 Note: Both both subquestions 1 and 2, I assume that the too small or too large $\lambda$s bias the model to a too complex or too simple model relative to the optimum model complexity, respectively.
 
@@ -240,9 +240,9 @@ Note: For this question, I collaborated with Matt Wilde.
 
 %%% QUESTION 5 %%%
 
-\section*{Question 5}
+\section*{Question 5: Regression and Agnostic Learning}
 
-\subsection*{5.1}
+\subsection*{5.1: Bayes Optimal Prediction}
 
 \subsubsection*{5.1.1}
 
@@ -310,7 +310,7 @@ L(f_{Bayes}) & = E_X[E[Y|X] - f_{Bayes}^2] + E_{X,Y}[(Y - E[Y|X])^2] \\
 \end{equation}
 This expression for $L(f_{Bayes})$ represents the inherent uncertainty in the data which sets the error limit a model cannot improve upon.
 
-\subsection*{5.2}
+\subsection*{5.2: Bias-Variance-Noise Error Decomposition}
 
 \subsubsection*{5.2.1}
 
@@ -409,7 +409,7 @@ Note: For this question, I collaborated with Matt Wilde and Serena Liu.
 
 %%% QUESTION 6 %%%
 
-\section*{Question 6}
+\section*{Question 6: Classification Using Least Squares}
 
 Note: The following scripts (attached) include all code used to solve this question: {\tt hw1$\_$6.py, mnist$\_$utils.py, regression$\_$utils.py, ridge$\_$utils.py, validation.py}.
 
@@ -427,7 +427,7 @@ however the matrix inversion required is not only computationally expensive but 
 \end{equation}
 This formula allows me to quickly solve the ridge regression problem for a given $\lambda$.
 
-\subsection*{6.1}
+\subsection*{6.1: Binary Classification with Regression}
 
 The hyperparameters of my model, the regularization parameter $\lambda$ and the threshold parameter $c$, were simultaneously fit for along a regularization grid.  Since my training set was sufficiently large with $N = 60,000$ samples, I randomly partitioned it into a validation set with $N_{val} = 6,000$ and a training set with $N_{train} = 54,000$.  I iterated over a two-dimensional grid of thresholds $c \in [-0.2,1]$ in 20 linear bins and $\lambda \in [10^{-5},10^{10}]$ in 20 logarithmic bins.  For each $(c,\lambda)$ pair, I fit the ridge regression on the training set then tested it on the validation data.  I used the validation predictions to compute the 0-1 loss and stored it for each grid point.  I found the optimal $c = 0.4$ and $\lambda = 10^4$ from the minimum value of the 0-1 loss grid.  With these optimal hyperparameters, I then fit the ridge regression model on the entire $N = 60,000$ sample training set.
 
@@ -457,11 +457,11 @@ Note: For this question, I collaborated with Matt Wilde.
 
 %%% QUESTION 7 %%%
 
-\section*{Question 7}
+\section*{Question 7: LASSO}
 
 Note: The following scripts (attached) include all code used to solve this question: {\tt hw1$\_$7.3.py, hw1$\_$7.4.py, regression$\_$utils.py, lasso$\_$utils.py \text{ and } validation.py}.  The scripts {\tt hw1$\_$7.3.py \text{ and } hw1$\_$7.4.py} produces my answers for questions 7.3 and 7.4, respectively.  
 
-\subsection*{7.1}
+\subsection*{7.1: Time Complexity and making your code fast}
 
 Below, I derive the update rules used for Algorithm 2: the Efficient Coordinate Descent Algorithm for solving the LASSO regression.
 
@@ -549,13 +549,13 @@ If $\hat{y}_i^{(t)}$ is already computed, the time complexity required to comput
 
 Combining all the rules derived in 7.1.1 - 7.1.6, we have the Efficient Coordinate Descent Algorithm for LASSO regression.  To estimate the per iteration complexity of the algorithm, we note that within the while loop there are two regimes to consider: within the for loop over all $d$ features and outside said loop.  Outside the loop, the first calculation of $\hat{y}$ is $\mathcal{O}(||X||_0 + N)$ as shown in 7.1.2.  The update rules for $w_0$ and the second update of $\hat{y}$ both take $\mathcal{O}(N)$ yielding a net $\mathcal{O}(||X||_0 + N)$ for the operations outside of the for loop.  Within the for loop over all $d$ features, the complexity for updating $\hat{y}$ is $\mathcal{O}(N)$ as this operation involves looping over $N$ elements to perform simple arithmetic operations.  The complexity to update $\hat{\omega_k}$ is $\mathcal{O}(z_j)$.  Given that a maximum number of non-zero elements for a given column $X_i$ is $N$, the asymptotic complexity to update $\hat{\omega}$ is $\mathcal{O}(N)$.  Therefore, the operations within the loop have a complexity of $\mathcal{O}(2N)$ which asymptotes to $\mathcal{O}(N)$.  These loop operations occur $d$ times over the course of the loop yielding a net for loop complexity of $\mathcal{O}(Nd)$.  This complexity then combines with the outside of the loop complexity to yield a per iteration complexity of $\mathcal{O}(Nd + ||X||_0 + N)$.  When we only consider the behavior for large $dN$ or large $||X||_0$, this gives a per iteration complexity of the algorithm of $\mathcal{O}(Nd + ||X||_0)$.
 
-\subsection*{7.2}
+\subsection*{7.2: Implement coordinate descent to solve the LASSO}
 
 My {\tt python} implementations of both Algorithm 1 and Algorithm 2 are in the attached file {\tt lasso$\_$utils.py} and are named {\tt fit$\_$lasso and fit$\_$lasso$\_$fast}, respectively.  Each function includes the offset term $w_0$ that is not regularized, have the option to take initial conditions for both $\omega$ and $w_0$ and can handle dense or sparse $X$ using the {\tt scipy.sparse} package.  Both of my LASSO solves extensively use the NumPy computing package to speed up all linear algebra computations.  
 
 In both fitting routines, I declare a solution as converged once no elements of $\hat{w}$ change by more than $\epsilon$ after an iteration.  I set $\epsilon = 5.0 \times 10^{-3}$ unless noted otherwise to ensure that my algorithm converges quickly enough to make long regularization paths more feasible.  
 
-\subsection*{7.3}
+\subsection*{7.3: Try out your work on synthetic data}
 
 \subsubsection*{7.3.1}
 
@@ -575,7 +575,7 @@ I reran the same regularization analysis for the data generated with $\sigma = 1
 
 In order to achieve the optimal precision and recall for this noisy data, one should run a regularization path as before while monitoring recall.  Once recall has increased to 1, that $\lambda_{best}$ should be returned as the optimal regularization coefficient.  For $\lambda < \lambda_{best}$, the regularization penalty would be too low allowing noise to produce spurious features yielding incorrect non-zero terms in $\hat{\omega}$.  For the general case where $\omega_{true}$ is not known, one should bias towards larger $\lambda$ for noisy data to prevent overfitting.
 
-\subsection*{7.4}
+\subsection*{7.4: Become a data scientist at Yelp}
 
 Note: The following scripts (attached) include all code used to solve this question: {\tt hw1$\_$7.4.py, regression$\_$utils.py, lasso$\_$utils.py \text{ and } validation.py}.  The script {\tt hw1$\_$7.4.py} produces my answers for this question.  I should note that the regularization path for both the Yelp upvote and star data took of order hours to run to completion so I cache the results as NumPy $.npz$ files that are available upon request.  
 
@@ -583,23 +583,96 @@ To normalize the data for both the upvote and star datasets, for a given dataset
 
 \subsubsection*{7.4.1: Yelp Upvotes}
 
-Following the instructions, I randomly partitioned the data into a training set with $N_{train} = 4000$, a validation set with $N_{val} = 1000$ and a testing set with $N_{test} = 1000$.  For my regularization path, I started at $\lambda_{max} = 2 ||X^{T}(y - \bar{y}) ||_{\infty}$ and decreased $\lambda$ by a factor of 1.25 each iteration for 20 steps.  I found that 20 iterations allowed me to find the minimum of the validation error and also allowed me to see the subsequent validation error increase after its minimum as expected.
+Following the instructions, I randomly partitioned the data into a training set with $N_{train} = 4000$, a validation set with $N_{val} = 1000$ and a testing set with $N_{test} = 1000$.  For my regularization path, I started at $\lambda_{max} = 2 ||X^{T}(y - \bar{y}) ||_{\infty}$ and decreased $\lambda$ by a factor of 1.25 each iteration for 20 steps.  I found that 20 iterations allowed me to find the minimum of the validation error and also allowed me to see the subsequent validation error increase after its minimum as expected.  After the first step, I initialized each LASSO algorithm with the previous solution.  
 
-Each iteration, I fit the training data with my implementation of the LASSO Coordinate Descent Algorithm 2 to produce $\hat{w}$ and $w_0$.  Using the results of the fit, I evaluated the model on the training and validation data and computed the root-mean-squared-error (RMSE).  I also computed the number of nonzeros in the fitted weight vector $\omega$.  The RMSE and number of nonzeros as a function of $\lambda$ along the regularization path are shown in Fig.~\ref{fig:yelp_upvote_rmse} and Fig.~\ref{fig:yelp_upvote_nonzeros}.
-
-DISCUSS
+Each iteration, I fit the training data with my implementation of the LASSO Coordinate Descent Algorithm 2 to find $\hat{w}$ and $w_0$.  Using the results of the fit, I evaluated the model on the training and validation data and computed the root-mean-squared-error (RMSE) for both.  I also computed the number of nonzeros in the fitted weight vector $\omega$.  The $\lambda$ that yields the minimum validation RMSE after fitting on the training data is the best $\lambda$ and will be used for subsequent model evaluation on the testing data.  The RMSE and number of nonzeros as a function of $\lambda$ along the regularization path are shown in Fig.~\ref{fig:yelp_upvote_rmse} and Fig.~\ref{fig:yelp_upvote_nonzeros}.
 
 \begin{figure}
 	\includegraphics[width=\columnwidth]{upvote_rmse.pdf}
-    \caption{RMSE for the training set (green) and validation set (blue) as a function of regularization parameter $\lambda$.  The black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
+    \caption{Upvote dataset: RMSE for the training set (green) and validation set (blue) as a function of regularization parameter $\lambda$.  The black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
     \label{fig:yelp_upvote_rmse}
 \end{figure}
 
 \begin{figure}
 	\includegraphics[width=\columnwidth]{upvote_nonzeros.pdf}
-    \caption{Number of nonzeros in the predicted weight vector $\hat{\omega}$ as a function of regularization parameter $\lambda$.  As before, the black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
+    \caption{Upvote dataset: Number of nonzeros in the predicted weight vector $\hat{\omega}$ as a function of regularization parameter $\lambda$.  As before, the black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
     \label{fig:yelp_upvote_nonzeros}
 \end{figure}
+
+As $\lambda$ decreases, the training error monotonically decreases, likely overfitting the training set at small $\lambda$.  The validation error also decreases with decreasing $\lambda$ but seems to reach a minimum at the best fit $\lambda$ before increasing at the iteration.  As expected, The number of nonzeros increase with decreasing $\lambda$.  The best fit $\lambda$ yields a solution with about 60 nonzero elements.
+
+\subsubsection*{7.4.2}
+
+The best $\lambda$ was selected over the regularization path by fitting on the training set and testing on the validation set.  I found a minimal RMSE of A and B on the training and validation sets, respectively.  The best $\lambda$ was that which yielded the smallest validation set error.  From this procedure, I determined $\lambda_{best} = X$ for the Yelp upvote data.  Using this $\lambda_{best}$, I refit the training data and using the resultant weight vector, I evaluated the model on the testing data and got an RMSE of Z.  As expected, my training set error was less than my validation set error which was less than my testing set error.  This makes sense as any model will likely tend to preform worse on new data as during the training process, model parameters, e.g. $\omega$, $w_0$, are optimizing over the training data.
+
+\subsubsection*{7.4.3}
+
+In the table below, I shown the 10 features with weights largest in magnitude.
+
+\begin{table}
+	\centering
+	\caption{Top 10 Upvote Weights by Magnitude}
+	\begin{tabular}{ccc} 
+		\hline
+		Rank & Weight Name & Weight Coefficient \\
+		\hline
+		1 & 0 & 0.00383 \\
+		2 & 0.001 & 0.00383 \\
+		3 & 0.05 & 0.00383 \\
+		4 & 0.1032 & 0.00383 \\
+		5 & 0.25 & 0.00383  \\ 
+		6 & 0.1032 & 0.00766  \\
+		7 & 0.1032 & 0.00192  \\
+		8 & 0.1032 & 0.00574  \\
+		9 & 0.1032 & 0.00383 \\
+		10 & 0.1032 & 0.00383 \\
+		\hline
+	\end{tabular}
+	\label{tab:top_upvotes}
+\end{table}
+
+Discussion.  What is an upvote?
+
+\subsubsection*{7.4.4}
+
+Repeat above.  What is a star?
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{star_rmse.pdf}
+    \caption{Star dataset: RMSE for the training set (green) and validation set (blue) as a function of regularization parameter $\lambda$.  The black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
+    \label{fig:yelp_star_rmse}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{star_nonzeros.pdf}
+    \caption{Star dataset: Number of nonzeros in the predicted weight vector $\hat{\omega}$ as a function of regularization parameter $\lambda$.  As before, the black dashed vertical line corresponds to the minimum validation error and hence optimal $\lambda$.}
+    \label{fig:yelp_star_nonzeros}
+\end{figure}
+
+DISCUSS trends in plots.
+
+\begin{table}
+	\centering
+	\caption{Top 10 Stars Weights by Magnitude}
+	\begin{tabular}{ccc} 
+		\hline
+		Rank & Weight Name & Weight Coefficient \\
+		\hline
+		1 & 0 & 0.00383 \\
+		2 & 0.001 & 0.00383 \\
+		3 & 0.05 & 0.00383 \\
+		4 & 0.1032 & 0.00383 \\
+		5 & 0.25 & 0.00383  \\ 
+		6 & 0.1032 & 0.00766  \\
+		7 & 0.1032 & 0.00192  \\
+		8 & 0.1032 & 0.00574  \\
+		9 & 0.1032 & 0.00383 \\
+		10 & 0.1032 & 0.00383 \\
+		\hline
+	\end{tabular}
+	\label{tab:top_stars}
+\end{table}
+
 
 Note: On this question, I collaborated with Matt Wilde, Serena Liu, and Janet Matsen.
 

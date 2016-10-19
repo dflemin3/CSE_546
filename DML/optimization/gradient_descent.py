@@ -13,11 +13,11 @@ gradient descent.
 from __future__ import print_function, division
 import numpy as np
 from ..classification import classifier_utils as cu
-from ..validation import validation as val
 
 
-def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sparse = False,
-                     eps = 1.0e-1, max_iter = 5000, adaptive = False, lossfn = val.logloss):
+def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, sparse = False,
+                     eps = 1.0e-3, max_iter = 1000, adaptive = True, lossfn = None,
+                     saveloss = False):
     """
     Performs regularized batch gradient descent to optimize model with an update step:
 
@@ -55,6 +55,8 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sp
         whether or not to use adaptive step sizes
     lossfn : function (optional)
         which loss function to use with args y, y_hat.  Defaults to logloss
+    saveloss : bool (optional)
+        whether or not to save the loss at each iteration
 
     Returns
     -------
@@ -72,11 +74,9 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sp
     if w is None:
     	# No initial conditions given, assume 0s
     	w_pred = np.zeros((d,1))
-    	w_old = np.copy(w_pred) + 10000000. # offset
     else:
     	# Initial conditions given, use those as first w_pred
 		w_pred = np.copy(w)
-		w_old = np.copy(w_pred) + 10000000. # offset
 
     if w0 is None:
 		w0 = 0.0
@@ -84,6 +84,16 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sp
     # While not converged, do
     iters = 0
     converged = False
+
+    # Save loss values?
+    if saveloss:
+        loss_arr = []
+        iter_arr = []
+
+    # No loss function given -> use log loss
+    if lossfn is None:
+        from ..validation import validation
+        lossfn = validation.logloss
 
     # Precompute X transpose since it doesn't change
     XT = X.T
@@ -99,7 +109,11 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sp
     		print("Returning current solution: Convergence not guarenteed.")
     		print("lambda = %.3e" % lam)
     		print("Old loss, current loss: %.3e, %.3e" % (old_loss, loss))
-    		return w0, w_pred
+    		if saveloss:
+    		    return w0, w_pred, np.asarray(loss_arr), np.asarray(iter_arr)
+    		else:
+    		    return w0, w_pred
+
 
         # Precompute y_hat using w^(t), w0 since this doesn't change in a given iteration
         y_hat = model(X, w_pred, w0, sparse=sparse)
@@ -114,7 +128,10 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sp
 
         # Adapt step size: if loss new > old, decrease stepsize, increase otherwise
         loss = lossfn(y, y_hat)
-        print(loss)
+
+        if saveloss:
+            loss_arr.append(loss)
+            iter_arr.append(iters)
 
         # Using an adaptive step size?
         if adaptive:
@@ -133,18 +150,8 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sp
         old_loss = loss
         iters += 1
 
-    return w0, w_pred
+    if saveloss:
+        return w0, w_pred, np.asarray(loss_arr), np.asarray(iter_arr)
+    else:
+        return w0, w_pred
 # end function
-
-
-
-
-
-
-
-
-
-
-
-
-

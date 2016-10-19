@@ -10,6 +10,7 @@ Created on Mon Oct  3 11:26:17 2016
 from __future__ import print_function, division
 import os
 import pickle
+import numpy as np
 
 def load_mnist(dataset="training",
                path="/Users/dflemin3/Desktop/Career/Grad_Classes/CSE_546/Data"):
@@ -47,3 +48,27 @@ def load_mnist(dataset="training",
 
     return images, labels
 # end function
+
+
+def mnist_filter(y, filterby=2):
+    """
+    Takes in a MNIST label vector and sets all instances of filterby to 1 and
+    everything else to 0 to train a binary classifier.
+
+    Parameters
+    ----------
+    y : array (n x 1)
+    filterby : int (optional)
+        Which number to set to 1 for a binary classifier.  Defaults to 2
+
+    Returns
+    -------
+    y_filt : array (n x 1)
+        but masked!
+    """
+    mask = (y == filterby)
+    y_filt = np.zeros_like(y)
+    y_filt[mask] = 1
+
+    return y_filt
+#end function

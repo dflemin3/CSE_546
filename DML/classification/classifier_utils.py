@@ -85,7 +85,7 @@ def generate_binary_data(n, k, d, sparse=False, w0 = 0.0, seed = None):
 
 def logistic_model(X, w, w0, sparse=False):
     """
-    Logistic regression conditional probability of P(Y = 1 | x, w) applicable for binary
+    Binary logistic regression conditional probability of P(Y = 1 | x, w) applicable for
     classification problems where labels are either 0 or 1.
 
     Parameters
@@ -107,4 +107,35 @@ def logistic_model(X, w, w0, sparse=False):
 
     arg = w0 + X.dot(w)
     return np.exp(arg)/(1.0 + np.exp(arg))
+# end function
+
+
+def logistic_classifier(X, w, w0, thresh = 0.5, sparse = False):
+    """
+    Binary logistic regression classifier.  Returns 1 if P(Y = 1 | X, w) > thresh.
+
+    Parameters
+    ----------
+    X : array (n x d)
+        Input data
+    w : vector (d x 1)
+        weight coefficients
+    w0 : float
+        constant offset term
+    thesh : float (optional)
+        Classification threshold.  Defaults to 0.5.
+    sparse : bool (optional, not implemented)
+        whether or not X is a scipy.sparse array
+
+    Returns
+    -------
+    y_hat : array (n x 1)
+        P(Y = 1 | x, w)
+    """
+
+    py1 = logistic_model(X, w, w0, sparse=False)
+    y_hat = np.zeros(X.shape[0]).reshape((X.shape[0],1))
+    y_hat[py1 > thresh] = 1
+    return y_hat
+
 # end function

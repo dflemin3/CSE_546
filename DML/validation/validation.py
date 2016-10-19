@@ -12,6 +12,8 @@ This file contains routines to be used for model validation, selection, and erro
 import numpy as np
 from ..regression import regression_utils as ru
 from ..regression import ridge_utils as ri
+from ..classification import classifier_utils as cu
+from ..optimization import gradient_descent as gd
 
 def MSE(y, y_hat):
     """
@@ -284,6 +286,104 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 		return error_val, error_train, np.array(lams), best_w0[ind], best_w[ind]
 	elif save_nonzeros and best_w:
 		return error_val, error_train, np.array(lams), best_w0[ind], best_w[ind], nonzeros
+	else:
+		return error_val, error_train, np.array(lams)
+# end function
+
+
+def binlogistic_reg_path(X_train, y_train, X_val, y_val, model=cu.logistic_model, lammax=1000.,
+                         scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
+                         eta = 1.0e0, sparse=False, eps=1.0e-3, max_iter=1000,
+                         adaptive=True, lossfn=logloss, saveloss=False, **kwargs):
+	"""
+	Perform a regularization path for a regularized binary logistic regressor  by fitting
+	the model on the training data and evaluating it on the validation data to determine
+	the best regularization constant.
+
+	Parameters
+	----------
+	X_train : array (n x d)
+		training input data
+	y_train : array (n x 1)
+		training labels
+	X_val : array (m x d)
+		validation input data
+	y_val : array (m x 1)
+		validation labels
+	model : function
+		linear model
+	lammax : float (optional)
+		maximum regularization lambda.  Defaults to 1.0e3
+	num : int (optional)
+		number of lambdas to search over.  Defaults to 10
+	error_func : function (optional)
+		error function.  Defaults to log loss
+	kwargs : dict
+		any additional parameters required by the linear model
+	For other parameters, see parameters for gradient_descent
+
+	Returns
+	-------
+	error : array (num x 1)
+		error as a function of lambda
+	lams : array (num x 1)
+		lambda grid
+	"""
+
+	# Using sparse data?
+	if "sparse" in kwargs:
+		sparse = kwargs["sparse"]
+	else:
+		sparse = False
+
+	# Init lambda at lammax, init storage arrays
+	lam = lammax
+	lams = []
+	error_val = np.zeros(num)
+	error_train = np.zeros(num)
+
+	# Assume null solution to begin with
+	w = np.zeros((X_train.shape[-1],1))
+	w0 = 0.0
+
+	# Save the best fitting weight vector?
+	if best_w:
+		best_w0 = np.zeros(num)
+		best_w_arr = np.zeros((num,len(w)))
+
+	# Main loop over lambdas
+	for ii in range(num):
+		print("Regularization path iteration: %d" % ii)
+
+		# Solve logistic regression using gradient descent on the training data
+		# optimizing over the logloss
+		w0, w = gd.gradient_descent(model, X_train, y_train, lam=lam, eta=eta,w=w,
+		                            w0=w0, sparse=sparse, eps=eps, max_iter=max_iter,
+		                            adaptive=adaptive, lossfn=logloss, saveloss=False)
+
+		# Now classify on both validation and training set!
+		y_hat_val = cu.logistic_classifier(X_val, w, w0, thresh=thresh, sparse=sparse)
+		y_hat_train = cu.logistic_classifier(X_train, w, w0, thresh=thresh, sparse=sparse)
+
+		# Save w, w0s?
+		if best_w:
+			best_w0[ii] = w0
+			best_w_arr[ii] = np.squeeze(w)
+
+		# Evaluate error on validation and training set
+		error_val[ii] = error_func(y_val, y_hat_val)
+		error_train[ii] = error_func(y_train, y_hat_train)
+
+		# Save, scale lambda for next iteration
+		lams.append(lam)
+		lam /= scale
+
+	# Find best weight vector?
+	if best_w:
+		ind = np.argmin(error_val)
+
+	if best_w:
+		return error_val, error_train, np.array(lams), best_w0[ind], best_w_arr[ind].reshape((X_train.shape[-1],1))
 	else:
 		return error_val, error_train, np.array(lams)
 # end function

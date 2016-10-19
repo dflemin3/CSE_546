@@ -82,22 +82,28 @@ def generate_binary_data(n, k, d, sparse=False, w0 = 0.0, seed = None):
     return w, X, y
 # end function
 
-# Test functions using my logistic regressor and sklearn's implementation
-if __name__ == "__main__":
 
-    from sklearn.linear_model import LogisticRegression
+def logistic_model(X, w, w0, sparse=False):
+    """
+    Logistic regression conditional probability of P(Y = 1 | x, w)
 
-    # Fake classifier parameters
-    n = 10000
-    k = 5
-    d = 10
-    w0 = 0
-    seed = 42
+    Parameters
+    ----------
+    X : array (n x d)
+        Input data
+    w : vector (d x 1)
+        weight coefficients
+    w0 : float
+        constant offset term
+    sparse : bool (optional, not implemented)
+        whether or not X is a scipy.sparse array
 
-    w, X, y = generate_binary_data(n, k, d, w0=w0, seed=seed)
-    print(w)
+    Returns
+    -------
+    y_hat : array (n x 1)
+        P(Y = 1 | x, w)
+    """
 
-    # Fit with Logistic Regressor
-    lr = LogisticRegression(C=2) # Hand-tunes regularization for this problem
-    lr.fit(X,y)
-    print(lr.coef_,lr.coef_.shape)
+    arg = w0 + X.dot(w)
+    return np.exp(arg)/(1.0 + np.exp(arg))
+# end function

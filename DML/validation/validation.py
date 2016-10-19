@@ -94,6 +94,26 @@ def loss_01(y, y_hat):
 # end function
 
 
+def logloss(y, y_hat):
+    """
+    Compute the log loss of a prediction
+
+    Parameters
+    ----------
+    y : array (n x 1)
+        array of observations
+    y_hat : array (n x 1)
+        array of predictions
+
+    Returns
+    -------
+    ll : float
+        logloss
+    """
+    return np.sum(np.log(1.0 + np.exp(-y*y_hat)))
+# end function
+
+
 def sign(x):
 	"""
 	If x > 0, return 1, else, return -1

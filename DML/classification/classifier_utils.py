@@ -85,7 +85,8 @@ def generate_binary_data(n, k, d, sparse=False, w0 = 0.0, seed = None):
 
 def logistic_model(X, w, w0, sparse=False):
     """
-    Logistic regression conditional probability of P(Y = 1 | x, w)
+    Logistic regression conditional probability of P(Y = 1 | x, w) applicable for binary
+    classification problems where labels are either 0 or 1.
 
     Parameters
     ----------

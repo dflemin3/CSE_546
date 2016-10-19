@@ -13,10 +13,11 @@ gradient descent.
 from __future__ import print_function, division
 import numpy as np
 from ..classification import classifier_utils as cu
+from ..validation import validation as val
 
 
 def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sparse = False,
-                     eps = 1.0e-1, max_iter = 5000, adaptive = False):
+                     eps = 1.0e-1, max_iter = 5000, adaptive = False, lossfn = val.logloss):
     """
     Performs regularized batch gradient descent to optimize model with an update step:
 
@@ -52,6 +53,8 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sp
         maximum number of while loop iterations
     adapative : bool (optional)
         whether or not to use adaptive step sizes
+    lossfn : function (optional)
+        which loss function to use with args y, y_hat.  Defaults to logloss
 
     Returns
     -------
@@ -109,14 +112,15 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e-2, w = None, w0 = None, sp
         # Do so in a vectorized manner
         w_pred = w_pred + eta * scale * (-lam * w_pred + XT.dot(arg))
 
-        # Adapt step size: if square loss new > old, decrease stepsize, increase otherwise
-        loss = np.sum(arg*arg)
+        # Adapt step size: if loss new > old, decrease stepsize, increase otherwise
+        loss = lossfn(y, y_hat)
         print(loss)
 
+        # Using an adaptive step size?
         if adaptive:
-            if loss > old_loss: # Moving uphill
+            if loss > old_loss: # Moving uphill, decrease step a lot!
                 scale /= 2.0
-            else: # Moving downhill
+            else: # Moving downhill, increase step a little bit
                 scale *= 1.01
 
         # Is it converged (is new cost not much different than old cost?)

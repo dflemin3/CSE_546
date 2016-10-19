@@ -113,17 +113,3 @@ def ridge_bin_class(X, w, w0, thresh=0.5):
 
     return y_hat_class
 # end function
-
-
-# Test it out!
-if __name__ == "__main__":
-
-	seed = 1
-	sparse = False
-	w, X, y = ru.generate_norm_data(10000,7,10,sparse=sparse,seed=seed)
-
-	print(w.shape,X.shape,y.shape)
-
-	print("Performing ridge regression...")
-	print(fit_ridge(X,y,lam=10.0))
-	print(w)

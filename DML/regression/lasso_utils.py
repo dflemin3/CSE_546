@@ -16,7 +16,7 @@ from __future__ import print_function, division
 import numpy as np
 import scipy.sparse as sp
 import regression_utils as ru
-import validation as val
+from ..validation import validation as val
 import time
 
 def fit_lasso(X,y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter = 500,
@@ -552,31 +552,3 @@ def lasso_reg_path_true(X, y, w_true, scale = 10., sparse = True, max_iter = 10,
 	else:
 		return np.array(lams)
 # end function
-
-
-# Test it out!
-if __name__ == "__main__":
-
-    # Generate some fake data
-    n = 10000
-    d = 75
-    k = 5
-    lam = 500.0
-    sparse = True
-    seed = 1
-    w, X, y = ru.generate_norm_data(n,k,d,sigma=1,sparse=sparse,seed=seed)
-
-    # What should the maximum lambda in a regularization step be?
-    print("Lambda_max:",compute_max_lambda(X,y))
-
-    print("Performing LASSO regression...")
-    start = time.time()
-    w_0_pred, w_pred = fit_lasso_fast(X,y,lam=lam,sparse=sparse)
-    end = time.time()
-    print("fast:",end-start)
-
-    print("w_pred:",w_pred)
-    print(w)
-
-    # Was the predicted solution correct?
-    print(check_solution(X,y,w_pred,w_0_pred,lam=lam))

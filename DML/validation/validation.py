@@ -10,8 +10,8 @@ This file contains routines to be used for model validation, selection, and erro
 """
 
 import numpy as np
-import regression_utils as ru
-import ridge_utils as ri
+from ..regression import regression_utils as ru
+from ..regression import ridge_utils as ri
 
 def MSE(y, y_hat):
     """

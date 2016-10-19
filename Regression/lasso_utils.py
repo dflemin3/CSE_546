@@ -253,7 +253,7 @@ def fit_lasso_fast(X, y,lam=1.0, sparse = True, w = None, w_0 = None, max_iter =
 
             #Compute c (d x 1)
             if sparse:
-            	ck = 2.0*X[:,k].T.dot(y - y_hat + X[:,k].multiply(w_pred[k]))
+            	ck = 2.0*X[:,k].T.dot(y - y_hat + X[:,k].multiply(w_pred[k]))[0,0]
             else:
             	ck = 2.0*X[:,k].T.dot(y - y_hat + (w_pred[k]*X[:,k]).reshape(n,1))[0]
 

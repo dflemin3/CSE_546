@@ -106,7 +106,7 @@ def logistic_model(X, w, w0, sparse=False):
     """
 
     arg = w0 + X.dot(w)
-    return np.exp(arg)/(1.0 + np.exp(arg))
+    return 1.0 - 1.0/(1.0 + np.exp(arg)) # Since probabilities sum to 1
 # end function
 
 

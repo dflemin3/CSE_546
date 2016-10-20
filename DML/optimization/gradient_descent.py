@@ -15,8 +15,8 @@ import numpy as np
 from ..classification import classifier_utils as cu
 
 
-def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, sparse = False,
-                     eps = 1.0e-5, max_iter = 500, adaptive = True, lossfn = None,
+def gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, sparse = False,
+                     eps = 1.0e-3, max_iter = 500, adaptive = True, lossfn = None,
                      saveloss = False, X_test = None, y_test = None):
     """
     Performs regularized batch gradient descent to optimize model with an update step:
@@ -111,7 +111,7 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spa
     		print("Maximum iteration threshold hit %d." % iters)
     		print("Returning current solution: Convergence not guarenteed.")
     		print("lambda = %.3e" % lam)
-    		print("Old loss, current loss: %.3e, %.3e" % (old_loss, loss))
+    		print("Old loss, current loss: %e, %e" % (old_loss, loss))
     		if saveloss:
     		    return w0, w_pred, np.asarray(loss_arr), np.asarray(iter_arr)
     		else:
@@ -132,7 +132,7 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spa
         # Adapt step size: if loss new > old, decrease stepsize, increase otherwise
         y_hat = model(X, w_pred, w0, sparse=sparse)
         arg = y - y_hat
-        loss = lossfn(y, y_hat)
+        loss = lossfn(y, (w0 + X.dot(w_pred)))
         print(loss)
 
         if saveloss:
@@ -143,14 +143,16 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spa
         if X_test is not None and y_test is not None:
             y_hat = model(X_test, w_pred, w0, sparse=sparse)
             arg = y_test - y_hat
-            test_loss_arr.append(lossfn(y_test, y_hat)/len(y_hat))
+
+            y_loss = w0 + X_test.dot(w_pred)
+            test_loss_arr.append(lossfn(y_test, y_loss)/len(y_hat))
 
         # Using an adaptive step size?
         if adaptive:
             if loss > old_loss: # Moving uphill, decrease step a lot!
                 scale /= 2.0
             else: # Moving downhill, increase step a little bit
-                scale *= 1.01
+                scale *= 1.1
 
         # Is it converged (is new cost not much different than old cost?)
         if np.fabs(loss - old_loss) > eps:

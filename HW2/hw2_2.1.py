@@ -33,9 +33,9 @@ find_best_lam = False
 # From a previous grid search on training data:
 
 # Define constants
-best_lambda = 0.585276634659
+best_lambda = 1.0#0.585276634659
 best_thresh = 0.5
-eta = 1.0e-6
+eta = 1.0e-5
 
 seed = 42
 frac = 0.1
@@ -86,10 +86,10 @@ if find_best_lam:
     plt.show()
 
 # With a best fit lambda, threshold, refit
-w0, w, loss_train, loss_test, iter_train = gd.gradient_descent(cu.logistic_model, X_train, y_train_true,
+w0, w, loss_train, loss_test, iter_train = gd.gradient_ascent(cu.logistic_model, X_train, y_train_true,
                                                     lam=best_lambda, eta=eta, saveloss=True,
                                                     X_test=X_test, y_test=y_test_true,
-                                                    adaptive=True)
+                                                    adaptive=True, eps=1.0e-10)
 
 plt.plot(iter_train, loss_train, color="green")
 plt.plot(iter_train, loss_test, color="blue")

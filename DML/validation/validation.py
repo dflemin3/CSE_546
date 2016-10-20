@@ -15,6 +15,39 @@ from ..regression import ridge_utils as ri
 from ..classification import classifier_utils as cu
 from ..optimization import gradient_descent as gd
 
+def normalize(X, y=None):
+    """
+    Normalize data via feature l2 norm.
+
+    Parameters
+    ----------
+    X : array (n x d)
+    y : array (n x 1) (optional)
+
+    Returns
+    -------
+    X : array (n x d)
+    y : array (n x 1) (optional)
+    """
+
+    # X norm
+    norm = np.linalg.norm(X, ord=2, axis=0)
+
+    # If any columns are all 0s, set that norm to 1
+    norm[norm == 0] = 1.0
+
+    if y is not None:
+        ynorm = np.linalg.norm(y, order=2)
+
+    if y is None:
+        return X/norm
+    else:
+        return X/norm, y/ynorm
+
+    return None
+# end function
+
+
 def MSE(y, y_hat):
     """
     Compute the mean squared error of a prediction
@@ -112,7 +145,7 @@ def logloss(y, y_hat):
     ll : float
         logloss
     """
-    return np.sum(np.log(1.0 + np.exp(-y*y_hat)))
+    return np.sum(y*y_hat - np.log(1.0 + np.exp(y_hat)))
 # end function
 
 

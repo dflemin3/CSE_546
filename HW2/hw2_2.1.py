@@ -27,29 +27,29 @@ mpl.rc('text', usetex='true')
 
 # Flags to control functionality
 find_best_lam = False
-show_plots = True
-save_plots = True
+show_plots = False
+save_plots = False
 
 # Best threshold from previous running of script
 #
 # From a previous grid search on training data:
 
 # Define constants
-best_lambda = 1.0#0.585276634659
+best_lambda = 1000.0
 best_thresh = 0.5
-eta = 1.0e-4
+best_eta = 1.0e-3
 eps = 5.0e-3
 
 seed = 42
 frac = 0.1
-num = 10
-lammax = 10.0
-scale = 1.5
+num = 6
+lammax = 1000.0
+scale = 10.0
+sparse = False
 
 # Load in MNIST training data, set 2s -> 1, others -> 0
 print("Loading MNIST Training data...")
 X_train, y_train = mu.load_mnist(dataset='training')
-#X_train = X_train - np.mean(X_train, axis=0)
 
 y_train_true = mu.mnist_filter(y_train, filterby=2)
 print("True number of twos in training set:",np.sum(y_train_true))
@@ -58,12 +58,11 @@ print("True number of twos in training set:",np.sum(y_train_true))
 print("Loading MNIST Testing data...")
 X_test, y_test = mu.load_mnist(dataset='testing')
 y_test_true = mu.mnist_filter(y_test, filterby=2)
-#X_test = X_test - np.mean(X_test, axis=0)
 
 # Build regularized binary classifier by minimizing log log
-# Will need to optimize over lambda via a regularization path
+# Will need to optimize over lambda and eta via a regularization path
 if find_best_lam:
-    print("Running regularization path to optmize lambda...")
+    print("Running regularization path to optmize lambda, eta...")
 
     # Split training data into subtraining set, validation set
     X_tr, y_tr, X_val, y_val = val.split_data(X_train, y_train, frac=frac, seed=seed)
@@ -72,26 +71,28 @@ if find_best_lam:
     y_tr_true = mu.mnist_filter(y_tr, filterby=2)
     y_val_true = mu.mnist_filter(y_val, filterby=2)
 
-    error_val, error_train, lams = \
-    val.binlogistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, model=cu.logistic_model,
-    lammax=lammax,scale=scale, num=num, error_func=val.loss_01, thresh=best_thresh, best_w=False,
-    eta=eta, adaptive=False, lossfn=val.logloss, saveloss=False)
+    # Define arrays
+    eta_arr = np.logspace(-3,2,num)
+    err_val = np.zeros((num,num))
+    err_train = np.zeros((num,num))
+
+    for ii in range(num):
+        print("Eta:",eta_arr[ii])
+        err_val[ii,:], err_train[ii,:], lams = \
+        val.binlogistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, model=cu.logistic_model,
+        lammax=lammax,scale=scale, num=num, error_func=val.loss_01, thresh=best_thresh, best_w=False,
+        eta=eta_arr[ii], adaptive=True, llfn=val.loglike_bin, savell=False)
 
     # Find minimum threshold, lambda from minimum validation error
-    ind = np.nanargmin(error_val)
-    best_lambda = lams[ind]
+    ind_e,ind_l = np.unravel_index(err_val.argmin(), err_val.shape)
+    best_lambda = lams[ind_l]
+    best_eta = eta_arr[ind_e]
     print("Best lambda:",best_lambda)
-
-    if show_plots:
-        plt.plot(lams,error_val,color="blue",lw=3,label="Val")
-        plt.plot(lams,error_train,color="green",lw=3,label="Train")
-        plt.legend()
-        plt.semilogx()
-        plt.show()
+    print("Best eta:",best_eta)
 
 # With a best fit lambda, threshold, refit
 w0, w, ll_train, ll_test, iter_train = gd.batch_gradient_ascent(cu.logistic_model, X_train, y_train_true,
-                                                    lam=best_lambda, eta=eta, savell=True,
+                                                    lam=best_lambda, eta=best_eta, savell=True,
                                                     X_test=X_test, y_test=y_test_true,
                                                     adaptive=True, eps=eps)
 
@@ -114,3 +115,11 @@ if show_plots:
     plt.show()
 
 # Now compute, output 0-1 loss for training and testing sets
+y_hat_train = cu.logistic_classifier(X_train, w, w0, thresh=best_thresh, sparse=sparse)
+y_hat_test = cu.logistic_classifier(X_test, w, w0, thresh=best_thresh, sparse=sparse)
+
+# Evaluate error on validation and training set
+error_train = val.loss_01(y_train, y_hat_train)/len(y_train)
+error_test = val.loss_01(y_test, y_hat_test)/len(y_test)
+print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
+# Training, testing 0-1 loss: 0.893, 0.895

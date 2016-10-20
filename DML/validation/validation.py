@@ -326,12 +326,13 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 
 def binlogistic_reg_path(X_train, y_train, X_val, y_val, model=cu.logistic_model, lammax=1000.,
                          scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
-                         eta = 1.0e0, sparse=False, eps=1.0e-3, max_iter=1000,
-                         adaptive=True, lossfn=loss_01, saveloss=False, **kwargs):
+                         eta = 1.0e0, sparse=False, eps=5.0e-3, max_iter=1000,
+                         adaptive=True, llfn=loglike_bin, savell=False, batchsize=0.1,
+                         **kwargs):
     """
     Perform a regularization path for a regularized binary logistic regressor  by fitting
     the model on the training data and evaluating it on the validation data to determine
-    the best regularization constant.
+    the best regularization constant via batch gradient ascent
 
     Parameters
     ----------
@@ -389,17 +390,9 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, model=cu.logistic_model
 
         # Solve logistic regression using gradient descent on the training data
         # optimizing over the logloss
-        if np.any(np.isnan(w)):
-            w = np.zeros((X_train.shape[-1],1))
-
-        if np.isnan(w0):
-            w0 = 0.0
-
-        print(w0,X_train.dot(w))
-
-        w0, w = gd.gradient_descent(model, X_train, y_train, lam=lam, eta=eta, w=w,
-                                    w0=w0, sparse=sparse, eps=eps, max_iter=max_iter,
-                                    adaptive=adaptive, lossfn=logloss, saveloss=False)
+        w0, w = gd.batch_gradient_ascent(model, X_train, y_train, lam=lam, eta=eta,
+                                        sparse=sparse, eps=eps, max_iter=max_iter,
+                                        adaptive=adaptive, llfn=llfn, savell=False)
 
 
         # Now classify on both validation and training set!

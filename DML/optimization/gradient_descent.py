@@ -137,7 +137,6 @@ def gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spar
         arg = y - y_hat
 
         ll = llfn(y, (w0 + X.dot(w_pred)))
-        print(ll/len(y))
 
         if savell:
             ll_arr.append(ll/len(y_hat))
@@ -153,7 +152,6 @@ def gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spar
             scale = 1.0/(n * (1.0 + iters))
 
         # Is it converged (is loglikelihood not improving?)
-        print(np.fabs(ll - old_ll)/np.fabs(old_ll))
         if np.fabs(ll - old_ll)/np.fabs(old_ll) > eps:
             converged = False
         else:
@@ -282,10 +280,11 @@ def batch_gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None
 
         # Create batch indices mask
         ind = int(batchsize * X.shape[0])
-        inds= np.random.permutation(X.shape[0])
+        inds = np.random.permutation(X.shape[0])
         inds = inds[:ind]
 
         # Precompute y_hat using w^(t), w0 since this doesn't change in a given iteration
+        # using only batchsize of data
         y_hat = model(X[inds,:], w_pred, w0, sparse=sparse) # P(Y=1|X,w)
         arg = y[inds] - y_hat
 
@@ -298,10 +297,10 @@ def batch_gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None
 
         # Now estimate loss on entire training set
         ll = llfn(y, (w0 + X.dot(w_pred)))
-        print(ll/len(y))
 
         if savell:
             ll_arr.append(ll/len(y))
+            iter_arr.append(iters)
 
         # Compute testing set error for this iteration using fit from training set?
         if X_test is not None and y_test is not None:
@@ -310,10 +309,9 @@ def batch_gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None
 
         # Using an adaptive step size?
         if adaptive:
-            scale = 1.0/(n * (1.0 + iters))
+            scale = 1.0/(batchsize * n * (1.0 + iters))
 
         # Is it converged (is loglikelihood not improving?)
-        print(np.fabs(ll - old_ll)/np.fabs(old_ll))
         if np.fabs(ll - old_ll)/np.fabs(old_ll) > eps:
             converged = False
         else:
@@ -321,7 +319,6 @@ def batch_gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None
 
         # Store old_cost, iterate
         old_ll = ll
-        iter_arr.append(iters)
         iters += 1
 
     if savell and not (X_test is not None and y_test is not None):

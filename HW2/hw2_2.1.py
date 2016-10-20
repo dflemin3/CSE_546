@@ -27,6 +27,8 @@ mpl.rc('text', usetex='true')
 
 # Flags to control functionality
 find_best_lam = False
+show_plots = True
+save_plots = True
 
 # Best threshold from previous running of script
 #
@@ -35,7 +37,8 @@ find_best_lam = False
 # Define constants
 best_lambda = 1.0#0.585276634659
 best_thresh = 0.5
-eta = 1.0e-5
+eta = 1.0e-4
+eps = 5.0e-3
 
 seed = 42
 frac = 0.1
@@ -46,7 +49,7 @@ scale = 1.5
 # Load in MNIST training data, set 2s -> 1, others -> 0
 print("Loading MNIST Training data...")
 X_train, y_train = mu.load_mnist(dataset='training')
-X_train = X_train - np.mean(X_train, axis=0)
+#X_train = X_train - np.mean(X_train, axis=0)
 
 y_train_true = mu.mnist_filter(y_train, filterby=2)
 print("True number of twos in training set:",np.sum(y_train_true))
@@ -55,7 +58,7 @@ print("True number of twos in training set:",np.sum(y_train_true))
 print("Loading MNIST Testing data...")
 X_test, y_test = mu.load_mnist(dataset='testing')
 y_test_true = mu.mnist_filter(y_test, filterby=2)
-X_test = X_test - np.mean(X_test, axis=0)
+#X_test = X_test - np.mean(X_test, axis=0)
 
 # Build regularized binary classifier by minimizing log log
 # Will need to optimize over lambda via a regularization path
@@ -79,18 +82,35 @@ if find_best_lam:
     best_lambda = lams[ind]
     print("Best lambda:",best_lambda)
 
-    plt.plot(lams,error_val,color="blue",lw=3,label="Val")
-    plt.plot(lams,error_train,color="green",lw=3,label="Train")
-    plt.legend()
-    plt.semilogx()
-    plt.show()
+    if show_plots:
+        plt.plot(lams,error_val,color="blue",lw=3,label="Val")
+        plt.plot(lams,error_train,color="green",lw=3,label="Train")
+        plt.legend()
+        plt.semilogx()
+        plt.show()
 
 # With a best fit lambda, threshold, refit
-w0, w, loss_train, loss_test, iter_train = gd.gradient_ascent(cu.logistic_model, X_train, y_train_true,
-                                                    lam=best_lambda, eta=eta, saveloss=True,
+w0, w, ll_train, ll_test, iter_train = gd.batch_gradient_ascent(cu.logistic_model, X_train, y_train_true,
+                                                    lam=best_lambda, eta=eta, savell=True,
                                                     X_test=X_test, y_test=y_test_true,
-                                                    adaptive=True, eps=1.0e-10)
+                                                    adaptive=True, eps=eps)
 
-plt.plot(iter_train, loss_train, color="green")
-plt.plot(iter_train, loss_test, color="blue")
-plt.show()
+if show_plots:
+
+    # Plot Training, testing ll vs iteration number
+    fig, ax = plt.subplots()
+
+    ax.plot(iter_train, ll_train, lw=3, color="green", label=r"Train")
+    ax.plot(iter_train, ll_test, lw=3, color="blue", label=r"Test")
+
+    # Format plot
+    ax.legend(loc="lower right")
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("LogLike")
+    fig.tight_layout()
+    if save_plots:
+            fig.savefig("mnist_train_test_ll.pdf")
+
+    plt.show()
+
+# Now compute, output 0-1 loss for training and testing sets

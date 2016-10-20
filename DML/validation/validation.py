@@ -129,9 +129,9 @@ def loss_01(y, y_hat):
 # end function
 
 
-def logloss(y, y_hat):
+def loglike_bin(y, y_hat):
     """
-    Compute the log loss of a probabilistic prediction for a binary classifier.
+    Compute the log ll (likelihood) of a probabilistic prediction for a binary classifier.
 
     Parameters
     ----------
@@ -143,7 +143,7 @@ def logloss(y, y_hat):
     Returns
     -------
     ll : float
-        logloss
+        ll
     """
     return np.sum(y*y_hat - np.log(1.0 + np.exp(y_hat)))
 # end function
@@ -327,7 +327,7 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 def binlogistic_reg_path(X_train, y_train, X_val, y_val, model=cu.logistic_model, lammax=1000.,
                          scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
                          eta = 1.0e0, sparse=False, eps=1.0e-3, max_iter=1000,
-                         adaptive=True, lossfn=logloss, saveloss=False, **kwargs):
+                         adaptive=True, lossfn=loss_01, saveloss=False, **kwargs):
     """
     Perform a regularization path for a regularized binary logistic regressor  by fitting
     the model on the training data and evaluating it on the validation data to determine

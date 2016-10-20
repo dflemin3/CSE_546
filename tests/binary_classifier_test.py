@@ -27,6 +27,6 @@ print(w)
 # Now try with my gradient descent implementation using adaptive step sizes
 model = cu.logistic_model
 #model = ru.linear_model
-w0, w_pred = gd.gradient_ascent(model, X, y, lam=1.0e0, eta = 1.0e2, max_iter = 500, adaptive=True)
+w0, w_pred = gd.gradient_ascent(model, X, y, lam=1.0e-1, eta = 1.0e0, max_iter = 500, adaptive=True)
 
 print(w_pred)

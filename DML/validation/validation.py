@@ -112,8 +112,7 @@ def logloss(y, y_hat):
     ll : float
         logloss
     """
-    #return -np.sum(y*(y_hat) - np.log(1.0 + np.exp(y_hat)))
-    return -np.sum(np.log(1.0 + np.exp(-y*y_hat)))
+    return np.sum(np.log(1.0 + np.exp(-y*y_hat)))
 # end function
 
 

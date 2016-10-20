@@ -33,30 +33,29 @@ find_best_lam = False
 # From a previous grid search on training data:
 
 # Define constants
-best_lambda = 10.0
+best_lambda = 0.585276634659
 best_thresh = 0.5
-eta = 1.0e-7
+eta = 1.0e-6
 
 seed = 42
 frac = 0.1
 num = 10
-lammax = 1.0e2
-scale = 5.0
+lammax = 10.0
+scale = 1.5
 
 # Load in MNIST training data, set 2s -> 1, others -> 0
 print("Loading MNIST Training data...")
 X_train, y_train = mu.load_mnist(dataset='training')
 X_train = X_train - np.mean(X_train, axis=0)
 
+y_train_true = mu.mnist_filter(y_train, filterby=2)
+print("True number of twos in training set:",np.sum(y_train_true))
+
 # Load in MNIST training data, set 2s -> 1, others -> 0
 print("Loading MNIST Testing data...")
 X_test, y_test = mu.load_mnist(dataset='testing')
 y_test_true = mu.mnist_filter(y_test, filterby=2)
 X_test = X_test - np.mean(X_test, axis=0)
-
-y_train_true = mu.mnist_filter(y_train, filterby=2)
-
-print("True number of twos in training set:",np.sum(y_train_true))
 
 # Build regularized binary classifier by minimizing log log
 # Will need to optimize over lambda via a regularization path
@@ -73,7 +72,7 @@ if find_best_lam:
     error_val, error_train, lams = \
     val.binlogistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, model=cu.logistic_model,
     lammax=lammax,scale=scale, num=num, error_func=val.loss_01, thresh=best_thresh, best_w=False,
-    eta=eta, adaptive=True, lossfn=val.logloss, saveloss=False)
+    eta=eta, adaptive=False, lossfn=val.logloss, saveloss=False)
 
     # Find minimum threshold, lambda from minimum validation error
     ind = np.nanargmin(error_val)
@@ -88,12 +87,10 @@ if find_best_lam:
 
 # With a best fit lambda, threshold, refit
 w0, w, loss_train, loss_test, iter_train = gd.gradient_descent(cu.logistic_model, X_train, y_train_true,
-                                                    lam=1.0, eta=1.0e-5, saveloss=True,
-                                                    X_test=X_test, y_test=y_test_true)
+                                                    lam=best_lambda, eta=eta, saveloss=True,
+                                                    X_test=X_test, y_test=y_test_true,
+                                                    adaptive=True)
 
-print("Fuck sham:",w0)
-plt.plot(w0 + X_test.dot(w))
-plt.show()
 plt.plot(iter_train, loss_train, color="green")
 plt.plot(iter_train, loss_test, color="blue")
 plt.show()

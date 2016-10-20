@@ -133,6 +133,7 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spa
         y_hat = model(X, w_pred, w0, sparse=sparse)
         arg = y - y_hat
         loss = lossfn(y, y_hat)
+        print(loss)
 
         if saveloss:
             loss_arr.append(loss/len(y_hat))

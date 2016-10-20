@@ -30,9 +30,10 @@ find_best_lam = False
 show_plots = False
 save_plots = False
 
-# Best threshold from previous running of script
-#
-# From a previous grid search on training data:
+# Performance:
+# Training, testing predicted number of twos: 5327, 899
+# Training, testing logloss: 0.557, 0.555
+# Training, testing 0-1 loss: 0.903, 0.905
 
 # Define constants
 best_lambda = 1000.0
@@ -101,13 +102,14 @@ if show_plots:
     # Plot Training, testing ll vs iteration number
     fig, ax = plt.subplots()
 
-    ax.plot(iter_train, ll_train, lw=3, color="green", label=r"Train")
-    ax.plot(iter_train, ll_test, lw=3, color="blue", label=r"Test")
+    # Plot -(log likelikehood) to get logloss
+    ax.plot(iter_train, -ll_train, lw=2, color="green", label=r"Train")
+    ax.plot(iter_train, -ll_test, lw=2, color="blue", label=r"Test")
 
     # Format plot
-    ax.legend(loc="lower right")
+    ax.legend(loc="upper right")
     ax.set_xlabel("Iteration")
-    ax.set_ylabel("LogLike")
+    ax.set_ylabel("LogLoss")
     fig.tight_layout()
     if save_plots:
             fig.savefig("mnist_train_test_ll.pdf")
@@ -117,9 +119,17 @@ if show_plots:
 # Now compute, output 0-1 loss for training and testing sets
 y_hat_train = cu.logistic_classifier(X_train, w, w0, thresh=best_thresh, sparse=sparse)
 y_hat_test = cu.logistic_classifier(X_test, w, w0, thresh=best_thresh, sparse=sparse)
+print("Training, testing predicted number of twos: %d, %d" % (np.sum(y_hat_train),np.sum(y_hat_test)))
+
+# Now compute, output logloss for training and testing sets
+y_hat_train = cu.logistic_model(X_train, w, w0, sparse=sparse)
+y_hat_test = cu.logistic_model(X_test, w, w0, sparse=sparse)
+ll_train = -val.loglike_bin(y_train, y_hat_train)/len(y_hat_train)
+ll_test = -val.loglike_bin(y_test, y_hat_test)/len(y_hat_test)
+print("Training, testing logloss: %.3lf, %.3lf" % (ll_train, ll_test))
+
 
 # Evaluate error on validation and training set
 error_train = val.loss_01(y_train, y_hat_train)/len(y_train)
 error_test = val.loss_01(y_test, y_hat_test)/len(y_test)
 print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
-# Training, testing 0-1 loss: 0.893, 0.895

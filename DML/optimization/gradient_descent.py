@@ -16,8 +16,8 @@ from ..classification import classifier_utils as cu
 
 
 def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, sparse = False,
-                     eps = 1.0e-3, max_iter = 1000, adaptive = True, lossfn = None,
-                     saveloss = False):
+                     eps = 1.0e-5, max_iter = 500, adaptive = True, lossfn = None,
+                     saveloss = False, X_test = None, y_test = None):
     """
     Performs regularized batch gradient descent to optimize model with an update step:
 
@@ -85,10 +85,13 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spa
     iters = 0
     converged = False
 
-    # Save loss values?
+    # Save loss values on training set?
     if saveloss:
         loss_arr = []
         iter_arr = []
+
+    if X_test is not None and y_test is not None:
+        test_loss_arr = []
 
     # No loss function given -> use log loss
     if lossfn is None:
@@ -99,7 +102,7 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spa
     XT = X.T
 
     # Dummy old loss
-    old_loss = 1.0e10
+    old_loss = 1.0e4
     scale = 1.0/n
 
     while not converged:
@@ -127,11 +130,19 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spa
         w_pred = w_pred + eta * scale * (-lam * w_pred + XT.dot(arg))
 
         # Adapt step size: if loss new > old, decrease stepsize, increase otherwise
+        y_hat = model(X, w_pred, w0, sparse=sparse)
+        arg = y - y_hat
         loss = lossfn(y, y_hat)
 
         if saveloss:
-            loss_arr.append(loss)
+            loss_arr.append(loss/len(y_hat))
             iter_arr.append(iters)
+
+        # Compute testing set error for this iteration using fit from training set?
+        if X_test is not None and y_test is not None:
+            y_hat = model(X_test, w_pred, w0, sparse=sparse)
+            arg = y_test - y_hat
+            test_loss_arr.append(lossfn(y_test, y_hat)/len(y_hat))
 
         # Using an adaptive step size?
         if adaptive:
@@ -150,8 +161,10 @@ def gradient_descent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spa
         old_loss = loss
         iters += 1
 
-    if saveloss:
+    if saveloss and not (X_test is not None and y_test is not None):
         return w0, w_pred, np.asarray(loss_arr), np.asarray(iter_arr)
+    elif saveloss and (X_test is not None and y_test is not None):
+        return w0, w_pred, np.asarray(loss_arr), np.asarray(test_loss_arr), np.asarray(iter_arr)
     else:
         return w0, w_pred
 # end function

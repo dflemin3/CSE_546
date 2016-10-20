@@ -133,8 +133,8 @@ def logistic_classifier(X, w, w0, thresh = 0.5, sparse = False):
         P(Y = 1 | x, w)
     """
 
-    py1 = logistic_model(X, w, w0, sparse=False)
-    y_hat = np.zeros(X.shape[0]).reshape((X.shape[0],1))
+    py1 = logistic_model(X, w, w0, sparse=sparse)
+    y_hat = np.zeros((X.shape[0],1))
     y_hat[py1 > thresh] = 1
     return y_hat
 

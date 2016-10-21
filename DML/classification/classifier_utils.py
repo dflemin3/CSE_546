@@ -13,6 +13,7 @@ from __future__ import print_function, division
 import numpy as np
 import scipy.sparse as sp
 from ..regression import regression_utils as ru
+from ..data_processing import mnist_utils as mu
 
 def sigmoid(x):
     """
@@ -139,3 +140,92 @@ def logistic_classifier(X, w, w0, thresh = 0.5, sparse = False):
     return y_hat
 
 # end function
+
+
+def multi_linear_classifier_fit(X, y, N, lam=1.0e6, thresh=0.4):
+    """
+    Using ridge regression, fit for the label of each sample where labels
+    are ints from 0 to N-1.  Produces a len(y) x N prediction matrix.
+
+    Parameters
+    ----------
+    X : array (n x d)
+        features array (d features, n samples)
+    y : vector (n x 1)
+        labels
+    n : int
+        Number of classes
+    lam : float (optional)
+        regularization constant
+	thresh : float (optional)
+
+    Returns
+    -------
+    w0 : float
+        Constant offset term
+    w : vector (d x N)
+        linear weight vector for N number of classes
+    """
+    # Precompute hat matrix H
+
+    # Center data to avoid penalizing constant offset term
+    Xc = X - np.mean(X,axis=0)
+
+    # Compute sigma, tau as a function of lambda
+    sigma = 1.0
+    tau = sigma/np.sqrt(lam)
+
+    # Make cholesky decomposition matrix to append to X
+    # such that X's shape is (n + d) x d
+    delta = (1.0/(tau**2))*np.identity(Xc.shape[-1])
+    delta = np.linalg.cholesky(delta)
+
+    # Augment y, x
+    Xc = np.vstack((Xc/sigma,delta))
+
+    # Compute weight vector
+    H = np.linalg.inv(np.dot(np.transpose(Xc),Xc))
+    H = np.dot(H,np.transpose(Xc))
+
+    # Now loop over classes
+    w = np.zeros((X.shape[-1],N))
+    w0 = np.zeros((N,1))
+    for ii in range(N):
+
+        # Filter y values to 0, 1 labels according to label
+        y_filt = mu.mnist_filter(y,filterby=ii)
+
+        # Now finish the ridge prediction
+        yc = y_filt - np.mean(y_filt)
+        yc = np.vstack((yc/sigma,np.zeros((Xc.shape[-1],1))))
+
+        # Save predictions
+        w[:,ii] = np.squeeze(np.dot(H,yc))
+        w0[ii] = np.mean(y) - np.dot(np.transpose(np.mean(X,axis=0)),w[:,ii])
+
+    return np.mean(w0), w
+# end function
+
+
+def multi_linear_classifier(X, w, w0):
+    """
+    Predict the class label of the samples given the feature x class label matrix
+    and constant offset w0.
+
+    Parameters
+    ----------
+    X : array (n x d)
+        features array (d features, n samples)
+    w : vector (d x N)
+        linear weight vector for N number of classes
+    w0 : float
+        Constant offset term
+
+    Returns
+    -------
+    y_hat : array (n x 1)
+        class label prediction vector
+    """
+
+    # Compute (n x N) prediction matrix for N classes, n samples
+    return np.argmax(w0 + X.dot(w),axis=1).reshape((X.shape[0],1))

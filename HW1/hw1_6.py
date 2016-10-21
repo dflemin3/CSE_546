@@ -234,7 +234,7 @@ if __name__ == "__main__":
         plt.show()
 
     # Fit training set for model parameters using best fit lambda
-    w0, w = ri.fit_ridge(X_train, y_train_true, lam=1)#best_lambda)
+    w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
 
     # Predict, then get square loss, 1/0 error on training data
     y_hat_train = ru.linear_model(X_train, w, w0)

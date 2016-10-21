@@ -222,7 +222,7 @@ def col_max_filt(X):
 # end function
 
 
-def naive_nn_layer(X, k=10000):
+def naive_nn_layer(X, k=10000, v=None):
 	"""
 	Perform a naive approximation to the first layer of a neural network to transform
 	a d x 1 dimensional feature vector for a given sample to k x 1 via a linear
@@ -239,6 +239,8 @@ def naive_nn_layer(X, k=10000):
 		input data
 	k : int
 		number of features for of new sample
+	v : array (d x k) (optional)
+		weight mapping matrix.  generated from standard normal if not supplied
 
 	Returns
 	-------
@@ -247,8 +249,11 @@ def naive_nn_layer(X, k=10000):
 	"""
 
 	# Generate feature mapping as random variates from standard normal distribution
-	v = np.random.normal(size=(X.shape[-1],k))
-	return col_max_filt(X.dot(v))
+	if v is None:
+		v = np.random.normal(size=(X.shape[-1],k))
+		return col_max_filt(X.dot(v)), v
+	else:
+		return col_max_filt(X.dot(v))
 # end function
 
 

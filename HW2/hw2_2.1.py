@@ -26,19 +26,19 @@ mpl.rcParams['font.size'] = 20.0
 mpl.rc('text', usetex='true')
 
 # Flags to control functionality
-find_best_lam = False
+find_best_lam = True
 show_plots = True
 save_plots = True
 
 # Performance:
-# Training, testing predicted number of twos: 5255, 890
-# Training, testing 0-1 loss: 0.051, 0.047
-# Training, testing logloss: 0.560, 0.558
+# Training, testing predicted number of twos: 5253, 891
+# Training, testing 0-1 loss: 0.050, 0.046
+# Training, testing logloss: 0.556, 0.554
 
 # Define constants
-best_lambda = 10.0
+best_lambda = 1.0
 best_thresh = 0.5
-best_eta = 1.0e-3
+best_eta = 0.000251188643151
 eps = 5.0e-3
 
 seed = 42

@@ -305,7 +305,7 @@ def batch_gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None
         # Compute testing set error for this iteration using fit from training set?
         if X_test is not None and y_test is not None:
             # Store test ll
-            test_ll_arr.append(llfn(y_test, w0 + X_test.dot(w_pred))/len(y_test))
+            test_ll_arr.append(llfn(y_test, (w0 + X_test.dot(w_pred)))/len(y_test))
 
         # Using an adaptive step size?
         if adaptive:

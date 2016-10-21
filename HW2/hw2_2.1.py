@@ -27,16 +27,16 @@ mpl.rc('text', usetex='true')
 
 # Flags to control functionality
 find_best_lam = False
-show_plots = False
-save_plots = False
+show_plots = True
+save_plots = True
 
 # Performance:
-# Training, testing predicted number of twos: 5327, 899
-# Training, testing logloss: 0.557, 0.555
-# Training, testing 0-1 loss: 0.903, 0.905
+# Training, testing predicted number of twos: 5255, 890
+# Training, testing 0-1 loss: 0.051, 0.047
+# Training, testing logloss: 0.560, 0.558
 
 # Define constants
-best_lambda = 1000.0
+best_lambda = 10.0
 best_thresh = 0.5
 best_eta = 1.0e-3
 eps = 5.0e-3
@@ -60,7 +60,7 @@ print("Loading MNIST Testing data...")
 X_test, y_test = mu.load_mnist(dataset='testing')
 y_test_true = mu.mnist_filter(y_test, filterby=2)
 
-# Build regularized binary classifier by minimizing log log
+# Build regularized binary classifier by minimizing 01 loss
 # Will need to optimize over lambda and eta via a regularization path
 if find_best_lam:
     print("Running regularization path to optmize lambda, eta...")
@@ -73,7 +73,7 @@ if find_best_lam:
     y_val_true = mu.mnist_filter(y_val, filterby=2)
 
     # Define arrays
-    eta_arr = np.logspace(-3,2,num)
+    eta_arr = np.logspace(-6,0,num)
     err_val = np.zeros((num,num))
     err_train = np.zeros((num,num))
 
@@ -85,7 +85,9 @@ if find_best_lam:
         eta=eta_arr[ii], adaptive=True, llfn=val.loglike_bin, savell=False)
 
     # Find minimum threshold, lambda from minimum validation error
-    ind_e,ind_l = np.unravel_index(err_val.argmin(), err_val.shape)
+    # Mask infs
+    err_val[np.isinf(err_val)] = np.nan
+    ind_e,ind_l = np.unravel_index(np.nanargmin(err_val), err_val.shape)
     best_lambda = lams[ind_l]
     best_eta = eta_arr[ind_e]
     print("Best lambda:",best_lambda)
@@ -120,6 +122,9 @@ if show_plots:
 y_hat_train = cu.logistic_classifier(X_train, w, w0, thresh=best_thresh, sparse=sparse)
 y_hat_test = cu.logistic_classifier(X_test, w, w0, thresh=best_thresh, sparse=sparse)
 print("Training, testing predicted number of twos: %d, %d" % (np.sum(y_hat_train),np.sum(y_hat_test)))
+error_train = val.loss_01(y_train_true, y_hat_train)/len(y_train)
+error_test = val.loss_01(y_test_true, y_hat_test)/len(y_test)
+print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
 
 # Now compute, output logloss for training and testing sets
 y_hat_train = cu.logistic_model(X_train, w, w0, sparse=sparse)
@@ -127,9 +132,3 @@ y_hat_test = cu.logistic_model(X_test, w, w0, sparse=sparse)
 ll_train = -val.loglike_bin(y_train, y_hat_train)/len(y_hat_train)
 ll_test = -val.loglike_bin(y_test, y_hat_test)/len(y_hat_test)
 print("Training, testing logloss: %.3lf, %.3lf" % (ll_train, ll_test))
-
-
-# Evaluate error on validation and training set
-error_train = val.loss_01(y_train, y_hat_train)/len(y_train)
-error_test = val.loss_01(y_test, y_hat_test)/len(y_test)
-print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))

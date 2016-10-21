@@ -390,7 +390,7 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, model=cu.logistic_model
 
         # Solve logistic regression using gradient descent on the training data
         # optimizing over the logloss
-        w0, w = gd.batch_gradient_ascent(model, X_train, y_train, lam=lam, eta=eta,
+        w0, w = gd.gradient_ascent(model, X_train, y_train, lam=lam, eta=eta,
                                         sparse=sparse, eps=eps, max_iter=max_iter,
                                         adaptive=adaptive, llfn=llfn, savell=False)
 

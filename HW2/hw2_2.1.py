@@ -31,15 +31,15 @@ show_plots = True
 save_plots = True
 
 # Performance:
-# Training, testing predicted number of twos: 5253, 891
-# Training, testing 0-1 loss: 0.050, 0.046
-# Training, testing logloss: 0.556, 0.554
+# Training, testing predicted number of twos: 5693, 956
+# Training, testing 0-1 loss: 0.051, 0.046
+# Training, testing logloss: 0.540, 0.540
 
 # Define constants
-best_lambda = 1.0
+best_lambda = 1000.
 best_thresh = 0.5
 best_eta = 0.000251188643151
-eps = 5.0e-3
+eps = 1.0e-2
 
 seed = 42
 frac = 0.1
@@ -94,7 +94,7 @@ if find_best_lam:
     print("Best eta:",best_eta)
 
 # With a best fit lambda, threshold, refit
-w0, w, ll_train, ll_test, iter_train = gd.batch_gradient_ascent(cu.logistic_model, X_train, y_train_true,
+w0, w, ll_train, ll_test, iter_train = gd.gradient_ascent(cu.logistic_model, X_train, y_train_true,
                                                     lam=best_lambda, eta=best_eta, savell=True,
                                                     X_test=X_test, y_test=y_test_true,
                                                     adaptive=True, eps=eps)

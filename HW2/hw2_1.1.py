@@ -9,8 +9,11 @@ Created on Oct 20 2016
 This script solves question 1.1 of CSE 546 HW2
 
 Best fit:
-Training 01 Loss: 0.18645
-Testing 01 Loss: 0.1885
+Training 01 Loss: 0.186866666667
+Testing 01 Loss: 0.1884
+
+Training Square Loss: 3.35155
+Testing Square Loss: 3.4774
 """
 
 from __future__ import print_function, division
@@ -93,3 +96,7 @@ y_hat_test = cu.multi_linear_classifier(X_test, w, w0)
 # Compute 01 Loss!
 print("Training 01 Loss:",val.loss_01(y_train,y_hat_train)/len(y_hat_train))
 print("Testing 01 Loss:",val.loss_01(y_test,y_hat_test)/len(y_hat_test))
+
+# Compute square loss!
+print("Training Square Loss:",val.square_loss(y_train,y_hat_train)/len(y_hat_train))
+print("Testing Square Loss:",val.square_loss(y_test,y_hat_test)/len(y_hat_test))

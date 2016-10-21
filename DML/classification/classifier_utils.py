@@ -187,15 +187,17 @@ def multi_linear_classifier_fit(X, y, N, lam=1.0e6, thresh=0.4):
     H = np.linalg.inv(np.dot(np.transpose(Xc),Xc))
     H = np.dot(H,np.transpose(Xc))
 
-    # Now loop over classes
+    # Init matrix to hold weight vectors for each class
     w = np.zeros((X.shape[-1],N))
     w0 = np.zeros((N,1))
+
+    # Now loop over classes and regress for each class
     for ii in range(N):
 
         # Filter y values to 0, 1 labels according to label
         y_filt = mu.mnist_filter(y,filterby=ii)
 
-        # Now finish the ridge prediction
+        # Now finish the ridge prediction for this class
         yc = y_filt - np.mean(y_filt)
         yc = np.vstack((yc/sigma,np.zeros((Xc.shape[-1],1))))
 

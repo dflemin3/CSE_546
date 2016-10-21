@@ -19,7 +19,7 @@ def gradient_ascent(model, X, y, lam=1.0, eta = 1.0e0, w = None, w0 = None, spar
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None):
     """
-    Performs regularized gradient descent to optimize model with an update step:
+    Performs regularized batch gradient descent to optimize model with an update step:
 
     w_i^(t+1) <- w_i^(t) + eta * {-lambda*w_i^(t) + sum_j[x_i^j(y^j - y_hat^j)]}
 

@@ -201,6 +201,56 @@ def recall_lasso(w_true, w_pred, eps = 1.0e-3):
 # end function
 
 
+def col_max_filt(X):
+	"""
+	Alter X according to the column-wise max(x_i, 0)
+
+	Parameters
+	----------
+	X : array (n x d)
+
+	Returns
+	-------
+	Xprime : array (n x d)
+		Note: Xprime is X
+	"""
+	for ii in range(X.shape[-1]):
+		if np.sum(X[:,ii]) < 0:
+			X[:,ii] = np.zeros(X.shape[0])
+
+	return X
+# end function
+
+
+def naive_nn_layer(X, k=10000):
+	"""
+	Perform a naive approximation to the first layer of a neural network to transform
+	a d x 1 dimensional feature vector for a given sample to k x 1 via a linear
+	combination of the original d features.  The mapping is given by the following
+
+	h_i(x) = max(v_i dot x, 0)
+
+	where v is a d x k matrix where each column is a d x 1 vector whose entries are
+	sampled from the standard normal distribution.
+
+	Parameters
+	----------
+	X : array (n x d)
+		input data
+	k : int
+		number of features for of new sample
+
+	Returns
+	-------
+	Xprime : array (n x k)
+		transformed data
+	"""
+
+	# Generate feature mapping as random variates from standard normal distribution
+	v = np.random.normal(size=(X.shape[-1],k))
+	return col_max_filt(X.dot(v))
+# end function
+
 
 
 

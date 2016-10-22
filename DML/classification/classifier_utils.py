@@ -205,7 +205,7 @@ def multi_linear_classifier_fit(X, y, N, lam=1.0e6, thresh=0.4):
         w[:,ii] = np.squeeze(np.dot(H,yc))
         w0[ii] = np.mean(y) - np.dot(np.transpose(np.mean(X,axis=0)),w[:,ii])
 
-    return np.mean(w0), w
+    return w0, w
 # end function
 
 
@@ -218,9 +218,9 @@ def multi_linear_classifier(X, w, w0):
     ----------
     X : array (n x d)
         features array (d features, n samples)
-    w : vector (d x N)
+    w : array (d x N)
         linear weight vector for N number of classes
-    w0 : float
+    w0 : array (N x 1)
         Constant offset term
 
     Returns
@@ -230,4 +230,5 @@ def multi_linear_classifier(X, w, w0):
     """
 
     # Compute (n x N) prediction matrix for N classes, n samples
-    return np.argmax(w0 + X.dot(w),axis=1).reshape((X.shape[0],1))
+    return np.argmax(w0.T + X.dot(w),axis=1).reshape((X.shape[0],1))
+# end functions

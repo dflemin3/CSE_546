@@ -26,14 +26,14 @@ import DML.regression.regression_utils as ru
 find_best_lam = False
 
 # Define constants
-best_lambda = 1.0e6
+best_lambda = 1.0e2
 best_thresh = 0.4
 seed = 1
 frac = 0.1
 num = 5
 kwargs = {}
 lammax = 1.0e7
-k = 3000
+k = 1000
 scale = 10.0
 Nclass = 10 # classes are 0 - 9
 nn_cache = "/Users/dflemin3/Desktop/Career/Grad_Classes/CSE_546/Data/hw2-data/MNIST_nn_cache.npz"

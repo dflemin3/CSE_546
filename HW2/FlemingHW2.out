@@ -1,4 +1,6 @@
 \BOOKMARK [1][-]{section*.2}{Introduction}{}% 1
-\BOOKMARK [1][-]{section*.3}{Question 1: TODO}{}% 2
-\BOOKMARK [1][-]{section*.4}{Question 2: Multi-Class Classification using Logistic Regression and Softmax}{}% 3
-\BOOKMARK [2][-]{section*.5}{2.1: Binary Logistic Regression}{section*.4}% 4
+\BOOKMARK [1][-]{section*.3}{Question 1: Multi-Class Classification using Least Squares}{}% 2
+\BOOKMARK [2][-]{section*.4}{1.1: One vs all classification}{section*.3}% 3
+\BOOKMARK [2][-]{section*.8}{1.2: Neural Nets with a random first layer: Using more features}{section*.3}% 4
+\BOOKMARK [1][-]{section*.9}{Question 2: Multi-Class Classification using Logistic Regression and Softmax}{}% 5
+\BOOKMARK [2][-]{section*.10}{2.1: Binary Logistic Regression}{section*.9}% 6

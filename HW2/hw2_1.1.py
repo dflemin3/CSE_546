@@ -9,11 +9,10 @@ Created on Oct 20 2016
 This script solves question 1.1 of CSE 546 HW2
 
 Best fit:
-Training 01 Loss: 0.186866666667
-Testing 01 Loss: 0.1884
-
-Training Square Loss: 3.35155
-Testing Square Loss: 3.4774
+Training 01 Loss: 0.140733333333
+Testing 01 Loss: 0.1382
+Training Square Loss: 2.48708333333
+Testing Square Loss: 2.4174
 """
 
 from __future__ import print_function, division

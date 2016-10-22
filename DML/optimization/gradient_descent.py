@@ -18,7 +18,7 @@ import numpy as np
 from ..classification import classifier_utils as cu
 
 
-def gradient_ascent(model, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
+def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None):
     """
@@ -38,8 +38,8 @@ def gradient_ascent(model, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
 
     Parameters
     ----------
-    model : function
-        Model which computes y_hat given X, w, w0
+    grad : function
+        Model which computes gradient of w, w0 given X, w, w0, y
     X : array (n x d)
         training data
     y : array (n x 1)
@@ -126,21 +126,25 @@ def gradient_ascent(model, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
     		    return w0, w_pred
 
         # Precompute y_hat using w^(t), w0 since this doesn't change in a given iteration
-        y_hat = model(X, w_pred, w0, sparse=sparse) # P(Y = 1 | X, w)
-        arg = y - y_hat
+        # Precompute gradients
+        wgrad, w0grad = grad(X, y, w_pred, w0, sparse=sparse)
+
+        #y_hat = model(X, w_pred, w0, sparse=sparse) # P(Y = 1 | X, w)
+        #arg = y - y_hat
 
         # Update w0 (not regularized!)
-        w0 = w0 + eta * scale * np.sum(arg)
+        w0 = w0 + eta * scale * w0grad
 
         # Loop over features to update according to gradient, learning rate
         # Do so in a vectorized manner
-        w_pred = w_pred + eta * scale * (-lam * w_pred + XT.dot(arg))
+        #w_pred = w_pred + eta * scale * (-lam * w_pred + XT.dot(arg))
+        w_pred = w_pred + eta * scale * (-lam * w_pred + wgrad)
 
         # Compute loglikelihood for this fit
         ll = llfn(y, (w0 + X.dot(w_pred)))
 
         if savell:
-            ll_arr.append(ll/len(y_hat))
+            ll_arr.append(ll/len(y))
             iter_arr.append(iters)
 
         # Compute testing set loglike for this iteration using fit from training set?

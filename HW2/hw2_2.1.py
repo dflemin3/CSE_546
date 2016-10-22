@@ -26,9 +26,9 @@ mpl.rcParams['font.size'] = 20.0
 mpl.rc('text', usetex='true')
 
 # Flags to control functionality
-find_best_lam = True
+find_best_lam = False
 show_plots = True
-save_plots = True
+save_plots = False
 
 # Performance:
 # Training, testing predicted number of twos: 5693, 956
@@ -80,7 +80,7 @@ if find_best_lam:
     for ii in range(num):
         print("Eta:",eta_arr[ii])
         err_val[ii,:], err_train[ii,:], lams = \
-        val.binlogistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, model=cu.logistic_model,
+        val.binlogistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, grad=cu.bin_logistic_grad,
         lammax=lammax,scale=scale, num=num, error_func=val.loss_01, thresh=best_thresh, best_w=False,
         eta=eta_arr[ii], adaptive=True, llfn=val.loglike_bin, savell=False)
 
@@ -94,7 +94,7 @@ if find_best_lam:
     print("Best eta:",best_eta)
 
 # With a best fit lambda, threshold, refit
-w0, w, ll_train, ll_test, iter_train = gd.gradient_ascent(cu.logistic_model, X_train, y_train_true,
+w0, w, ll_train, ll_test, iter_train = gd.gradient_ascent(cu.bin_logistic_grad, X_train, y_train_true,
                                                     lam=best_lambda, eta=best_eta, savell=True,
                                                     X_test=X_test, y_test=y_test_true,
                                                     adaptive=True, eps=eps)

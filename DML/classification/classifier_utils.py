@@ -111,6 +111,39 @@ def logistic_model(X, w, w0, sparse=False):
 # end function
 
 
+def bin_logistic_grad(X, y, w, w0, sparse=False):
+    """
+    Compute the gradient of the loglikelihood function for binary logistic regression for
+    both w and w0
+
+    Parameters
+    ----------
+    X : array (n x d)
+        Input data
+    y : array (n x 1)
+        labels
+    w : vector (d x 1)
+        weight coefficients
+    w0 : float
+        constant offset term
+    sparse : bool (optional, not implemented)
+        whether or not X is a scipy.sparse array
+
+    Returns
+    -------
+    wgrad : array (d x 1)
+        gradient of weight vector
+    w0grad : float
+        gradient of constant offset
+    """
+    arg = y - logistic_model(X, w, w0, sparse=sparse)
+
+    wgrad = X.T.dot(arg)
+    w0grad = np.sum(arg)
+    return wgrad, w0grad
+# end function
+
+
 def logistic_classifier(X, w, w0, thresh = 0.5, sparse = False):
     """
     Binary logistic regression classifier.  Returns 1 if P(Y = 1 | X, w) > thresh.

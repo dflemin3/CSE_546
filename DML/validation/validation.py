@@ -324,7 +324,7 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 # end function
 
 
-def binlogistic_reg_path(X_train, y_train, X_val, y_val, model=cu.logistic_model, lammax=1000.,
+def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_grad, lammax=1000.,
                          scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
                          eta = 1.0e0, sparse=False, eps=5.0e-3, max_iter=1000,
                          adaptive=True, llfn=loglike_bin, savell=False, batchsize=0.1,
@@ -344,8 +344,8 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, model=cu.logistic_model
         validation input data
     y_val : array (m x 1)
         validation labels
-    model : function
-        linear model
+    grad : function
+        function which computes gradient of w, w0
     lammax : float (optional)
         maximum regularization lambda.  Defaults to 1.0e3
     num : int (optional)
@@ -390,7 +390,7 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, model=cu.logistic_model
 
         # Solve logistic regression using gradient descent on the training data
         # optimizing over the logloss
-        w0, w = gd.gradient_ascent(model, X_train, y_train, lam=lam, eta=eta,
+        w0, w = gd.gradient_ascent(grad, X_train, y_train, lam=lam, eta=eta,
                                         sparse=sparse, eps=eps, max_iter=max_iter,
                                         adaptive=adaptive, llfn=llfn, savell=False)
 

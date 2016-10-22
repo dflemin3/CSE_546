@@ -33,7 +33,7 @@ save_plots = False
 # Performance:
 # Training, testing predicted number of twos: 5693, 956
 # Training, testing 0-1 loss: 0.051, 0.046
-# Training, testing logloss: 0.540, 0.540
+# Training, testing logloss: 213.559, 219.727
 
 # Define constants
 best_lambda = 1000.
@@ -127,8 +127,6 @@ error_test = val.loss_01(y_test_true, y_hat_test)/len(y_test)
 print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
 
 # Now compute, output logloss for training and testing sets
-y_hat_train = cu.logistic_model(X_train, w, w0, sparse=sparse)
-y_hat_test = cu.logistic_model(X_test, w, w0, sparse=sparse)
-ll_train = -val.loglike_bin(y_train, y_hat_train)/len(y_hat_train)
-ll_test = -val.loglike_bin(y_test, y_hat_test)/len(y_hat_test)
+ll_train = -val.loglike_bin(X_train, y_train, w, w0)/len(y_train)
+ll_test = -val.loglike_bin(X_test, y_test, w, w0)/len(y_test)
 print("Training, testing logloss: %.3lf, %.3lf" % (ll_train, ll_test))

@@ -129,23 +129,54 @@ def loss_01(y, y_hat):
 # end function
 
 
-def loglike_bin(y, y_hat):
+def loglike_bin(X, y, w, w0):
     """
     Compute the log ll (likelihood) of a probabilistic prediction for a binary classifier.
 
     Parameters
     ----------
+    X : array (n x d)
+        input data
     y : array (n x 1)
         array of observations
-    y_hat : array (n x 1)
-        array of predictions
+    w : array (d x 1)
+        weight vector
+    w0 : float
+        constant offset
 
     Returns
     -------
     ll : float
         ll
     """
+    y_hat = w0 + X.dot(w)
     return np.sum(y*y_hat - np.log(1.0 + np.exp(y_hat)))
+# end function
+
+
+def loglike_multi(X, y, w, w0):
+    """
+    Compute the loglikelihood of a probabilitstic prediction for a softmax multi-class
+    logistic classifier.
+
+    Parameters
+    ----------
+    X : array (n x d)
+        input data
+    y : array (n x 1)
+        array of observations
+    w : array (d x 1)
+        weight vector
+    w0 : float
+        constant offset
+
+    Returns
+    -------
+    ll : float
+        ll
+    """
+
+    return None
 # end function
 
 
@@ -421,47 +452,3 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_gr
     else:
         return error_val, error_train, np.array(lams)
 # end function
-
-
-def k_folds_linear(X, y, model, k=3, loss=MSE, **kwargs):
-	"""
-	Perform k-folds cross validation to estimate the error
-	for linear regressors.
-
-	Parameters
-	----------
-	X : array (n x d)
-		training data
-	y : array (n x 1)
-		training labels
-	model : function
-		model to fit to data
-	k : int (optional)
-		number of folds to use.  Defaults to 3
-	loss : function (optional)
-		loss function to use for error estimate.  Defaults to mean squared error (MSE)
-	kwargs : dict
-		any keyword arguments required by model
-
-	Returns
-	-------
-	error : float
-		k-fold cross-validation error
-	"""
-
-	raise NotImplementedError("I haven't coded this one up yet!")
-	return None
-	"""
-
-	for ii in range(k):
-		# First split data to exclude kth fold (set aside for testing)
-		#X_train = [k,:]
-		#y_train = [k]
-
-		#y_test = [k+1]
-
-		# Fit model using training data with kth fold excluded
-		#w_0, w = model(X_train, y_train, **kwargs)
-
-	return None
-	"""

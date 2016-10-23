@@ -62,11 +62,12 @@ X_test, y_test = mu.load_mnist(dataset='testing')
 y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
 
 # With a best fit lambda, threshold, refit
-w0, w, ll_train, ll_test, iter_train = gd.gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
+w0, w, ll_train, ll_test, iter_train = gd.stochastic_gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
                                                     lam=best_lambda, eta=eta, sparse=sparse,
                                                     savell=True, adaptive=True, eps=eps,
                                                     multi=Nclass, llfn=val.logloss_multi,
-                                                    X_test=X_test, y_test=y_test_true)
+                                                    X_test=X_test, y_test=y_test_true,
+                                                    batchsize=100)
 
 
 if show_plots:

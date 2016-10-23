@@ -131,7 +131,7 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
 
         # Loop over features to update according to gradient, learning rate
         # Do so in a vectorized manner
-        w_pred = w_pred - eta * scale * (-lam * w_pred + wgrad)
+        w_pred = w_pred - eta * scale * (lam * w_pred + wgrad)
 
         # Compute loss for this fit
         ll = llfn(X, y, w_pred, w0)
@@ -173,7 +173,7 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
                      eps = 5.0e-3, max_iter = 5000, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None, multi=None, batchsize=None):
     """
-    Performs regularized batch gradient descent to optimize model with an update step:
+    Performs regularized stochastic gradient descent to optimize model with an update step:
 
     w_i^(t+1) <- w_i^(t) - eta * {-lambda*w_i^(t) + gradient}
 
@@ -227,7 +227,7 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
 
     #Define values
     n = y.shape[0]
-    d = X.shape[1]
+    d = 1 # For stochastic gradient descent, use 1 (or batchsize) points
 
     # No multi == no multiclasses
     if multi is None:
@@ -281,17 +281,18 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
     		else:
     		    return w0, w_pred
 
-        # If using batches, get collection of indicies, else pick out one for SGA
+        # If using batches, get collection of indicies, else pick out one for SGD
         if batchsize is not None:
             # Create batch indices mask
-            ind = batchsize
             inds = np.random.permutation(X.shape[0])
-            inds = inds[:ind]
-        # No batches: straight up SGA
+            inds = inds[:batchsize]
+            n = len(inds) # With a batch, must normalize by size of batch
+        # No batches: straight up SGD
         else:
             inds = np.random.randint(0, high=X.shape[0], size=1)
 
         # Precompute gradient using w^(t), w0 since this doesn't change in a given iteration
+        # using either one or a batch of samples
         wgrad, w0grad = grad(X[inds,:], y[inds], w_pred, w0, sparse=sparse)
 
         # Update w0 (not regularized!)
@@ -299,7 +300,7 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
 
         # Loop over features to update according to gradient, learning rate
         # Do so in a vectorized manner
-        w_pred = w_pred - eta * scale * (-lam * w_pred + wgrad)
+        w_pred = w_pred - eta * scale * (lam * w_pred + wgrad)
 
         # Compute loss for this fit
         ll = llfn(X, y, w_pred, w0)

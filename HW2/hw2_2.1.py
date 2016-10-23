@@ -84,7 +84,7 @@ if find_best_lam:
         err_val[ii,:], err_train[ii,:], lams = \
         val.binlogistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, grad=cu.bin_logistic_grad,
         lammax=lammax,scale=scale, num=num, error_func=val.loss_01, thresh=best_thresh, best_w=False,
-        eta=eta_arr[ii], adaptive=True, llfn=val.loglike_bin, savell=False)
+        eta=eta_arr[ii], adaptive=True, llfn=val.logloss_bin, savell=False)
 
     # Find minimum threshold, lambda from minimum validation error
     # Mask infs
@@ -96,7 +96,7 @@ if find_best_lam:
     print("Best eta:",best_eta)
 
 # With a best fit lambda, threshold, refit
-w0, w, ll_train, ll_test, iter_train = gd.gradient_ascent(cu.bin_logistic_grad, X_train, y_train_true,
+w0, w, ll_train, ll_test, iter_train = gd.gradient_descent(cu.bin_logistic_grad, X_train, y_train_true,
                                                     lam=best_lambda, eta=best_eta, savell=True,
                                                     X_test=X_test, y_test=y_test_true,
                                                     adaptive=True, eps=eps)
@@ -107,8 +107,8 @@ if show_plots:
     fig, ax = plt.subplots()
 
     # Plot -(log likelikehood) to get logloss
-    ax.plot(iter_train, -ll_train, lw=2, color="green", label=r"Train")
-    ax.plot(iter_train, -ll_test, lw=2, color="blue", label=r"Test")
+    ax.plot(iter_train, ll_train, lw=2, color="green", label=r"Train")
+    ax.plot(iter_train, ll_test, lw=2, color="blue", label=r"Test")
 
     # Format plot
     ax.legend(loc="upper right")
@@ -129,6 +129,6 @@ error_test = val.loss_01(y_test_true, y_hat_test)/len(y_test)
 print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
 
 # Now compute, output logloss for training and testing sets
-logl_train = -val.loglike_bin(X_train, y_train_true, w, w0)/len(y_train)
-logl_test = -val.loglike_bin(X_test, y_test_true, w, w0)/len(y_test)
+logl_train = val.logloss_bin(X_train, y_train_true, w, w0)/len(y_train)
+logl_test = val.logloss_bin(X_test, y_test_true, w, w0)/len(y_test)
 print("Training, testing logloss: %.3lf, %.3lf" % (logl_train, logl_test))

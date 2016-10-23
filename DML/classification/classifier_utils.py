@@ -163,8 +163,8 @@ def multi_logistic_grad(X, y, w, w0, sparse=False):
     """
     arg = y - softmax(X, w, w0, sparse=sparse)
 
-    wgrad = X.T.dot(arg)
-    w0grad = np.sum(arg)
+    wgrad = -X.T.dot(arg)
+    w0grad = -np.sum(arg)
     return wgrad, w0grad
 # end function
 
@@ -196,8 +196,8 @@ def bin_logistic_grad(X, y, w, w0, sparse=False):
     """
     arg = y - logistic_model(X, w, w0, sparse=sparse)
 
-    wgrad = X.T.dot(arg)
-    w0grad = np.sum(arg)
+    wgrad = -X.T.dot(arg)
+    w0grad = -np.sum(arg)
     return wgrad, w0grad
 # end function
 

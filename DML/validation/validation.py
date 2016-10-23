@@ -129,9 +129,9 @@ def loss_01(y, y_hat):
 # end function
 
 
-def loglike_bin(X, y, w, w0):
+def logloss_bin(X, y, w, w0):
     """
-    Compute the log ll (likelihood) of a probabilistic prediction for a binary classifier.
+    Compute the log loss of a probabilistic prediction for a binary classifier.
 
     Parameters
     ----------
@@ -150,14 +150,14 @@ def loglike_bin(X, y, w, w0):
         ll
     """
     y_hat = w0 + X.dot(w)
-    return np.sum(y*y_hat - np.log(1.0 + np.exp(y_hat)))
+    return -np.sum(y*y_hat - np.log(1.0 + np.exp(y_hat)))
 # end function
 
 
-def loglike_multi(X, y, w, w0, sparse=False):
+def logloss_multi(X, y, w, w0, sparse=False):
     """
-    Compute the loglikelihood of a probabilitstic prediction for a softmax multi-class
-    logistic classifier for N classes.
+    Compute the -loglikelihood == loss of a probabilitstic prediction for a softmax
+    multi-class logistic classifier for N classes.
 
     Parameters
     ----------
@@ -177,7 +177,7 @@ def loglike_multi(X, y, w, w0, sparse=False):
     """
 
     y_hat = cu.softmax(X, w, w0, sparse=sparse)
-    return np.sum(np.multiply(y, y_hat))
+    return -np.sum(np.multiply(y, y_hat))
 # end function
 
 
@@ -359,12 +359,12 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_grad, lammax=1000.,
                          scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
                          eta = 1.0e0, sparse=False, eps=5.0e-3, max_iter=1000,
-                         adaptive=True, llfn=loglike_bin, savell=False, batchsize=0.1,
+                         adaptive=True, llfn=logloss_bin, savell=False, batchsize=0.1,
                          **kwargs):
     """
     Perform a regularization path for a regularized binary logistic regressor  by fitting
     the model on the training data and evaluating it on the validation data to determine
-    the best regularization constant via batch gradient ascent
+    the best regularization constant via batch gradient descent
 
     Parameters
     ----------
@@ -422,7 +422,7 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_gr
 
         # Solve logistic regression using gradient descent on the training data
         # optimizing over the logloss
-        w0, w = gd.gradient_ascent(grad, X_train, y_train, lam=lam, eta=eta,
+        w0, w = gd.gradient_descent(grad, X_train, y_train, lam=lam, eta=eta,
                                         sparse=sparse, eps=eps, max_iter=max_iter,
                                         adaptive=adaptive, llfn=llfn, savell=False)
 

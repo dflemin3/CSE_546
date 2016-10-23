@@ -8,9 +8,6 @@ Created on Mon Oct 18 2016
 
 This file implements various functions and algorithms pertaining optimization via
 gradient descent/ascent.
-
-Even though this file is named gradient_descent, I actually implemented gradient ascent
-to maximize loglikelihoods.
 """
 
 from __future__ import print_function, division
@@ -18,23 +15,18 @@ import numpy as np
 from ..classification import classifier_utils as cu
 
 
-def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
+def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None, multi=None):
     """
     Performs regularized batch gradient descent to optimize model with an update step:
 
-    w_i^(t+1) <- w_i^(t) + eta * {-lambda*w_i^(t) + sum_j[x_i^j(y^j - y_hat^j)]}
+    w_i^(t+1) <- w_i^(t) - eta * {-lambda*w_i^(t) + gradient}
 
     Model call is something like linear_model(X, w, w0, sparse=False)
 
     In practice, for a learning rate I use k*eta/n instead of eta where k is determined
     each step. k = 1/(1.0 + sqrt(step_number)) where step_number starts from 0.
-
-    Note: loss here is actually likelihood since gradient ascent seeks to maximize the
-    likelihood.
-
-    If batchsize is set to some int, then perform batch gradient ascent.
 
     Parameters
     ----------
@@ -61,7 +53,7 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
     adapative : bool (optional)
         whether or not to use adaptive step sizes
     llfn : function (optional)
-        which ll function to use with args y, y_hat.  Defaults to loglike_bin
+        which ll function to use with args y, y_hat.  Defaults to logloss_bin
     savell : bool (optional)
         whether or not to save the ll at each iteration
     multi : int (optional)
@@ -110,13 +102,13 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
     if X_test is not None and y_test is not None:
         test_ll_arr = []
 
-    # No loglike function given -> use loglike_bin for a binary classifier
+    # No loss function given -> use loss for a binary classifier
     if llfn is None:
         from ..validation import validation
-        llfn = validation.loglike_bin
+        llfn = validation.logloss_bin
 
-    # Dummy old super small loglikelihood
-    old_ll = -1.0e10
+    # Dummy old super huge loss
+    old_ll = 1.0e10
     scale = 1.0/n
 
     while not converged:
@@ -135,13 +127,13 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
         wgrad, w0grad = grad(X, y, w_pred, w0, sparse=sparse)
 
         # Update w0 (not regularized!)
-        w0 = w0 + eta * scale * w0grad
+        w0 = w0 - eta * scale * w0grad
 
         # Loop over features to update according to gradient, learning rate
         # Do so in a vectorized manner
-        w_pred = w_pred + eta * scale * (-lam * w_pred + wgrad)
+        w_pred = w_pred - eta * scale * (-lam * w_pred + wgrad)
 
-        # Compute loglikelihood for this fit
+        # Compute loss for this fit
         ll = llfn(X, y, w_pred, w0)
         print(ll)
 
@@ -149,7 +141,7 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
             ll_arr.append(ll/len(y))
             iter_arr.append(iters)
 
-        # Compute testing set loglike for this iteration using fit from training set?
+        # Compute testing set loss for this iteration using fit from training set?
         if X_test is not None and y_test is not None:
             # Store test ll
             test_ll_arr.append(llfn(X_test, y_test, w_pred, w0)/len(y_test))
@@ -158,13 +150,13 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
         if adaptive:
             scale = 1.0/(n * np.sqrt(1.0 + iters))
 
-        # Is it converged (is loglikelihood not improving by some %?)
+        # Is it converged (is loss not changing by some %?)
         if np.fabs(ll - old_ll)/np.fabs(old_ll) > eps:
             converged = False
         else:
             converged = True
 
-        # Store old_loglike, iterate
+        # Store old loss, iterate
         old_ll = ll
         iters += 1
 
@@ -177,23 +169,20 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
 # end function
 
 
-def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
-                     eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
+def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
+                     eps = 5.0e-3, max_iter = 5000, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None, multi=None, batchsize=None):
     """
     Performs regularized batch gradient descent to optimize model with an update step:
 
-    w_i^(t+1) <- w_i^(t) + eta * {-lambda*w_i^(t) + sum_j[x_i^j(y^j - y_hat^j)]}
+    w_i^(t+1) <- w_i^(t) - eta * {-lambda*w_i^(t) + gradient}
 
     Model call is something like linear_model(X, w, w0, sparse=False)
 
     In practice, for a learning rate I use k*eta/n instead of eta where k is determined
     each step. k = 1/(1.0 + sqrt(step_number)) where step_number starts from 0.
 
-    Note: loss here is actually likelihood since gradient ascent seeks to maximize the
-    likelihood.
-
-    If batchsize is set to some int, then perform batch gradient ascent.
+    If batchsize is set to some int, then perform minibatch stochastic gradient descent
 
     Parameters
     ----------
@@ -220,13 +209,13 @@ def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 =
     adapative : bool (optional)
         whether or not to use adaptive step sizes
     llfn : function (optional)
-        which ll function to use with args y, y_hat.  Defaults to loglike_bin
+        which ll function to use with args y, y_hat.  Defaults to logloss_bin
     savell : bool (optional)
         whether or not to save the ll at each iteration
     multi : int (optional)
         If not None, multi sets number of classes
-    batchsize : float (optional)
-        size of minibatch for minibatch SGA
+    batchsize : int (optional)
+        size of minibatch
 
     Returns
     -------
@@ -252,10 +241,11 @@ def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 =
     	# Initial conditions given, use those as first w_pred
 		w_pred = np.copy(w)
 
-    if w0 is None and multi is None:
-        w0 = 0.0
-    else: # Multiclass -> w0 becomes a vector
-	    w0 = np.zeros((multi,1))
+    if w0 is None:
+        if multi is None:
+            w0 = 0.0
+        else: # Multiclass -> w0 becomes a vector
+	        w0 = np.zeros((multi,1))
 
     # While not converged, do
     iters = 0
@@ -270,13 +260,13 @@ def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 =
     if X_test is not None and y_test is not None:
         test_ll_arr = []
 
-    # No loglike function given -> use loglike_bin for a binary classifier
+    # No loss function given -> use loss for a binary classifier
     if llfn is None:
         from ..validation import validation
-        llfn = validation.loglike_bin
+        llfn = validation.logloss_bin
 
-    # Dummy old super small loglikelihood
-    old_ll = -1.0e10
+    # Dummy old super huge loss
+    old_ll = 1.0e10
     scale = 1.0/n
 
     while not converged:
@@ -294,7 +284,7 @@ def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 =
         # If using batches, get collection of indicies, else pick out one for SGA
         if batchsize is not None:
             # Create batch indices mask
-            ind = int(batchsize * X.shape[0])
+            ind = batchsize
             inds = np.random.permutation(X.shape[0])
             inds = inds[:ind]
         # No batches: straight up SGA
@@ -305,20 +295,21 @@ def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 =
         wgrad, w0grad = grad(X[inds,:], y[inds], w_pred, w0, sparse=sparse)
 
         # Update w0 (not regularized!)
-        w0 = w0 + eta * scale * w0grad
+        w0 = w0 - eta * scale * w0grad
 
         # Loop over features to update according to gradient, learning rate
         # Do so in a vectorized manner
-        w_pred = w_pred + eta * scale * (-lam * w_pred + wgrad)
+        w_pred = w_pred - eta * scale * (-lam * w_pred + wgrad)
 
-        # Compute loglikelihood for this fit
+        # Compute loss for this fit
         ll = llfn(X, y, w_pred, w0)
+        print(ll)
 
         if savell:
             ll_arr.append(ll/len(y))
             iter_arr.append(iters)
 
-        # Compute testing set loglike for this iteration using fit from training set?
+        # Compute testing set loss for this iteration using fit from training set?
         if X_test is not None and y_test is not None:
             # Store test ll
             test_ll_arr.append(llfn(X_test, y_test, w_pred, w0)/len(y_test))
@@ -327,13 +318,13 @@ def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 =
         if adaptive:
             scale = 1.0/(n * np.sqrt(1.0 + iters))
 
-        # Is it converged (is loglikelihood not improving by some %?)
+        # Is it converged (is loss not changing by some %?)
         if np.fabs(ll - old_ll)/np.fabs(old_ll) > eps:
             converged = False
         else:
             converged = True
 
-        # Store old_loglike, iterate
+        # Store old loss, iterate
         old_ll = ll
         iters += 1
 

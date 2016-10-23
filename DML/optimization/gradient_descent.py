@@ -91,10 +91,11 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
     	# Initial conditions given, use those as first w_pred
 		w_pred = np.copy(w)
 
-    if w0 is None and multi is None:
-        w0 = 0.0
-    else: # Multiclass -> w0 becomes a vector
-	    w0 = np.zeros((multi,1))
+    if w0 is None:
+        if multi is None:
+            w0 = 0.0
+        else: # Multiclass -> w0 becomes a vector
+	        w0 = np.zeros((multi,1))
 
     # While not converged, do
     iters = 0

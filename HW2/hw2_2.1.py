@@ -27,19 +27,21 @@ mpl.rc('text', usetex='true')
 
 # Flags to control functionality
 find_best_lam = False
-show_plots = True
+show_plots = False
 save_plots = False
 
 # Performance:
 # Training, testing predicted number of twos: 5693, 956
-# Training, testing 0-1 loss: 0.051, 0.046
-# Training, testing logloss: 213.559, 219.727
+# Training, testing predicted number of twos: 5872, 994
+# Training, testing 0-1 loss: 0.024, 0.022
+# Training, testing logloss: 0.134, 0.142
+
 
 # Define constants
 best_lambda = 1000.
 best_thresh = 0.5
 best_eta = 0.000251188643151
-eps = 1.0e-2
+eps = 1.0e-3
 
 seed = 42
 frac = 0.1
@@ -127,6 +129,6 @@ error_test = val.loss_01(y_test_true, y_hat_test)/len(y_test)
 print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
 
 # Now compute, output logloss for training and testing sets
-ll_train = -val.loglike_bin(X_train, y_train, w, w0)/len(y_train)
-ll_test = -val.loglike_bin(X_test, y_test, w, w0)/len(y_test)
-print("Training, testing logloss: %.3lf, %.3lf" % (ll_train, ll_test))
+logl_train = -val.loglike_bin(X_train, y_train_true, w, w0)/len(y_train)
+logl_test = -val.loglike_bin(X_test, y_test_true, w, w0)/len(y_test)
+print("Training, testing logloss: %.3lf, %.3lf" % (logl_train, logl_test))

@@ -111,6 +111,64 @@ def logistic_model(X, w, w0, sparse=False):
 # end function
 
 
+def softmax(X, w, w0, sparse=False):
+    """
+    Softmax multi-class logistic classifier estimator (P(Y = c | X, w)) for N classes
+
+    Parameters
+    ----------
+    X : array (n x d)
+        Input data
+    w : array (d x N)
+        weight coefficients
+    w0 : vector (N x 1)
+        constant offset term
+    sparse : bool (optional, not implemented)
+        whether or not X is a scipy.sparse array
+
+    Returns
+    -------
+    y_hat : array (n x N)
+        P(Y = c | X, w)
+    """
+
+    return np.exp(w0.T + X.dot(w))/np.sum(np.exp(w0.T + X.dot(w)),axis=1).reshape((X.shape[0],1))
+# end function
+
+
+def multi_logistic_grad(X, y, w, w0, sparse=False):
+    """
+    Compute the gradient of the loglikelihood function for multiclass logistic regression
+    for both w and w0 for N classes
+
+    Parameters
+    ----------
+    X : array (n x d)
+        Input data
+    y : array (n x N)
+        labels
+    w : array (d x N)
+        weight coefficients
+    w0 : vector (N x 1)
+        constant offset term
+    sparse : bool (optional, not implemented)
+        whether or not X is a scipy.sparse array
+
+    Returns
+    -------
+    wgrad : array (d x N)
+        gradient of weight vector
+    w0grad : float
+        gradient of constant offset
+    """
+    arg = y - softmax(X, w, w0, sparse=sparse)
+
+    wgrad = X.T.dot(arg)
+    w0grad = np.sum(arg)
+    return wgrad, w0grad
+# end function
+
+
 def bin_logistic_grad(X, y, w, w0, sparse=False):
     """
     Compute the gradient of the loglikelihood function for binary logistic regression for
@@ -174,6 +232,34 @@ def logistic_classifier(X, w, w0, thresh = 0.5, sparse = False):
 
 # end function
 
+
+def multi_logistic_classifier(X, w, w0, thresh = 0.5, sparse = False):
+    """
+    Multiclass logistic regression classifier for N classes
+
+    Parameters
+    ----------
+    X : array (n x d)
+        Input data
+    w : array (d x N)
+        weight coefficients
+    w0 : vector (N x 1)
+        constant offset term
+    thesh : float (optional)
+        Classification threshold.  Defaults to 0.5.
+    sparse : bool (optional, not implemented)
+        whether or not X is a scipy.sparse array
+
+    Returns
+    -------
+    y_hat : array (n x 1)
+        P(Y = 1 | x, w)
+    """
+
+    y_hat = softmax(X, w, w0, sparse=sparse)
+    return np.argmax(y_hat, axis=1).reshape((X.shape[0],1))
+
+# end function
 
 def multi_linear_classifier_fit(X, y, N, lam=1.0e6, thresh=0.4):
     """

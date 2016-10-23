@@ -154,18 +154,18 @@ def loglike_bin(X, y, w, w0):
 # end function
 
 
-def loglike_multi(X, y, w, w0):
+def loglike_multi(X, y, w, w0, sparse=False):
     """
     Compute the loglikelihood of a probabilitstic prediction for a softmax multi-class
-    logistic classifier.
+    logistic classifier for N classes.
 
     Parameters
     ----------
     X : array (n x d)
         input data
-    y : array (n x 1)
+    y : array (n x N)
         array of observations
-    w : array (d x 1)
+    w : array (d x N)
         weight vector
     w0 : float
         constant offset
@@ -176,7 +176,8 @@ def loglike_multi(X, y, w, w0):
         ll
     """
 
-    return None
+    y_hat = cu.softmax(X, w, w0, sparse=sparse)
+    return np.sum(np.multiply(y, y_hat))
 # end function
 
 

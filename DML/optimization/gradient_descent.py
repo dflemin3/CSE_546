@@ -29,7 +29,7 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
     Model call is something like linear_model(X, w, w0, sparse=False)
 
     In practice, for a learning rate I use k*eta/n instead of eta where k is determined
-    each step. k = 1/(1.0 + step_number) where step_number starts from 0.
+    each step. k = 1/(1.0 + sqrt(step_number)) where step_number starts from 0.
 
     Note: loss here is actually likelihood since gradient ascent seeks to maximize the
     likelihood.
@@ -142,6 +142,7 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
 
         # Compute loglikelihood for this fit
         ll = llfn(X, y, w_pred, w0)
+        print(ll)
 
         if savell:
             ll_arr.append(ll/len(y))
@@ -154,7 +155,7 @@ def gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spar
 
         # Using an adaptive step size?
         if adaptive:
-            scale = 1.0/(n * (1.0 + iters))
+            scale = 1.0/(n * np.sqrt(1.0 + iters))
 
         # Is it converged (is loglikelihood not improving by some %?)
         if np.fabs(ll - old_ll)/np.fabs(old_ll) > eps:
@@ -186,7 +187,7 @@ def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 =
     Model call is something like linear_model(X, w, w0, sparse=False)
 
     In practice, for a learning rate I use k*eta/n instead of eta where k is determined
-    each step. k = 1/(1.0 + step_number) where step_number starts from 0.
+    each step. k = 1/(1.0 + sqrt(step_number)) where step_number starts from 0.
 
     Note: loss here is actually likelihood since gradient ascent seeks to maximize the
     likelihood.
@@ -323,7 +324,7 @@ def stochastic_gradient_ascent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 =
 
         # Using an adaptive step size?
         if adaptive:
-            scale = 1.0/(n * (1.0 + iters))
+            scale = 1.0/(n * np.sqrt(1.0 + iters))
 
         # Is it converged (is loglikelihood not improving by some %?)
         if np.fabs(ll - old_ll)/np.fabs(old_ll) > eps:

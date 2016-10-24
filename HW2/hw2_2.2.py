@@ -28,7 +28,7 @@ mpl.rc('text', usetex='true')
 
 # Flags to control functionality
 show_plots = True
-save_plots = True
+save_plots = False
 
 # Best Performance:
 # Training, testing 0-1 loss: 0.119, 0.112
@@ -66,7 +66,7 @@ gd.gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
                                X_test=X_test, y_test=y_test_true,
                                train_label=y_train,
                                test_label=y_test, classfn=cu.multi_linear_classifier,
-                               loss01fn=val.loss_01)
+                               loss01fn=val.loss_01, batchsize=batchsize)
 
 
 if show_plots:

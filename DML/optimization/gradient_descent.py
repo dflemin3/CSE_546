@@ -197,8 +197,9 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
 
 
 def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
-                     eps = 5.0e-3, max_iter = 5000, adaptive = True, llfn = None,
-                     savell = False, X_test = None, y_test = None, multi=None, batchsize=None):
+                     eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
+                     savell = False, X_test = None, y_test = None, multi=None, classfn=None,
+                     train_label=None,test_label=None, loss01fn=None, batchsize=None):
     """
     Performs regularized stochastic gradient descent to optimize model with an update step:
 
@@ -241,6 +242,12 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
         whether or not to save the ll at each iteration
     multi : int (optional)
         If not None, multi sets number of classes
+    classfn : func (optional)
+        Function to classify.  If provided, used to compute/return 0/1 loss
+    train_label : array (n x 1) (optional)
+        training labels used for 0/1 loss calculation
+    test_label : array (n x 1) (optional)
+        testing labels used for 0/1 loss calculation
     batchsize : int (optional)
         size of minibatch
 
@@ -286,9 +293,15 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
         ll_arr = []
         iter_arr = []
 
+    # Save 01 loss?
+    if classfn is not None:
+        train_01_loss = []
+
     # Save ll values on testing set?
     if X_test is not None and y_test is not None:
         test_ll_arr = []
+        if classfn is not None:
+            test_01_loss = []
 
     # No loss function given -> use loss for a binary classifier
     if llfn is None:
@@ -339,10 +352,18 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
             ll_arr.append(ll/len(y))
             iter_arr.append(iters)
 
+        # Compute 01 loss?
+        if classfn is not None:
+            train_01_loss.append(loss01fn(train_label,
+                                 cu.multi_logistic_classifier(X, w_pred, w0))/len(train_label))
+
         # Compute testing set loss for this iteration using fit from training set?
         if X_test is not None and y_test is not None:
             # Store test ll
             test_ll_arr.append(llfn(X_test, y_test, w_pred, w0)/len(y_test))
+            if classfn is not None:
+                test_01_loss.append(loss01fn(test_label,
+                                 cu.multi_logistic_classifier(X_test, w_pred, w0))/len(test_label))
 
         # Using an adaptive step size?
         if adaptive:
@@ -358,10 +379,16 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
         old_ll = ll
         iters += 1
 
-    if savell and not (X_test is not None and y_test is not None):
+    # Uh, so what do I return?
+    if savell and not (X_test is not None and y_test is not None) and classfn is None:
         return w0, w_pred, np.asarray(ll_arr), np.asarray(iter_arr)
-    elif savell and (X_test is not None and y_test is not None):
+    elif savell and (X_test is not None and y_test is not None) and classfn is None:
         return w0, w_pred, np.asarray(ll_arr), np.asarray(test_ll_arr), np.asarray(iter_arr)
+    elif savell and classfn is not None and not (X_test is not None and y_test is not None):
+        return w0, w_pred, np.asarray(ll_arr), np.asarray(train_01_loss), np.asarray(iter_arr)
+    elif savell and classfn is not None and (X_test is not None and y_test is not None):
+        return w0, w_pred, np.asarray(ll_arr), np.asarray(test_ll_arr), \
+        np.asarray(train_01_loss), np.asarray(test_01_loss), np.asarray(iter_arr)
     else:
         return w0, w_pred
 # end function

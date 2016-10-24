@@ -19,7 +19,6 @@ import DML.data_processing.mnist_utils as mu
 import DML.validation.validation as val
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from sklearn.feature_extraction import DictVectorizer
 
 #Typical plot parameters that make for pretty plots
 mpl.rcParams['figure.figsize'] = (8,8)
@@ -40,12 +39,12 @@ save_plots = False
 best_lambda = 0.
 best_thresh = 0.5
 best_eta = 0.000251188643151
-eta = 5.0e-5
-eps = 5.0e-4
+eta = 1.0e-6#5.0e-5
+eps = 1.0e-2#5.0e-4
 seed = 42
 sparse = False
 Nclass = 10
-batchsize = 100
+batchsize = None
 
 # Load in MNIST training data
 print("Loading MNIST Training data...")
@@ -59,7 +58,7 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 
 # With a best fit lambda, threshold, refit
 w0, w, ll_train, ll_test, train_01, test_01, iter_train = \
-gd.gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
+gd.stochastic_gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
                                lam=best_lambda, eta=eta, sparse=sparse,
                                savell=True, adaptive=True, eps=eps,
                                multi=Nclass, llfn=val.logloss_multi,

@@ -35,13 +35,15 @@ save_plots = False
 # Training, testing predicted number of twos: 5872, 994
 # Training, testing 0-1 loss: 0.024, 0.022
 # Training, testing logloss: 0.134, 0.142
+# eta: 2.5e-4
+# eps: 1.0e-3
 
 
 # Define constants
 best_lambda = 1000.
 best_thresh = 0.5
 best_eta = 0.000251188643151
-eps = 1.0e-3
+eps = 1.0e-2
 
 seed = 42
 frac = 0.1

@@ -199,7 +199,8 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
 def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None, multi=None, classfn=None,
-                     train_label=None,test_label=None, loss01fn=None, batchsize=None):
+                     train_label=None,test_label=None, loss01fn=None, batchsize=None,
+                     nout=15000):
     """
     Performs regularized stochastic gradient descent to optimize model with an update step:
 
@@ -250,6 +251,8 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
         testing labels used for 0/1 loss calculation
     batchsize : int (optional)
         size of minibatch
+    nout : int (optional)
+        Number of inner loop iterations to run before saving things like loss, 0-1 loss, etc
 
     Returns
     -------
@@ -324,60 +327,66 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
     		else:
     		    return w0, w_pred
 
-        # If using batches, get collection of indicies, else pick out one for SGD
-        if batchsize is not None:
-            # Create batch indices mask
-            inds = np.random.permutation(X.shape[0])
-            inds = inds[:batchsize]
-        # No batches: straight up SGD
-        else:
-            inds = np.random.randint(0, high=X.shape[0], size=1)
+        # Randomly permute X, y
+        inds = np.random.permutation(X.shape[0])
+        X_per = X[inds]
+        y_per = y[inds]
 
-        # Precompute gradient using w^(t), w0 since this doesn't change in a given iteration
-        # using either one or a batch of samples
-        wgrad, w0grad = grad(X[inds,:], y[inds], w_pred, w0, sparse=sparse)
+        # Loop over samples
+        ii = 0 # Keeps track of how many samples have been used for gradient estimation
+        for batch in make_batches(X_per, y_per, size=n):
+            X_b = batch[0].reshape((n,batch[0].shape[-1]))
+            y_b = batch[1].reshape((n,batch[1].shape[-1]))
 
-        # Update w0 (not regularized!)
-        w0 = w0 - eta * scale * w0grad
+            # Precompute gradient using w^(t), w0 since this doesn't change in a given iteration
+            # using either one or a batch of samples
+            wgrad, w0grad = grad(X_b, y_b, w_pred, w0, sparse=sparse)
 
-        # Loop over features to update according to gradient, learning rate
-        # Do so in a vectorized manner
-        w_pred = w_pred - eta * scale * (lam * w_pred + wgrad)
+            # Update w0 (not regularized!)
+            w0 = w0 - eta * scale * w0grad
 
-        # Compute loss for this fit
-        ll = llfn(X, y, w_pred, w0)
-        print(ll)
+            # Loop over features to update according to gradient, learning rate
+            # Do so in a vectorized manner
+            w_pred = w_pred - eta * scale * (lam * w_pred + wgrad)
 
-        if savell:
-            ll_arr.append(ll/len(y))
-            iter_arr.append(iters)
+            # Compute loss for this fit over entire set?
+            if ii % nout == 0:
+                ll = llfn(X, y, w_pred, w0)
+                print(ll)
 
-        # Compute 01 loss?
-        if classfn is not None:
-            train_01_loss.append(loss01fn(train_label,
-                                 cu.multi_logistic_classifier(X, w_pred, w0))/len(train_label))
+                if savell:
+                    ll_arr.append(ll/len(y))
+                    iter_arr.append(iters)
 
-        # Compute testing set loss for this iteration using fit from training set?
-        if X_test is not None and y_test is not None:
-            # Store test ll
-            test_ll_arr.append(llfn(X_test, y_test, w_pred, w0)/len(y_test))
-            if classfn is not None:
-                test_01_loss.append(loss01fn(test_label,
-                                 cu.multi_logistic_classifier(X_test, w_pred, w0))/len(test_label))
+                # Compute 01 loss?
+                if classfn is not None:
+                    train_01_loss.append(loss01fn(train_label,
+                                         cu.multi_logistic_classifier(X, w_pred, w0))/len(train_label))
 
-        # Using an adaptive step size?
-        if adaptive:
-            scale = 1.0/(n * np.sqrt(1.0 + iters))
+                # Compute testing set loss for this iteration using fit from training set?
+                if X_test is not None and y_test is not None:
+                    # Store test ll
+                    test_ll_arr.append(llfn(X_test, y_test, w_pred, w0)/len(y_test))
+                    if classfn is not None:
+                        test_01_loss.append(loss01fn(test_label,
+                                         cu.multi_logistic_classifier(X_test, w_pred, w0))/len(test_label))
 
-        # Is it converged (is loss not changing by some %?)
-        if np.fabs(ll - old_ll)/np.fabs(old_ll) > eps:
-            converged = False
-        else:
-            converged = True
+                # Using an adaptive step size?
+                if adaptive:
+                    scale = 1.0/(n * np.sqrt(1.0 + iters))
 
-        # Store old loss, iterate
-        old_ll = ll
-        iters += 1
+                # Is it converged (is loss not changing by some %?)
+                if np.fabs((ll - old_ll)/old_ll) > eps:
+                    converged = False
+                else:
+                    converged = True
+                    break
+
+                # Store old loss, iterate
+                old_ll = ll
+                iters += 1
+
+            ii = ii + n
 
     # Uh, so what do I return?
     if savell and not (X_test is not None and y_test is not None) and classfn is None:
@@ -392,3 +401,27 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
     else:
         return w0, w_pred
 # end function
+
+
+def make_batches(X, y, size=1):
+    """
+    Create list of data batches of a given size.  Useful for making batches to iterate over
+    using gradient descent.
+
+    Parameters
+    ----------
+    X : array (n x d)
+        input data
+    y : array (n x 1)
+        labeled data
+    size : int (optional)
+        batch size
+
+    Returns
+    -------
+    batches : list
+        list of the form [(X_batch, y_batch), ...]
+    """
+
+    for i in range(0, len(y), size):
+        yield (X[i:i + size], y[i:i + size])

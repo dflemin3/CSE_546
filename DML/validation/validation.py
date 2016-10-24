@@ -421,9 +421,9 @@ def logistic_reg_path(X_train, y_train, X_val, y_val,
     error_train = np.zeros(num)
 
     # Labels default to y values if no special parsing has to be done
-    if y_train_label == None:
+    if y_train_label is None:
         y_train_label = y_train
-    if y_val_label == None:
+    if y_val_label is None:
         y_val_label = y_val
 
     # Assume null solution to begin with

@@ -356,26 +356,36 @@ def linear_reg_path(X_train, y_train, X_val, y_val, model, lammax=1000., scale=2
 # end function
 
 
-def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_grad, lammax=1000.,
+def logistic_reg_path(X_train, y_train, X_val, y_val,
+                         y_train_label = None, y_val_label = None,
+                         grad=cu.bin_logistic_grad, lammax=1000.,
                          scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
-                         eta = 1.0e0, sparse=False, eps=5.0e-3, max_iter=1000,
+                         eta = 1.0e-4, sparse=False, eps=5.0e-3, max_iter=1000,
                          adaptive=True, llfn=logloss_bin, savell=False, batchsize=0.1,
-                         **kwargs):
+                         classfn=cu.logistic_classifier, **kwargs):
     """
-    Perform a regularization path for a regularized binary logistic regressor  by fitting
+    Perform a regularization path for a regularized logistic regressor by fitting
     the model on the training data and evaluating it on the validation data to determine
-    the best regularization constant via batch gradient descent
+    the best regularization constant via batch gradient descent.  Behavior defaults to
+    binary logistic regression and computing 0/1 loss.
+
+    Note y_train and y_train_label are not always the same.  For example, y_train could
+    be a matrix of 0, 1 while y_train_label could be a vector with digits 0-9 for a
+    softmax classifier.
 
     Parameters
     ----------
     X_train : array (n x d)
         training input data
     y_train : array (n x 1)
+        parsed training labels
+    y_train_label : array (n x 1)
         training labels
     X_val : array (m x d)
         validation input data
     y_val : array (m x 1)
         validation labels
+    y_val_labels : array (m x 1)
     grad : function
         function which computes gradient of w, w0
     lammax : float (optional)
@@ -384,6 +394,8 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_gr
         number of lambdas to search over.  Defaults to 10
     error_func : function (optional)
         error function.  Defaults to log loss
+    classfn : function (optional)
+        function which classifies based on prediction
     kwargs : dict
         any additional parameters required by the linear model
     For other parameters, see parameters for gradient_descent
@@ -408,6 +420,12 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_gr
     error_val = np.zeros(num)
     error_train = np.zeros(num)
 
+    # Labels default to y values if no special parsing has to be done
+    if y_train_label == None:
+        y_train_label = y_train
+    if y_val_label == None:
+        y_val_label = y_val
+
     # Assume null solution to begin with
     w = np.zeros((X_train.shape[-1],1))
     w0 = 0.0
@@ -428,8 +446,8 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_gr
 
 
         # Now classify on both validation and training set!
-        y_hat_val = cu.logistic_classifier(X_val, w, w0, thresh=thresh, sparse=sparse)
-        y_hat_train = cu.logistic_classifier(X_train, w, w0, thresh=thresh, sparse=sparse)
+        y_hat_val = classfn(X_val, w, w0)
+        y_hat_train = classfn(X_train, w, w0, thresh=thresh, sparse=sparse)
 
         # Save w, w0s?
         if best_w:
@@ -437,8 +455,8 @@ def binlogistic_reg_path(X_train, y_train, X_val, y_val, grad=cu.bin_logistic_gr
             best_w_arr[ii] = np.squeeze(w)
 
         # Evaluate error on validation and training set
-        error_val[ii] = error_func(y_val, y_hat_val)
-        error_train[ii] = error_func(y_train, y_hat_train)
+        error_val[ii] = error_func(y_val_label, y_hat_val)
+        error_train[ii] = error_func(y_train_label, y_hat_train)
 
         # Save, scale lambda for next iteration
         lams.append(lam)

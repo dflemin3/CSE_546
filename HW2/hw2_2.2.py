@@ -27,7 +27,7 @@ mpl.rc('text', usetex='true')
 
 # Flags to control functionality
 show_plots = True
-save_plots = False
+save_plots = True
 
 # Best Performance:
 # Training, testing 0-1 loss: 0.119, 0.112
@@ -36,13 +36,13 @@ save_plots = False
 # eps: 5.0e-4
 
 # Define constants
-best_lambda = 0.
+best_lambda = 1000.
 best_thresh = 0.5
-best_eta = 0.000251188643151
-eta = 1.0e-6#5.0e-5
-eps = 1.0e-2#5.0e-4
+eta = 5.0e-5
+eps = 5.0e-4
 seed = 42
 sparse = False
+num = 5
 Nclass = 10
 batchsize = None
 
@@ -56,16 +56,50 @@ print("Loading MNIST Testing data...")
 X_test, y_test = mu.load_mnist(dataset='testing')
 y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
 
+# Build regularized multiclass classifier by minimizing 01 loss
+# Will need to optimize over lambda via a regularization path
+if find_best_lam:
+    print("Running regularization path to optmize lambda, eta...")
+
+    # Split training data into subtraining set, validation set
+    X_tr, y_tr, X_val, y_val = val.split_data(X_train, y_train, frac=frac, seed=seed)
+
+    # Filter y values to 0, 1 labels
+    y_tr_true = np.asarray(y_tr[:, None] == np.arange(max(y_tr)+1),dtype=int).squeeze()
+    y_val_true = np.asarray(y_val[:, None] == np.arange(max(y_val)+1),dtype=int).squeeze()
+
+    # Define arrays
+    eta_arr = np.logspace(-6,0,num)
+    err_val = np.zeros((num,num))
+    err_train = np.zeros((num,num))
+
+    for ii in range(num):
+        print("Eta:",eta_arr[ii])
+        err_val[ii,:], err_train[ii,:], lams = \
+        val.binlogistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, grad=cu.bin_logistic_grad,
+        lammax=lammax,scale=scale, num=num, error_func=val.loss_01, thresh=best_thresh, best_w=False,
+        eta=eta_arr[ii], adaptive=True, llfn=val.logloss_bin, savell=False)
+
+    # Find minimum threshold, lambda from minimum validation error
+    # Mask infs
+    err_val[np.isinf(err_val)] = np.nan
+    ind_e,ind_l = np.unravel_index(np.nanargmin(err_val), err_val.shape)
+    best_lambda = lams[ind_l]
+    best_eta = eta_arr[ind_e]
+    print("Best lambda:",best_lambda)
+    print("Best eta:",best_eta)
+
+
 # With a best fit lambda, threshold, refit
 w0, w, ll_train, ll_test, train_01, test_01, iter_train = \
-gd.stochastic_gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
+gd.gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
                                lam=best_lambda, eta=eta, sparse=sparse,
                                savell=True, adaptive=True, eps=eps,
                                multi=Nclass, llfn=val.logloss_multi,
                                X_test=X_test, y_test=y_test_true,
                                train_label=y_train,
-                               test_label=y_test, classfn=cu.multi_linear_classifier,
-                               loss01fn=val.loss_01, batchsize=batchsize)
+                               test_label=y_test, classfn=cu.multi_logistic_classifier,
+                               loss01fn=val.loss_01)
 
 
 if show_plots:
@@ -83,7 +117,7 @@ if show_plots:
     ax.set_ylabel("LogLoss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("mnist_multi_train_test_ll.pdf")
+            fig.savefig("bgd_mnist_multi_train_test_ll.pdf")
 
     plt.show()
 
@@ -100,7 +134,7 @@ if show_plots:
     ax.set_ylabel("0/1 Loss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("mnist_multi_train_test_01.pdf")
+            fig.savefig("bgd_mnist_multi_train_test_01.pdf")
 
     plt.show()
 

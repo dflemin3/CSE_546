@@ -157,7 +157,7 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
         # Compute 01 loss?
         if classfn is not None:
             train_01_loss.append(loss01fn(train_label,
-                                 cu.multi_logistic_classifier(X, w_pred, w0))/len(train_label))
+                                 classfn(X, w_pred, w0))/len(train_label))
 
         # Compute testing set loss for this iteration using fit from training set?
         if X_test is not None and y_test is not None:
@@ -165,7 +165,7 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
             test_ll_arr.append(llfn(X_test, y_test, w_pred, w0)/len(y_test))
             if classfn is not None:
                 test_01_loss.append(loss01fn(test_label,
-                                 cu.multi_logistic_classifier(X_test, w_pred, w0))/len(test_label))
+                                 classfn(X_test, w_pred, w0))/len(test_label))
 
         # Using an adaptive step size?
         if adaptive:
@@ -361,7 +361,7 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
                 # Compute 01 loss?
                 if classfn is not None:
                     train_01_loss.append(loss01fn(train_label,
-                                         cu.multi_logistic_classifier(X, w_pred, w0))/len(train_label))
+                                         classfn(X, w_pred, w0))/len(train_label))
 
                 # Compute testing set loss for this iteration using fit from training set?
                 if X_test is not None and y_test is not None:
@@ -369,7 +369,7 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
                     test_ll_arr.append(llfn(X_test, y_test, w_pred, w0)/len(y_test))
                     if classfn is not None:
                         test_01_loss.append(loss01fn(test_label,
-                                         cu.multi_logistic_classifier(X_test, w_pred, w0))/len(test_label))
+                                         classfn(X_test, w_pred, w0))/len(test_label))
 
                 # Using an adaptive step size?
                 if adaptive:

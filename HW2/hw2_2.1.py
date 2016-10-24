@@ -26,24 +26,24 @@ mpl.rcParams['font.size'] = 20.0
 mpl.rc('text', usetex='true')
 
 # Flags to control functionality
-find_best_lam = False
+find_best_lam = True
 show_plots = False
 save_plots = False
 
 # Performance:
 # Training, testing predicted number of twos: 5693, 956
 # Training, testing predicted number of twos: 5872, 994
-# Training, testing 0-1 loss: 0.024, 0.022
-# Training, testing logloss: 0.134, 0.142
+# Training, testing 0-1 loss: 0.029, 0.027
+# Training, testing logloss: 0.206, 0.213
 # eta: 2.5e-4
-# eps: 1.0e-3
+# eps: 2.5e-3
 
 
 # Define constants
 best_lambda = 1000.
 best_thresh = 0.5
 best_eta = 0.000251188643151
-eps = 1.0e-2
+eps = 2.5e-3
 
 seed = 42
 frac = 0.1
@@ -84,9 +84,9 @@ if find_best_lam:
     for ii in range(num):
         print("Eta:",eta_arr[ii])
         err_val[ii,:], err_train[ii,:], lams = \
-        val.binlogistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, grad=cu.bin_logistic_grad,
+        val.logistic_reg_path(X_tr, y_tr_true, X_val, y_val_true, grad=cu.bin_logistic_grad,
         lammax=lammax,scale=scale, num=num, error_func=val.loss_01, thresh=best_thresh, best_w=False,
-        eta=eta_arr[ii], adaptive=True, llfn=val.logloss_bin, savell=False)
+        eta=eta_arr[ii], adaptive=True, llfn=val.logloss_bin, savell=False, eps=1.0e-2)
 
     # Find minimum threshold, lambda from minimum validation error
     # Mask infs
@@ -98,10 +98,15 @@ if find_best_lam:
     print("Best eta:",best_eta)
 
 # With a best fit lambda, threshold, refit
-w0, w, ll_train, ll_test, iter_train = gd.gradient_descent(cu.bin_logistic_grad, X_train, y_train_true,
-                                                    lam=best_lambda, eta=best_eta, savell=True,
-                                                    X_test=X_test, y_test=y_test_true,
-                                                    adaptive=True, eps=eps)
+w0, w, ll_train, ll_test, train_01, test_01, iter_train = \
+gd.gradient_descent(cu.bin_logistic_grad, X_train, y_train_true,
+                               lam=best_lambda, eta=best_eta, sparse=sparse,
+                               savell=True, adaptive=True, eps=eps,
+                               llfn=val.logloss_bin,
+                               X_test=X_test, y_test=y_test_true,
+                               train_label=y_train_true,
+                               test_label=y_test_true, classfn=cu.logistic_classifier,
+                               loss01fn=val.loss_01)
 
 if show_plots:
 
@@ -118,16 +123,32 @@ if show_plots:
     ax.set_ylabel("LogLoss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("mnist_train_test_ll.pdf")
+            fig.savefig("mnist_bin_train_test_ll.pdf")
+
+    plt.show()
+
+    # Plot Training, testing ll vs iteration number
+    fig, ax = plt.subplots()
+
+    # Plot -(log likelikehood) to get logloss
+    ax.plot(iter_train, train_01, lw=2, color="green", label=r"Train")
+    ax.plot(iter_train, test_01, lw=2, color="blue", label=r"Test")
+
+    # Format plot
+    ax.legend(loc="upper right")
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("0/1 Loss")
+    fig.tight_layout()
+    if save_plots:
+            fig.savefig("mnist_bin_train_test_01.pdf")
 
     plt.show()
 
 # Now compute, output 0-1 loss for training and testing sets
-y_hat_train = cu.logistic_classifier(X_train, w, w0, thresh=best_thresh, sparse=sparse)
-y_hat_test = cu.logistic_classifier(X_test, w, w0, thresh=best_thresh, sparse=sparse)
-print("Training, testing predicted number of twos: %d, %d" % (np.sum(y_hat_train),np.sum(y_hat_test)))
-error_train = val.loss_01(y_train_true, y_hat_train)/len(y_train)
-error_test = val.loss_01(y_test_true, y_hat_test)/len(y_test)
+y_hat_train = cu.logistic_classifier(X_train, w, w0)
+y_hat_test = cu.logistic_classifier(X_test, w, w0)
+error_train = val.loss_01(y_train_true, y_hat_train)/len(y_train_true)
+error_test = val.loss_01(y_test_true, y_hat_test)/len(y_test_true)
 print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
 
 # Now compute, output logloss for training and testing sets

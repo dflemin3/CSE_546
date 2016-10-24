@@ -17,7 +17,8 @@ from ..classification import classifier_utils as cu
 
 def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
-                     savell = False, X_test = None, y_test = None, multi=None):
+                     savell = False, X_test = None, y_test = None, multi=None, classfn=None,
+                     train_label=None,test_label=None, loss01fn=None):
     """
     Performs regularized batch gradient descent to optimize model with an update step:
 
@@ -58,6 +59,12 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
         whether or not to save the ll at each iteration
     multi : int (optional)
         If not None, multi sets number of classes
+    classfn : func (optional)
+        Function to classify.  If provided, used to compute/return 0/1 loss
+    train_label : array (n x 1) (optional)
+        training labels used for 0/1 loss calculation
+    test_label : array (n x 1) (optional)
+        testing labels used for 0/1 loss calculation
 
     Returns
     -------
@@ -98,9 +105,15 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
         ll_arr = []
         iter_arr = []
 
+    # Save 01 loss?
+    if classfn is not None:
+        train_01_loss = []
+
     # Save ll values on testing set?
     if X_test is not None and y_test is not None:
         test_ll_arr = []
+        if classfn is not None:
+            test_01_loss = []
 
     # No loss function given -> use loss for a binary classifier
     if llfn is None:
@@ -141,10 +154,18 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
             ll_arr.append(ll/len(y))
             iter_arr.append(iters)
 
+        # Compute 01 loss?
+        if classfn is not None:
+            train_01_loss.append(loss01fn(train_label,
+                                 cu.multi_logistic_classifier(X, w_pred, w0))/len(train_label))
+
         # Compute testing set loss for this iteration using fit from training set?
         if X_test is not None and y_test is not None:
             # Store test ll
             test_ll_arr.append(llfn(X_test, y_test, w_pred, w0)/len(y_test))
+            if classfn is not None:
+                test_01_loss.append(loss01fn(test_label,
+                                 cu.multi_logistic_classifier(X_test, w_pred, w0))/len(test_label))
 
         # Using an adaptive step size?
         if adaptive:
@@ -160,10 +181,16 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
         old_ll = ll
         iters += 1
 
-    if savell and not (X_test is not None and y_test is not None):
+    # Uh, so what do I return?
+    if savell and not (X_test is not None and y_test is not None) and classfn is None:
         return w0, w_pred, np.asarray(ll_arr), np.asarray(iter_arr)
-    elif savell and (X_test is not None and y_test is not None):
+    elif savell and (X_test is not None and y_test is not None) and classfn is None:
         return w0, w_pred, np.asarray(ll_arr), np.asarray(test_ll_arr), np.asarray(iter_arr)
+    elif savell and classfn is not None and not (X_test is not None and y_test is not None):
+        return w0, w_pred, np.asarray(ll_arr), np.asarray(train_01_loss), np.asarray(iter_arr)
+    elif savell and classfn is not None and (X_test is not None and y_test is not None):
+        return w0, w_pred, np.asarray(ll_arr), np.asarray(test_ll_arr), \
+        np.asarray(train_01_loss), np.asarray(test_01_loss), np.asarray(iter_arr)
     else:
         return w0, w_pred
 # end function
@@ -226,8 +253,11 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
     """
 
     #Define values
-    n = y.shape[0]
-    d = 1 # For stochastic gradient descent, use 1 (or batchsize) points
+    if batchsize is None:
+        n = 1 # For SGD, use 1 point unless using minibatch
+    else:
+        n = batchsize
+    d = X.shape[1]
 
     # No multi == no multiclasses
     if multi is None:
@@ -286,7 +316,6 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
             # Create batch indices mask
             inds = np.random.permutation(X.shape[0])
             inds = inds[:batchsize]
-            n = len(inds) # With a batch, must normalize by size of batch
         # No batches: straight up SGD
         else:
             inds = np.random.randint(0, high=X.shape[0], size=1)

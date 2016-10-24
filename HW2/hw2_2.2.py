@@ -27,29 +27,25 @@ mpl.rcParams['font.size'] = 20.0
 mpl.rc('text', usetex='true')
 
 # Flags to control functionality
-find_best_lam = False
-show_plots = False
-save_plots = False
+show_plots = True
+save_plots = True
 
-# Performance:
-# Training, testing predicted number of twos: 265675, 44228
-# Training, testing 0-1 loss: 0.129, 0.119
-# Training, testing logloss: -0.687, -0.697
+# Best Performance:
+# Training, testing 0-1 loss: 0.119, 0.112
+# Training, testing logloss: -0.800, -0.809
+# eta: 5.0e-5
+# eps: 5.0e-4
 
 # Define constants
-best_lambda = 1000.
+best_lambda = 0.
 best_thresh = 0.5
 best_eta = 0.000251188643151
-eta = 1.0e-5
+eta = 5.0e-5
 eps = 5.0e-4
-
 seed = 42
-frac = 0.1
-num = 6
-lammax = 1000.0
-scale = 10.0
 sparse = False
 Nclass = 10
+batchsize = 100
 
 # Load in MNIST training data
 print("Loading MNIST Training data...")
@@ -62,12 +58,15 @@ X_test, y_test = mu.load_mnist(dataset='testing')
 y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
 
 # With a best fit lambda, threshold, refit
-w0, w, ll_train, ll_test, iter_train = gd.stochastic_gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
-                                                    lam=best_lambda, eta=eta, sparse=sparse,
-                                                    savell=True, adaptive=True, eps=eps,
-                                                    multi=Nclass, llfn=val.logloss_multi,
-                                                    X_test=X_test, y_test=y_test_true,
-                                                    batchsize=100)
+w0, w, ll_train, ll_test, train_01, test_01, iter_train = \
+gd.gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
+                               lam=best_lambda, eta=eta, sparse=sparse,
+                               savell=True, adaptive=True, eps=eps,
+                               multi=Nclass, llfn=val.logloss_multi,
+                               X_test=X_test, y_test=y_test_true,
+                               train_label=y_train,
+                               test_label=y_test, classfn=cu.multi_linear_classifier,
+                               loss01fn=val.loss_01)
 
 
 if show_plots:
@@ -86,6 +85,23 @@ if show_plots:
     fig.tight_layout()
     if save_plots:
             fig.savefig("mnist_multi_train_test_ll.pdf")
+
+    plt.show()
+
+    # Plot Training, testing ll vs iteration number
+    fig, ax = plt.subplots()
+
+    # Plot -(log likelikehood) to get logloss
+    ax.plot(iter_train, train_01, lw=2, color="green", label=r"Train")
+    ax.plot(iter_train, test_01, lw=2, color="blue", label=r"Test")
+
+    # Format plot
+    ax.legend(loc="upper right")
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("0/1 Loss")
+    fig.tight_layout()
+    if save_plots:
+            fig.savefig("mnist_multi_train_test_01.pdf")
 
     plt.show()
 

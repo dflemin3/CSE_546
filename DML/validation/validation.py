@@ -9,6 +9,8 @@ Created on Mon Oct 10 2016
 This file contains routines to be used for model validation, selection, and error estimates.
 """
 
+from __future__ import print_function, division
+
 import numpy as np
 from ..regression import regression_utils as ru
 from ..regression import ridge_utils as ri
@@ -201,6 +203,66 @@ def sign(x):
 		return -1.0
 # end function
 sign = np.vectorize(sign) # Vectorize it!
+
+
+def summarize_loss(X_train, y_train, X_test, y_test, w, w0, y_train_label=None,
+                   y_test_label=None, classfn=None, lossfn=None):
+    """
+    Print a loss summary for training and testing data.
+
+    Note y_train and y_train_label are not always the same.  For example, y_train could
+    be a matrix of 0, 1 while y_train_label could be a vector with digits 0-9 for a
+    softmax classifier.
+
+    Parameters
+    ----------
+    X_train : array (n_train x d)
+        training input data
+    y_train : array (n_train x 1)
+        training labels
+    X_test : array (n_test x d)
+        testing input data
+    y_test : array (n_test x 1)
+        testing labels
+    w : vector (d x 1)
+        weight vector
+    w0 : float
+        constant offset
+    classfn : function
+        If provided, compute 0/1 loss for a classifier
+    lossfn : function
+        If provide, compute some loss metric using predictions
+    y_train_label : array (n_train x 1)
+    y_test_label : array (n_test x 1)
+
+    Returns
+    -------
+    None (outputs to consol...for now)
+    """
+
+    # Labels default to y values if no special parsing has to be done
+    if y_train_label is None:
+        y_train_label = y_train
+    if y_test_label is None:
+        y_test_label = y_test
+
+    # Now compute, output 0-1 loss for training and testing sets
+    if classfn is not None:
+        y_hat_train = classfn(X_train, w, w0)
+        y_hat_test = classfn(X_test, w, w0)
+
+        error_train = loss_01(y_train_label, y_hat_train)/len(y_hat_train)
+        error_test = loss_01(y_test_label, y_hat_test)/len(y_hat_test)
+        print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
+
+    if lossfn is not None:
+        # Now compute, output logloss for training and testing sets
+        logl_train = lossfn(X_train, y_train, w, w0)/len(y_train)
+        logl_test = lossfn(X_test, y_test, w, w0)/len(y_test)
+        print("Training, testing logloss: %.3lf, %.3lf" % (logl_train, logl_test))
+
+    return None
+# end function
 
 
 def split_data(X_train, y_train, frac=0.1, seed=None):

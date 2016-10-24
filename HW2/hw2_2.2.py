@@ -164,15 +164,6 @@ if show_plots:
 # Compute, output final losses
 #
 #######################################################
-
-# Now compute, output 0-1 loss for training and testing sets
-y_hat_train = cu.multi_logistic_classifier(X_train, w, w0)
-y_hat_test = cu.multi_logistic_classifier(X_test, w, w0)
-error_train = val.loss_01(y_train, y_hat_train)/len(y_train)
-error_test = val.loss_01(y_test, y_hat_test)/len(y_test)
-print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
-
-# Now compute, output logloss for training and testing sets
-logl_train = val.logloss_multi(X_train, y_train_true, w, w0)/len(y_train)
-logl_test = val.logloss_multi(X_test, y_test_true, w, w0)/len(y_test)
-print("Training, testing logloss: %.3lf, %.3lf" % (logl_train, logl_test))
+val.summarize_loss(X_train, y_train_true, X_test, y_test_true, w, w0,
+                       y_train_label=y_train, y_test_label=y_test,
+                       classfn=cu.multi_logistic_classifier, lossfn=val.logloss_multi)

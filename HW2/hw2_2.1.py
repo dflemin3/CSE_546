@@ -26,7 +26,7 @@ mpl.rcParams['font.size'] = 20.0
 mpl.rc('text', usetex='true')
 
 # Flags to control functionality
-find_best_lam = True
+find_best_lam = False
 show_plots = False
 save_plots = False
 
@@ -43,7 +43,8 @@ save_plots = False
 best_lambda = 1000.
 best_thresh = 0.5
 best_eta = 0.000251188643151
-eps = 2.5e-3
+eps = 1.0e-2
+#eps = 2.5e-3
 
 seed = 42
 frac = 0.1
@@ -144,14 +145,6 @@ if show_plots:
 
     plt.show()
 
-# Now compute, output 0-1 loss for training and testing sets
-y_hat_train = cu.logistic_classifier(X_train, w, w0)
-y_hat_test = cu.logistic_classifier(X_test, w, w0)
-error_train = val.loss_01(y_train_true, y_hat_train)/len(y_train_true)
-error_test = val.loss_01(y_test_true, y_hat_test)/len(y_test_true)
-print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
-
-# Now compute, output logloss for training and testing sets
-logl_train = val.logloss_bin(X_train, y_train_true, w, w0)/len(y_train)
-logl_test = val.logloss_bin(X_test, y_test_true, w, w0)/len(y_test)
-print("Training, testing logloss: %.3lf, %.3lf" % (logl_train, logl_test))
+# Output loss metrics!
+val.summarize_loss(X_train, y_train_true, X_test, y_test_true, w, w0,
+                       classfn=cu.logistic_classifier, lossfn=val.logloss_bin)

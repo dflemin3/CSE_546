@@ -373,7 +373,7 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
 
                 # Using an adaptive step size?
                 if adaptive:
-                    scale = 1.0/(n * np.sqrt(1.0 + iters))
+                    scale = 1.0/(n * (1.0 + iters))
 
                 # Is it converged (is loss not changing by some %?)
                 if np.fabs((ll - old_ll)/old_ll) > eps:

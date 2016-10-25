@@ -28,23 +28,13 @@ mpl.rc('text', usetex='true')
 # Flags to control functionality
 
 # Display, save plots?
-show_plots = True
+show_plots = False
 save_plots = False
 run_sgd = False
-run_minibatch_sgd = True
-
-# Best Performance:
-# Training, testing 0-1 loss: 0.120, 0.114
-# Training, testing logloss: -0.852, -0.858
-# eta: 1.0e-4
-# eps: 5.0e-4
+run_minibatch_sgd = False
 
 # Define constants
 
-# Best fits from reg path (using result from BGD)
-best_lambda = 1.0#100000.0
-best_thresh = 0.5
-best_eta = 5.0e-6#1.0e-5
 
 # Classifier parameters
 eps = 1.0e-3
@@ -71,12 +61,17 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 
 if run_minibatch_sgd:
     # Performance
-    # Training, testing 0-1 loss: 0.090, 0.086
-    # Training, testing logloss: -0.836, -0.842
-    # lam = 1.0, eta = 5.0e-6
-    print("Running minibatch SGD...")
+    # Training, testing 0-1 loss: 0.093, 0.088
+    # Training, testing logloss: 0.335, 0.321
+    # lam = 1.0, eta = 5.0e-6, eps = 5.0e-3
+
+    best_lambda = 1.0
+    best_thresh = 0.5
+    best_eta = 5.0e-6
+    eps = 5.0e-3
     batchsize = 100
 
+    print("Running minibatch SGD...")
     w0, w, ll_train, ll_test, train_01, test_01, iter_train = \
     gd.stochastic_gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
                                    lam=best_lambda, eta=best_eta, sparse=sparse,
@@ -147,9 +142,20 @@ if run_minibatch_sgd:
 #
 #######################################################
 if run_sgd:
-    print("Running SGD...")
+
+    # Performance
+    # Training, testing 0-1 loss: 0.081, 0.090
+    # Training, testing logloss: 0.379, 0.453
+    # lambda: 1.0, eps = 5.0e-3, eta = 5.0e-6
+
+    # SGD params
+    best_lambda = 1.0
+    best_thresh = 0.5
+    best_eta = 5.0e-6
+    eps = 5.0e-3
     batchsize = None
 
+    print("Running SGD...")
     w0, w, ll_train, ll_test, train_01, test_01, iter_train = \
     gd.stochastic_gradient_descent(cu.multi_logistic_grad, X_train, y_train_true,
                                    lam=best_lambda, eta=best_eta, sparse=sparse,
@@ -170,6 +176,10 @@ if run_sgd:
         ax.plot(iter_train, ll_train, lw=2, color="green", label=r"Train")
         ax.plot(iter_train, ll_test, lw=2, color="blue", label=r"Test")
 
+        # Plot BGD best fit on the testing set from before
+        plt.axhline(y=0.419, xmin=-1, xmax=100, ls="--", linewidth=2, color = 'k',
+                    label="BGD Testing Best Fit")
+
         # Format plot
         ax.legend(loc="upper right")
         ax.set_xlabel("Iteration")
@@ -186,6 +196,10 @@ if run_sgd:
         # Plot -(log likelikehood) to get logloss
         ax.plot(iter_train, train_01, lw=2, color="green", label=r"Train")
         ax.plot(iter_train, test_01, lw=2, color="blue", label=r"Test")
+
+        # Plot BGD best fit on the testing set from before
+        plt.axhline(y=0.106, xmin=-1, xmax=100, ls="--", linewidth=2, color = 'k',
+                    label="BGD Testing Best Fit")
 
         # Format plot
         ax.legend(loc="upper right")

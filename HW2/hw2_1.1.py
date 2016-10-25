@@ -29,23 +29,25 @@ import DML.regression.ridge_utils as ri
 find_best_lam = False
 
 # Define constants
-best_lambda = 1.0e6
+best_lambda = 1.0e4
 best_thresh = 0.4
 seed = 1
 frac = 0.1
 num = 5
 kwargs = {}
-lammax = 1.0e7
+lammax = 1.0e4
 scale = 10.0
 Nclass = 10 # classes are 0 - 9
 
-# Load in MNIST data
+# Load in MNIST training data
 print("Loading MNIST Training data...")
 X_train, y_train = mu.load_mnist(dataset='training')
+y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
 
+# Load in MNIST training data
 print("Loading MNIST Testing data...")
 X_test, y_test = mu.load_mnist(dataset='testing')
-
+y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
 # Estimate the best lambda?
 if find_best_lam:
 
@@ -85,7 +87,7 @@ if find_best_lam:
         print("Best threshold:",best_thresh)
 
 # Fit for the class prediction regression coefficients
-w0, w = cu.multi_linear_classifier_fit(X_train, y_train, Nclass, lam=best_lambda, thresh=best_thresh)
+w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
 
 # Using fit on training set, predict labels for train, test data by selecting whichever
 # prediction is the largest (one vs all classification)

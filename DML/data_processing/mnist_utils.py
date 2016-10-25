@@ -12,8 +12,7 @@ import os
 import pickle
 import numpy as np
 
-def load_mnist(dataset="training",
-               path="/Users/dflemin3/Desktop/Career/Grad_Classes/CSE_546/Data"):
+def load_mnist(dataset="training", path="../Data"):
     """
     Loads MNIST files into numpy arrays from pickle files.
 

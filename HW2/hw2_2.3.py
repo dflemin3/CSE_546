@@ -28,7 +28,7 @@ mpl.rc('text', usetex='true')
 # Flags to control functionality
 
 # Display, save plots?
-show_plots = False
+show_plots = True
 save_plots = False
 run_sgd = False
 run_minibatch_sgd = True
@@ -42,12 +42,12 @@ run_minibatch_sgd = True
 # Define constants
 
 # Best fits from reg path (using result from BGD)
-best_lambda = 100000.0
+best_lambda = 1.0#100000.0
 best_thresh = 0.5
-best_eta = 1.0e-5
+best_eta = 5.0e-6#1.0e-5
 
 # Classifier parameters
-eps = 1.0e-2
+eps = 1.0e-3
 seed = 42
 sparse = False
 Nclass = 10
@@ -56,6 +56,7 @@ Nclass = 10
 print("Loading MNIST Training data...")
 X_train, y_train = mu.load_mnist(dataset='training')
 y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
+print("Estimated best lambda: %.3lf" % val.estimate_lambda(X_train))
 
 # Load in MNIST training data
 print("Loading MNIST Testing data...")
@@ -69,6 +70,10 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 #######################################################
 
 if run_minibatch_sgd:
+    # Performance
+    # Training, testing 0-1 loss: 0.090, 0.086
+    # Training, testing logloss: -0.836, -0.842
+    # lam = 1.0, eta = 5.0e-6
     print("Running minibatch SGD...")
     batchsize = 100
 
@@ -88,9 +93,13 @@ if run_minibatch_sgd:
         # Plot Training, testing ll vs iteration number
         fig, ax = plt.subplots()
 
-        # Plot -(log likelikehood) to get logloss
+        # Plot log loss
         ax.plot(iter_train, ll_train, lw=2, color="green", label=r"Train")
         ax.plot(iter_train, ll_test, lw=2, color="blue", label=r"Test")
+
+        # Plot BGD best fit on the testing set from before
+        plt.axhline(y=0.419, xmin=-1, xmax=100, ls="--", linewidth=2, color = 'k',
+                    label="BGD Testing Best Fit")
 
         # Format plot
         ax.legend(loc="upper right")
@@ -105,9 +114,13 @@ if run_minibatch_sgd:
         # Plot Training, testing ll vs iteration number
         fig, ax = plt.subplots()
 
-        # Plot -(log likelikehood) to get logloss
+        # Plot 0/1 loss
         ax.plot(iter_train, train_01, lw=2, color="green", label=r"Train")
         ax.plot(iter_train, test_01, lw=2, color="blue", label=r"Test")
+
+        # Plot BGD best fit on the testing set from before
+        plt.axhline(y=0.106, xmin=-1, xmax=100, ls="--", linewidth=2, color = 'k',
+                    label="BGD Testing Best Fit")
 
         # Format plot
         ax.legend(loc="upper right")

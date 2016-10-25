@@ -179,7 +179,7 @@ def logloss_multi(X, y, w, w0, sparse=False):
     """
 
     y_hat = cu.softmax(X, w, w0, sparse=sparse)
-    return -np.sum(np.multiply(y, y_hat))
+    return -np.sum(y*np.log(y_hat))
 # end function
 
 
@@ -203,6 +203,28 @@ def sign(x):
 		return -1.0
 # end function
 sign = np.vectorize(sign) # Vectorize it!
+
+
+
+def estimate_lambda(X, scale=1.0):
+    """
+    Estimate regularization constant lambda using dimensional analysis as
+
+    lambda ~ scale * E[X^2]
+
+    Parameters
+    ----------
+    X : array (n x d)
+        training data
+    scale : float (optional)
+
+    Returns
+    -------
+    lambda : float
+    """
+
+    return scale * np.mean(X*X)
+# end function
 
 
 def summarize_loss(X_train, y_train, X_test, y_test, w, w0, y_train_label=None,

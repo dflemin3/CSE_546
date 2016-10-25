@@ -31,30 +31,30 @@ mpl.rc('text', usetex='true')
 find_best_lam = False
 
 # Display, save plots?
-show_plots = False
-save_plots = False
+show_plots = True
+save_plots = True
 
 # Best Performance:
-# Training, testing 0-1 loss: 0.120, 0.114
-# Training, testing logloss: -0.852, -0.858
+# Training, testing 0-1 loss: 0.112, 0.106
+# Training, testing logloss: 0.439, 0.419
 # eta: 1.0e-4
-# eps: 5.0e-4
+# eps: 5.0e-3
 
 # Define constants
 
 # Regularization path parameters
-lammax = 1.0e5
+lammax = 1.0e3
 scale = 10
 num = 5
 frac = 0.1
 
 # Best fits from reg path
-best_lambda = 100000.0
+best_lambda = 1000.0
 best_thresh = 0.5
 best_eta = 1.0e-4
 
 # Classifier parameters
-eps = 5.0e-4
+eps = 5.0e-3
 seed = 42
 sparse = False
 Nclass = 10
@@ -69,7 +69,6 @@ print("Loading MNIST Testing data...")
 X_test, y_test = mu.load_mnist(dataset='testing')
 y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
 
-
 #######################################################
 #
 # Run reg path over lambda, eta?
@@ -77,6 +76,7 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 #######################################################
 if find_best_lam:
     print("Running regularization path to optmize lambda, eta...")
+    print("Estimated best lambda: %.3lf" % val.estimate_lambda(X_train, scale=1.0e-3))
 
     # Split training data into subtraining set, validation set
     X_tr, y_tr, X_val, y_val = val.split_data(X_train, y_train, frac=frac, seed=seed)

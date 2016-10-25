@@ -107,7 +107,7 @@ def square_loss(y, y_hat):
     sl : float
         square loss
     """
-    return np.sum(np.power(y - y_hat,2))
+    return np.sum(np.power(y - y_hat,2))/len(y)
 # end function
 
 
@@ -127,7 +127,7 @@ def loss_01(y, y_hat):
     loss : float
         0-1 loss
     """
-    return np.sum(y != y_hat)
+    return np.sum(y != y_hat)/len(y)
 # end function
 
 
@@ -152,7 +152,7 @@ def logloss_bin(X, y, w, w0):
         ll
     """
     y_hat = w0 + X.dot(w)
-    return -np.sum(y*y_hat - np.log(1.0 + np.exp(y_hat)))
+    return -np.sum(y*y_hat - np.log(1.0 + np.exp(y_hat)))/len(y)
 # end function
 
 
@@ -179,7 +179,7 @@ def logloss_multi(X, y, w, w0, sparse=False):
     """
 
     y_hat = cu.softmax(X, w, w0, sparse=sparse)
-    return -np.sum(y*np.log(y_hat))
+    return -np.sum(y*np.log(y_hat))/len(y)
 # end function
 
 
@@ -273,14 +273,14 @@ def summarize_loss(X_train, y_train, X_test, y_test, w, w0, y_train_label=None,
         y_hat_train = classfn(X_train, w, w0)
         y_hat_test = classfn(X_test, w, w0)
 
-        error_train = loss_01(y_train_label, y_hat_train)/len(y_hat_train)
-        error_test = loss_01(y_test_label, y_hat_test)/len(y_hat_test)
+        error_train = loss_01(y_train_label, y_hat_train)
+        error_test = loss_01(y_test_label, y_hat_test)
         print("Training, testing 0-1 loss: %.3lf, %.3lf" % (error_train, error_test))
 
     if lossfn is not None:
         # Now compute, output logloss for training and testing sets
-        logl_train = lossfn(X_train, y_train, w, w0)/len(y_train)
-        logl_test = lossfn(X_test, y_test, w, w0)/len(y_test)
+        logl_train = lossfn(X_train, y_train, w, w0)
+        logl_test = lossfn(X_test, y_test, w, w0)
         print("Training, testing logloss: %.3lf, %.3lf" % (logl_train, logl_test))
 
     return None

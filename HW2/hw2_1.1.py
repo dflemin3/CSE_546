@@ -25,6 +25,13 @@ import DML.data_processing.mnist_utils as mu
 import DML.validation.validation as val
 import DML.regression.ridge_utils as ri
 
+# Performance
+# Training 01 Loss: 0.14065
+# Testing 01 Loss: 0.1387
+# Training Square Loss: 2.48796666667
+# Testing Square Loss: 2.4194
+# lambda = 1.0e4
+
 # Flags to control functionality
 find_best_lam = False
 
@@ -95,9 +102,9 @@ y_hat_train = cu.multi_linear_classifier(X_train, w, w0)
 y_hat_test = cu.multi_linear_classifier(X_test, w, w0)
 
 # Compute 01 Loss!
-print("Training 01 Loss:",val.loss_01(y_train,y_hat_train)/len(y_hat_train))
-print("Testing 01 Loss:",val.loss_01(y_test,y_hat_test)/len(y_hat_test))
+print("Training 01 Loss:",val.loss_01(y_train,y_hat_train))
+print("Testing 01 Loss:",val.loss_01(y_test,y_hat_test))
 
 # Compute square loss!
-print("Training Square Loss:",val.square_loss(y_train,y_hat_train)/len(y_hat_train))
-print("Testing Square Loss:",val.square_loss(y_test,y_hat_test)/len(y_hat_test))
+print("Training Square Loss:",val.square_loss(y_train,y_hat_train))
+print("Testing Square Loss:",val.square_loss(y_test,y_hat_test))

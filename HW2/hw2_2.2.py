@@ -76,7 +76,7 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 #######################################################
 if find_best_lam:
     print("Running regularization path to optmize lambda, eta...")
-    print("Estimated best lambda: %.3lf" % val.estimate_lambda(X_train, scale=1.0e-3))
+    print("Estimated best lambda: %.3lf" % val.estimate_lambda(X_train, scale=1.0e-1))
 
     # Split training data into subtraining set, validation set
     X_tr, y_tr, X_val, y_val = val.split_data(X_train, y_train, frac=frac, seed=seed)

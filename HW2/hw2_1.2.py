@@ -22,21 +22,13 @@ import DML.validation.validation as val
 import DML.regression.ridge_utils as ri
 import DML.regression.regression_utils as ru
 
-# Flags to control functionality
-find_best_lam = False
-
 # Define constants
-best_lambda = 1.0e2
-best_thresh = 0.4
-seed = 1
-frac = 0.1
-num = 5
+#best_lambda = 1.0e2
+seed = 42
 kwargs = {}
-lammax = 1.0e7
-k = 1000
-scale = 10.0
+k = 10000
 Nclass = 10 # classes are 0 - 9
-nn_cache = "/Users/dflemin3/Desktop/Career/Grad_Classes/CSE_546/Data/hw2-data/MNIST_nn_cache.npz"
+nn_cache = "../Data/hw2-data/MNIST_nn_cache.npz"
 
 # If I haven't already done it, load MNIST training data and transform it
 if not os.path.exists(nn_cache):
@@ -59,20 +51,35 @@ if not os.path.exists(nn_cache):
     print("Performing naive neural network layer transformation on testing set...")
     X_test = ru.naive_nn_layer(X_test, k=k, v=v)
 
+    # Now save transformation matrix for later
     print("Caching...")
-    np.savez(nn_cache,X_train=X_train,X_test=X_test,y_train=y_train,y_test=y_test,
-             v=v)
+    np.savez(nn_cache,v=v)
+# No cache, load transformation matrix
 else:
     print("Reading from cache...")
     res = np.load(nn_cache)
-    X_train = res["X_train"]
-    X_test = res["X_test"]
-    y_train = res["y_train"]
-    y_test = res["y_test"]
     v = res["v"]
 
-# Fit!
-# Fit for the class prediction regression coefficients
+    # Load in MNIST data
+    print("Loading MNIST Training data...")
+    X_train, y_train = mu.load_mnist(dataset='training')
+
+    # Transform X
+    print("Performing naive neural network layer transformation on training set...")
+    X_train = ru.naive_nn_layer(X_train, k=k, v=v)
+
+    # Load in MNIST data
+    print("Loading MNIST Testing data...")
+    X_test, y_test = mu.load_mnist(dataset='testing')
+
+    # Transform X
+    print("Performing naive neural network layer transformation on testing set...")
+    X_test = ru.naive_nn_layer(X_test, k=k, v=v)
+
+# Fit for the class prediction regression coefficients on transformed training set
+print("Fitting with ridge regression...")
+best_lambda = val.estimate_lambda(X_train, scale=1.0)
+print("Best lambda: %.3lf." % best_lambda)
 y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
 w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
 

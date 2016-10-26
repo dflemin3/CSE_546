@@ -259,7 +259,7 @@ def summarize_loss(X_train, y_train, X_test, y_test, w, w0, y_train_label=None,
 
     Returns
     -------
-    None (outputs to consol...for now)
+    None (outputs to console...for now)
     """
 
     # Labels default to y values if no special parsing has to be done

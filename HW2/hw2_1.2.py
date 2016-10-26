@@ -30,6 +30,13 @@ k = 10000
 Nclass = 10 # classes are 0 - 9
 nn_cache = "../Data/hw2-data/MNIST_nn_cache.npz"
 
+# Performance
+# Best lambda: 2814.589.
+# Training 01 Loss: 0.140566666667
+# Testing 01 Loss: 0.2538
+# Training Square Loss: 2.48653333333
+# Testing Square Loss: 4.4585
+
 # If I haven't already done it, load MNIST training data and transform it
 if not os.path.exists(nn_cache):
     print("Cache does not exist, running MNIST neural network transformation...")
@@ -81,6 +88,7 @@ print("Fitting with ridge regression...")
 best_lambda = val.estimate_lambda(X_train, scale=1.0)
 print("Best lambda: %.3lf." % best_lambda)
 y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
+y_train_test = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
 w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
 
 # Using fit on training set, predict labels for train, test data by selecting whichever
@@ -93,5 +101,5 @@ print("Training 01 Loss:",val.loss_01(y_train,y_hat_train))
 print("Testing 01 Loss:",val.loss_01(y_test,y_hat_test))
 
 # Compute square loss!
-print("Training Square Loss:",val.square_loss(y_train,y_hat_train))
-print("Testing Square Loss:",val.square_loss(y_test,y_hat_test))
+print("Training Square Loss:",val.square_loss(y_train_true,y_hat_train))
+print("Testing Square Loss:",val.square_loss(y_test_true,y_hat_test))

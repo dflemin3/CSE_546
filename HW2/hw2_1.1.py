@@ -28,8 +28,8 @@ import DML.regression.ridge_utils as ri
 # Performance
 # Training 01 Loss: 0.14065
 # Testing 01 Loss: 0.1387
-# Training Square Loss: 2.48796666667
-# Testing Square Loss: 2.4194
+# Training Square Loss: 265.462333333
+# Testing Square Loss: 264.3616
 # lambda = 1.0e4
 
 # Flags to control functionality
@@ -106,5 +106,5 @@ print("Training 01 Loss:",val.loss_01(y_train,y_hat_train))
 print("Testing 01 Loss:",val.loss_01(y_test,y_hat_test))
 
 # Compute square loss!
-print("Training Square Loss:",val.square_loss(y_train,y_hat_train))
-print("Testing Square Loss:",val.square_loss(y_test,y_hat_test))
+print("Training Square Loss:",val.square_loss(y_train_true,y_hat_train))
+print("Testing Square Loss:",val.square_loss(y_test_true,y_hat_test))

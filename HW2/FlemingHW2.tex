@@ -98,7 +98,7 @@ As discussed above in my description of how I optimized my hyperparameters, I fo
 With my optimal hyperparameters, I refit the batch gradient ascent on the entire $N = 60,000$ sample training set to get the final fit parameters $w_0$ and $\hat{w}$.  At each iteration of this fit, I computed the log-loss and 0/1 loss for both the training and testing set and plotted them in Fig.~\ref{fig:mnist_bin_ll} and \ref{fig:mnist_bin_01} below.  As expected, the testing error is worse than the training error for most of the batch gradient ascent path.  Interestingly, the testing loss actually dips below the training loss at the end of the fit near convergence.
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{mnist_bin_train_test_ll.pdf}
-    \caption{Log loss as a function of iteration for both the MNIST training and testing datasets for binary logistic regression.  The log loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  Note how the loss decreases for both sets with each iteration as the fit improves.  In general, the testing loss is slightly larger than the training loss as expected.}
+    \caption{Log loss as a function of iteration for both the MNIST training and testing datasets for binary logistic regression.  The log loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  The log-losses for both the training and testing sets are very close and hence their evolution appear to overlap in the figure. Note how the loss decreases for both sets with each iteration as the fit improves.  In general, the testing loss is slightly larger than the training loss as expected.}
     \label{fig:mnist_bin_ll}
 \end{figure}
 \begin{figure}[H]
@@ -112,4 +112,131 @@ The log-loss for both sets decreases dramatically during early iterations but th
 \subsubsection*{2.1.3}
 Given how the sigmoid binary logistic regression link function maps a prediction to a probability-like range $[0,1]$, a natural threshold for classification is to say if $\hat{y} > 0.5$, then $Y = 1$ and 0 otherwise.  With this threshold, I found a training log loss and 0/1 loss of 0.206 and 0.027, respectively.  I found a testing log loss and 0/1 loss of 0.213 and 0.027, respectively.  Note that I normalized both losses by the size of each respective set for comparison's sake.  Overall, my model performs very well at is can successfully classify ${\sim}97\%$ of 2s in the MNIST dataset
 
+\subsection*{2.2: Softmax classification: gradient descent}
+
+In this section I used multi-class softmax classification optimized using batch gradient descent to predict the label of a sample from the MNIST dataset.  For $k$ classes, the labels range over $[0,k-1]$ where for $Y > 0$
+\begin{equation} \label{eqn:softmax_p}
+P(Y = l | x, w) = \frac{\exp{(w_{0,l} + w^l \cdot x)}}{1 + \sum_{i = 1}^{k-1}\exp{(w_{0,i} + w^i \cdot x)}}
+\end{equation}
+where I have added a constant offset $w_0$ term for each class for my calculations.  Empirically, I find the model performs slightly better with the inclusion of $w_0$.  For $Y = 0$,
+\begin{equation}
+P(Y = l | x, w) = \frac{1}{1 + \sum_{i = 1}^{k-1}\exp{(w_{0,i} + w^i \cdot x)}}
+\end{equation}
+where the probabilities sum to 1.  For classification, I take the largest probability among the coefficients of the prediction vector.  The log-loss for softmax classification is given by 
+\begin{equation} \label{eqn:softmax_logloss}
+L(w) = \frac{-1}{N} \sum_{i = 1}^N \log(P(Y = y^i | x^i, w))
+\end{equation} 
+for $N$ samples.  Note that this sum is over the entire prediction vector and not just the predicted probability corresponding to the correct label.  When optimizing my model to find $w_0$ and $\hat{w}$, I seek to minimize Eqn.~\ref{eqn:softmax_logloss}.
+
+
+\subsubsection*{2.2.1}
+
+Here I take the derivative of the softmax function with respect to $w_p$ for the $lth$ class.  Note that in this case, there are two separate regimes:  where $l = p$ and $l \neq p$ where $l$ is the true class for the $jth$ sample.  Also, I define the indicator function as
+\begin{equation} \label{eqn:indicator}
+I(y^j, l)
+\end{equation}
+which returns 1 if $y^j = l$ and 0 otherwise.
+
+First, I expand Eqn.~\ref{eqn:softmax_logloss} and neglect the regularization term for now as it adds a $\lambda w_l$ to the gradient. I find 
+\begin{equation} \label{eqn:softmax_logloss_exp}
+\begin{split}
+NLL & = \sum_j \left[ \log \left[  \frac{\exp{(w_{0,l} + w^l \cdot x^j)}}{1 + \sum_{l = 1}^{k-1}\exp{(w_{0,l} + w^i \cdot x^j)}} \right]\right] \\
+& = \sum_j \left[(w_{0,l} + w^l \cdot x^j) - \log[1 + \sum_{l = 1}^{k-1}\exp{(w_{0,l} + w^l \cdot x^j)}] \right]
+\end{split}
+\end{equation}
+via log identities where this quantities is summed over all $j$ samples.
+
+Now, I take the gradient of Eqn.~\ref{eqn:softmax_logloss_exp} for $Y \neq 0$:
+
+\begin{equation} \label{eqn:softmax_grad_neq}
+\begin{split}
+& \frac{\partial}{\partial w_p} \left( \sum_j \left[(w_{0,l} + w^l \cdot x^j) - \log[1 + \sum_{l= 1}^{k-1}\exp{(w_{0,l} + w^l \cdot x^j)}]\right] \right) \\
+& = \sum_j  \sum_{l \neq p} I(y^j = l) \left( \frac{-x^j \exp(w_{0,p} + w_p \cdot x^j)}{1 + \sum_l \exp(w_{0,l} + w_l \cdot x^j)} \right)  \\
+& + I(y^j = p) \left( x^j - \frac{x^j \exp(w_{0,p} + w_p \cdot x^j)}{1 + \sum_l \exp(w_{0,l} + w_l \cdot x^j)} \right)
+\end{split}
+\end{equation}
+where the two terms account for cases when the true label $l \neq p$ and when $l = p$ where $p$ is the current class whose derivative I evaluate.  Replacing terms with conditional probabilities yield
+\begin{equation}
+\sum_j \sum_{l \neq p} -I(y^j = l) x^j P(y^j = p | x^j, w) + I(y^j = p) x^j \left[1 - P(y^j = p | x^j, w) \right]
+\end{equation}
+which is similar to the binary logistic regression case but with additional terms for all incorrectly labeled terms in the prediction vector.
+
+Now the gradient for the $Y = 0$ term proceeds similarly but without the $w_{0,l} + w^l \cdot x^j$ term as goes as follows: 
+
+\begin{equation} \label{eqn:softmax_grad_eq}
+\begin{split}
+& \frac{\partial}{\partial w_p} \left( \sum_j \left[- \log[1 + \sum_{l= 1}^{k-1}\exp{(w_{0,l} + w^l \cdot x^j)}]\right] \right) \\
+& = \sum_j  \sum_{l \neq p} I(y^j = l) \left( \frac{-x^j \exp(w_{0,p} + w_p \cdot x^j)}{1 + \sum_l \exp(w_{0,l} + w_l \cdot x^j)} \right)  \\
+& + I(y^j = p) \left( - \frac{x^j \exp(w_{0,p} + w_p \cdot x^j)}{1 + \sum_l \exp(w_{0,l} + w_l \cdot x^j)} \right).
+\end{split}
+\end{equation}
+Replacing with conditional probabilities and simplifying gives
+\begin{equation}
+\sum_j \sum_{l \neq p} -I(y^j = l) x^j P(y^j = p | x^j, w) + I(y^j = p) x^j \left[- P(y^j = p | x^j, w) \right]
+\end{equation}
+
+The gradient derived above becomes the gradient for my regularized gradient descent update rule
+\begin{equation}
+ w_l^{(t+1)} \leftarrow w_l^{(t)} - \eta (\lambda w_l^{(t)} + \nabla_l NLL(w_l)).
+ \end{equation}
+ In practice, I convert my $n \times 1$ label vector $y$ into $n \times k$ label matrix for $k$ classes.  For the $jth$ sample $y_j$, the element corresponding to the correct label is 1 while all other elements are 0.  Naturally, my $w$ becomes a $d \times k$ matrix and $w_0$ becomes a $k \times 1$ vector.  Inserting my derived gradients into the gradient descent update rule, I update $w$ and $w_0$ as follows
+ 
+ \begin{equation}
+w^{(t+1)}_l \leftarrow w^{(t)}_l - \eta (\lambda w^{(t)}_l - \sum_j x^j_i[y^j - \hat{P}(Y^j = l | x^j, w_l^{(t)})])
+\end{equation}
+and for the unregularized constant offset term
+\begin{equation}
+w^{(t+1)}_{0,l} \leftarrow w^{(t)}_{0,l} - \eta (- \sum_j[y^j - \hat{P}(Y^j = l | x^j, w^{(t)})]).
+\end{equation}
+where these expressions can simultaneously be evaluated for all $l$ when both $w$ and $y$ are converted into matrices as described above.
+
+\subsubsection*{2.2.2}
+
+TODO... learning rate and $\lambda$ optimization
+
+\subsubsection*{2.2.3}
+
+In Fig.~\ref{fig:bgd_mnist_ll} and Fig.~\ref{fig:bgd_mnist_01}, I plot the log-loss and 0/1 loss as a function of iteration for my softmax logistic regression batch gradient descent solution.  Initially in the first two or so iterations, my solution moves away from the local minimum, likely because the initial step size $\eta$ was a bit too large.  As the iteration number increased and $eta$ decayed as $1/\sqrt{t}$ for iteration number $t$, the decreased step size allowed the algorithm to advance towards to local minimum.  Eventually around iteration 15, the solution reached close to the local minimum and slowly converged from there.  Note that for this question, I said my solution was converged once the log-loss changed by less than $0.5\%$ between iterations.  A stricter converged criterion did not appreciably improve final losses and only slowed down the code.  Interestingly, I found lower losses on my testing set indicated that my model performed marginally better on my testing set than the training set.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{bgd_mnist_multi_train_test_ll.pdf}
+    \caption{Log loss as a function of iteration for both the MNIST training and testing datasets for softmax logistic regression using batch gradient descent.  The log loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  The log-losses for both the training and testing sets are very close and hence their evolution appear to overlap in the figure.  Note how the loss decreases for both sets with each iteration as the fit improves.}
+    \label{fig:bgd_mnist_ll}
+\end{figure}
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{bgd_mnist_multi_train_test_01.pdf}
+    \caption{0/1 loss as a function of iteration for both the MNIST training and testing datasets for softmax logistic regression using batch gradient descent.  The 0/1 loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  Note how the loss decreases for both sets with each iteration as the fit improves.}
+    \label{fig:bgd_mnist_01}
+\end{figure}
+
+\subsubsection*{2.2.4}
+
+On the training set, I achieved a log-loss and a 0/1 loss of 0.439 and 0.112, respectively.  On the testing set, I achieved a final log-loss and a 0/1 loss of 0.419, 0.106, respectively.  My simple batch gradient descent solution for softmax logistic regression performs rather well as it can correctly classify ${\sim}90\%$ of digits in the MNIST dataset.
+
+\subsection*{2.3: Softmax classification: stochastic gradient descent}
+
+
 \end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

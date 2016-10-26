@@ -4,3 +4,5 @@
 \BOOKMARK [2][-]{section*.8}{1.2: Neural Nets with a random first layer: Using more features}{section*.3}% 4
 \BOOKMARK [1][-]{section*.9}{Question 2: Multi-Class Classification using Logistic Regression and Softmax}{}% 5
 \BOOKMARK [2][-]{section*.10}{2.1: Binary Logistic Regression}{section*.9}% 6
+\BOOKMARK [2][-]{section*.14}{2.2: Softmax classification: gradient descent}{section*.9}% 7
+\BOOKMARK [2][-]{section*.19}{2.3: Softmax classification: stochastic gradient descent}{section*.9}% 8

@@ -285,9 +285,97 @@ I implemented mini-batch SGD using a batch size of 100 samples.  In Fig.~\ref{fi
     \label{fig:sgd_mini_mnist_01}
 \end{figure}
 
-As seen in both figures, the losses immediately drop to the batch gradient descent performance after 1 iteration, or 150 batches through 15,000 samples!  After several more iterations, my mini-batch SGD algorithm converged to performance that was markedly better than the batch gradient descent implementation. 
+As seen in both figures, the losses immediately drop to the batch gradient descent performance after 1 iteration, or 150 batches through 15,000 samples!  After several more iterations, my mini-batch SGD algorithm converged to performance that was markedly better than the batch gradient descent implementation.  The mini-batch SGD achieved a training set log-loss and 0/1 loss of 0.341 and 0.095 while achieving a log-loss and 0/1 loss of 0.326 and 0.09 on the testing set, respectively.
 
-TODO: LEARNING RATE, LAMBDA DISCUSSION
+After trial and error, I found that a learning rate $\eta = 5 \times 10^{-6}$ gave the best performance.  Any larger learning rate caused the algorithm to diverge.  As before, I decayed $\eta$ as $1/\sqrt{t}$ where $t$ is the number of the current iteration.  Using Eqn.~\ref{eqn:lambda_heuristic}, I found a regularization parameter of $\lambda = 1$ yielded the best performance.
+
+\subsubsection*{2.3.4}
+
+My mini-batch algorithm converged more quickly than my SGD algorithm at 1 iteration to reach batch gradient descent performance as compared to over 4 for SGD.  Mini-batch SGD only needed to pass through about one quarter of the training data before achieving batch gradient descent performance while it took vanilla SGD at least one full pass through all 60,000 points.  This is likely due to the inherent noise incurred from computing the gradient with one data point as is done with SGD causing the solution to bounce around more as opposed to a smooth decent to the minimum.  In mini-batch SGD, computing the gradient over 100 samples smooths out the noise to result in a quicker convergence down towards the minimum.
+
+\subsection*{Neural Nets with a random first layer: Using more features}
+
+\subsubsection*{2.4.1}
+
+For this question, I transformed my MNIST image datasets using the same transformation matrix $v$ I used in Question 1.2 for consistency.  Given the size of the transformed data ($60000 \times 10000$) and also the convergence speeds analyzed in the previous question, I decided to using mini-batch SGD to optimized a softmax classifier on this data.  After trial and error, error being where my solution diverged, I found a learning rate $\eta = 1 \times 10^{-8}$ yielded the best performance.  Using Eqn.~\ref{eqn:lambda_heuristic}, I found a regularization parameter of $\lambda = 2.8 \times 10^{4}$ yielded the best performance.  As before, I deem my algorithm converged once the log-loss changes by less than $0.5\%$ and for SGD, each pass through 15,000 samples is referred to as an iteration.
+
+In Fig.~\ref{fig:sgd_nn_mini_mnist_ll} and Fig.~\ref{fig:sgd_nn_mini_mnist_01} I plot the log-loss and 0/1 loss as a function of iteration for my softmax classification using mini-batch SGD on the transformed MNIST data.  In both figures, I plot a horizontal line representing the respective loss values computed by applying the converged batch gradient descent softmax classification model on the MNIST testing set for reference.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{sgd_nn_mnist_multi_train_test_ll.pdf}
+    \caption{Log loss as a function of iteration for both the transformed MNIST training and testing datasets for softmax logistic regression using mini-batch SGD.  The log loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.}
+    \label{fig:sgd_nn_mini_mnist_ll}
+\end{figure}
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{sgd_nn_mnist_multi_train_test_01.pdf}
+    \caption{0/1 loss as a function of iteration for both the transformed MNIST training and testing datasets for softmax logistic regression using mini-batch SGD.  The 0/1 loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.}
+    \label{fig:sgd_nn_mini_mnist_01}
+\end{figure}
+
+As seen above, the mini-batch SGD quickly achieves performance comparable to the gradient descent softmax optimization on the original MNIST data after only 2 iterations, or just half a pass through the training set.  The losses for both the training and testing set as a function of iteration are nearly identical until the algorithm finally converges at which point the testing loss is slightly greater than the training loss.
+
+\subsubsection*{2.4.2}
+
+The mini-batch SGD on the transformed MNIST data achieved a training set log-loss and 0/1 loss of 0.291 and 0.079 while achieving a log-loss and 0/1 loss of 0.300 and 0.083 on the testing set, respectively.  As expected, the testing loss is greater than the training loss.  Interestingly, both the log and 0/1 losses on the transformed data are appreciably smaller than their counter-parts on the original MNIST data.  Even though I used the same optimization algorithm, mini-batch SGD, and softmax classification, the one layer neural network transformed MNIST data yields a markedly better performance than the original data.  Even though I did nothing particularly clever when transforming the MNIST data to a space with more features, this trivial step yielded non-trivial improvements.
+
+\section*{3: (Baby) Learning Theory: Why is statistical learning possible?}
+
+For this question, I will assume a simplified Chernoff-Hoeffding bound of the following form
+\begin{equation} \label{eqn:ch_bound}
+P(|\bar{Z} - \theta| \geq \epsilon) \leq 2 \exp(-2N \epsilon^2)
+\end{equation}
+where $\bar{Z}$ is the empirical mean of N i.i.d. samples from a Bernoulli distribution where $P(Z = 1) = \theta$ and $P(Z = 0) = 1 - \theta$.  Additionally, I will be working in the hypothesis space where I have a finite set of $K$ classifiers.
+
+\subsection*{3.1: A confidence interval for a coin}
+
+\subsubsection*{3.1.1}
+
+A confidence interval for the quantities $|\bar{Z} - \theta|$ is for the probability of that quantity being smaller than some error threshold $\epsilon$ to be something like $95\%$ in which case $1 - \delta = 0.95$ for $\delta = 0.5$.  To quantify the confidence interval, I seek to derive a functional form for $\epsilon$ in terms of $N$ and $\delta$.
+
+\begin{equation}
+\begin{split}
+& P(|\bar{Z} - \theta| \leq \epsilon) \geq 1 - \delta \\
+& P(|\bar{Z} - \theta| \leq \epsilon) - 1 \geq - \delta \\
+& 1- P(|\bar{Z} - \theta| \leq \epsilon) \leq \delta \\
+& P(|\bar{Z} - \theta| \geq \epsilon) \leq \delta
+\end{split}
+\end{equation}
+via the law of total probability.  At this point, I note that the final expression is equivalent in form to Eqn.~\ref{eqn:ch_bound} and therefore I can equate
+\begin{equation}
+\delta = 2 \exp(-2N \epsilon^2).
+\end{equation}
+With this expression in hand, I can solve for $\epsilon$ and complete the confidence interval derivation as follows:
+\begin{equation}
+\begin{split}
+& \log (\delta/2) = \log(\exp(-2N \epsilon^2)) \\
+& \log(\delta/2) -2N \epsilon^2 \\
+& \sqrt{\frac{\log(2/\delta)}{2N}} = \epsilon .
+\end{split}
+\end{equation}
+
+\subsection*{3.2: Estimating the performance of a given classifier}
+
+In this question, I will work with a set of binary classifiers $f \in F$ for $K$ fs.  For a given classifier $f$, I define the 0/1 loss as
+\begin{equation} \label{eqn:loss_01}
+L(f) = E_{X,Y}[1(f(X) \neq Y)].
+\end{equation}
+
+\subsubsection*{3.2.1}
+
+TODO
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \end{document}
 

@@ -5,6 +5,8 @@
 \usepackage{amssymb}	% Extra maths symbols
 \usepackage{hyperref}
 \usepackage{float}
+\floatplacement{figure}{H}
+\floatplacement{table}{H} 
 \geometry{a4paper} % or letter or a5paper or ... etc
 
 \title{CSE 546: Machine Learning Homework 2}
@@ -22,7 +24,7 @@
 Please note that a copy of all the code I wrote to answer the questions in this assignment are included in my submission but also located online at \url{https://github.com/dflemin3/CSE_546/tree/master/HW2}.  Some scripts require data, such as MNIST data, to run to completion and were not included on my github or in my submission due to file size constraints.  If requested, I will happily send a compressed directory containing my homework and detailed instructions on how to reproduce my work.  My primary email is dflemin3 (at) uw (dot) edu.  Also for reproducibility, I set the random number generator seed near the top of each script such that rerunning my script will yield the same answers as presented here.
 
 %%% QUESTION 0  %%%
-
+\section*{Question 0: Collaborators}
 I collaborated with Matt Wilde, Serena Liu, and Janet Matsen for various questions on this assignment.
 
 %%% QUESTION 1 %%%
@@ -72,7 +74,7 @@ The code used to answer this question and all subquestions are contained within 
 
 \subsection*{2.1: Binary Logistic Regression}
 
-For this question, I filtered the MNIST data such that all Y digits equal to 2 were set to 1 and all other labels set to 0 to make this a binary classification problem.  I trained a logistic regression model on the MNIST training data using regularized batch gradient ascent to minimize the log-loss of the data as defined in class notes as
+For this question, I filtered the MNIST data such that all Y digits equal to 2 were set to 1 and all other labels set to 0 to make this a binary classification problem.  I trained a logistic regression model on the MNIST training data using regularized batch gradient descent to minimize the log-loss of the data as defined in class notes as
 \begin{equation} \label{eqn:bin_logloss}
 NLL = -\sum_j [y^j (w_0 + \sum_{i=1}^d X_i^j \hat{w}_i) - \log(1+ \exp(w_0 + \sum_{i=1}^d X_i^j \hat{w}_i))].
 \end{equation}
@@ -89,13 +91,13 @@ w^{(t+1)}_0 \leftarrow w^{(t)}_0 - \eta (- \sum_j[y^j - \hat{P}(Y^j = 1 | x^j, w
 
 Minimizing Eqn.~\ref{eqn:bin_logloss} over the training set by applying the update rules given in Eqn.~\ref{eqn:bin_w_update} and Eqn.~\ref{eqn:bin_w0_update} in a gradient descent algorithm then yields the predicted parameters $\hat{w}, w_0$.  I called my solution converged once the log-loss changed by less than $0.25 \%$.  I varied my convergence threshold and found comparable performance.
 
-For my regularized batch gradient ascent implementation, I used the $l_2$ norm penalty as was derived in class.  When fitting this algorithm, I need to optimize of the following hyperparameters: the learning rate $\eta$ and the regularization constant $\lambda$.  The hyperparameters of my model were simultaneously fit for along a regularization grid.  Since my training set was sufficiently large with $N = 60,000$ samples, I randomly partitioned it into a validation set with $N_{val} = 6,000$ and a training set with $N_{train} = 54,000$.  I iterated over a two-dimensional grid of $\eta \in [10^{-6},1]$ in 6 logarithmic bins and $\lambda \in [10^{-3},10^{3}]$ in 6 logarithmic bins.  For each $(\eta,\lambda)$ pair, I ran batch gradient ascent on the training set then tested it on the validation data.  I used the validation predictions to compute the 0/1 loss and stored it for each grid point.  I found the optimal $\eta = 2.5 \times 10^{-4}$ and $\lambda = 10^3$ from the minimum value of the 0/1 loss grid.  
+For my regularized batch gradient descent implementation, I used the $l_2$ norm penalty as was derived in class.  When fitting this algorithm, I need to optimize of the following hyperparameters: the learning rate $\eta$ and the regularization constant $\lambda$.  The hyperparameters of my model were simultaneously fit for along a regularization grid.  Since my training set was sufficiently large with $N = 60,000$ samples, I randomly partitioned it into a validation set with $N_{val} = 6,000$ and a training set with $N_{train} = 54,000$.  I iterated over a two-dimensional grid of $\eta \in [10^{-6},1]$ in 6 logarithmic bins and $\lambda \in [10^{-3},10^{3}]$ in 6 logarithmic bins.  For each $(\eta,\lambda)$ pair, I ran batch gradient descent on the training set then tested it on the validation data.  I used the validation predictions to compute the 0/1 loss and stored it for each grid point.  I found the optimal $\eta = 2.5 \times 10^{-4}$ and $\lambda = 10^3$ from the minimum value of the 0/1 loss grid.  
 
 \subsubsection*{2.1.1}
 As discussed above in my description of how I optimized my hyperparameters, I found that $\eta = 2.5 \times 10^{-4}$ gave the best fit.  In practice in my algorithm at the start of each iteration, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples fit over in a given batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the iteration number and $\eta_0 = 2.5 \times 10^{-4}$.  I found that the inclusion of $k$ which tends to suppress later step sizes prevented the solution from bouncing around optima and instead allowed for more runs to converge.  In practice, $k$ could also slow down convergence by reducing the step size even if the solution was tending towards the correct global optimum but I found that this was not an issue.
 
 \subsubsection*{2.1.2}
-With my optimal hyperparameters, I refit the batch gradient ascent on the entire $N = 60,000$ sample training set to get the final fit parameters $w_0$ and $\hat{w}$.  At each iteration of this fit, I computed the log-loss and 0/1 loss for both the training and testing set and plotted them in Fig.~\ref{fig:mnist_bin_ll} and \ref{fig:mnist_bin_01} below.  As expected, the testing error is worse than the training error for most of the batch gradient ascent path.  Interestingly, the testing loss actually dips below the training loss at the end of the fit near convergence.
+With my optimal hyperparameters, I refit the batch gradient descent on the entire $N = 60,000$ sample training set to get the final fit parameters $w_0$ and $\hat{w}$.  At each iteration of this fit, I computed the log-loss and 0/1 loss for both the training and testing set and plotted them in Fig.~\ref{fig:mnist_bin_ll} and \ref{fig:mnist_bin_01} below.  As expected, the testing error is worse than the training error for most of the batch gradient descent path.  Interestingly, the testing loss actually dips below the training loss at the end of the fit near convergence.
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{mnist_bin_train_test_ll.pdf}
     \caption{Log loss as a function of iteration for both the MNIST training and testing datasets for binary logistic regression.  The log loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  The log-losses for both the training and testing sets are very close and hence their evolution appear to overlap in the figure. Note how the loss decreases for both sets with each iteration as the fit improves.  In general, the testing loss is slightly larger than the training loss as expected.}
@@ -128,6 +130,7 @@ L(w) = \frac{-1}{N} \sum_{i = 1}^N \log(P(Y = y^i | x^i, w))
 \end{equation} 
 for $N$ samples.  Note that this sum is over the entire prediction vector and not just the predicted probability corresponding to the correct label.  When optimizing my model to find $w_0$ and $\hat{w}$, I seek to minimize Eqn.~\ref{eqn:softmax_logloss}.
 
+!!! DISCUSS WHERE FUNCTIONS ARE...WHAT LIVES IN WHICH FILE !!!
 
 \subsubsection*{2.2.1}
 
@@ -190,9 +193,36 @@ w^{(t+1)}_{0,l} \leftarrow w^{(t)}_{0,l} - \eta (- \sum_j[y^j - \hat{P}(Y^j = l 
 \end{equation}
 where these expressions can simultaneously be evaluated for all $l$ when both $w$ and $y$ are converted into matrices as described above.
 
+For my implementation, I found it easier to solve the over-constrained softmax
+\begin{equation}
+P(Y = l | x, w) = \frac{\exp{(w_{0,l} + w^l \cdot x)}}{\sum_{i = 1}^{k}\exp{(w_{0,i} + w^i \cdot x)}}
+\end{equation}
+where I also fit for a $w_0$ and a $w$ for the $Y = 0$ term.  I found that this version of softmax was more intuitive to interpret and yielded reasonable results when combined with $l_2$ regularization.  In this formalism, the negative log-likelihood, log-loss, becomes
+
+\begin{equation} \label{eqn:softmax_logloss_exp_actual}
+\begin{split}
+NLL & = \sum_j \left[ \log \left[  \frac{\exp{(w_{0,l} + w^l \cdot x^j)}}{\sum_{l = 1}^{k}\exp{(w_{0,l} + w^i \cdot x^j)}} \right]\right] \\
+& = \sum_j \left[(w_{0,l} + w^l \cdot x^j) - \log[\sum_{l = 1}^{k}\exp{(w_{0,l} + w^l \cdot x^j)}] \right].
+\end{split}
+\end{equation}
+
+I took the derivative of this term to get my gradient term for my update rule.  The math proceeds just as above for the $Y \neq 0$ case but without the normalizing 1 in the denominator to again yield
+\begin{equation}
+\sum_j \sum_{l \neq p} -I(y^j = l) x^j P(y^j = p | x^j, w) + I(y^j = p) x^j \left[- P(y^j = p | x^j, w) \right]
+\end{equation}
+in terms on conditional probabilities.  When I fold in a $l_2$ regularization term, the update rules become
+ \begin{equation}
+w^{(t+1)}_l \leftarrow w^{(t)}_l - \eta (\lambda w^{(t)}_l - \sum_j x^j_i[y^j - \hat{P}(Y^j = l | x^j, w_l^{(t)})])
+\end{equation}
+and for the unregularized constant offset term
+\begin{equation}
+w^{(t+1)}_{0,l} \leftarrow w^{(t)}_{0,l} - \eta (- \sum_j[y^j - \hat{P}(Y^j = l | x^j, w^{(t)})]).
+\end{equation}
+as before.  These are the update rules I implemented to solve the softmax classification problem using gradient descent (see the function {\tt multi$\_$logistic$\_$grad} in the file {\tt classifier$\_$utils.py}).
+
 \subsubsection*{2.2.2}
 
-TODO... learning rate and $\lambda$ optimization
+For my regularized batch gradient descent implementation, I used the $l_2$ norm penalty.  When fitting this algorithm, I need to optimize of the following hyperparameters: the learning rate $\eta$ and the regularization constant $\lambda$.  The hyperparameters of my model were simultaneously fit for along a regularization grid.  Since my training set was sufficiently large with $N = 60,000$ samples, I randomly partitioned it into a validation set with $N_{val} = 6,000$ and a training set with $N_{train} = 54,000$.  I iterated over a two-dimensional grid of $\eta \in [10^{-7},10^{-3}]$ in 5 logarithmic bins and $\lambda \in [10^{-2},10^{3}]$ in 5 logarithmic bins.  For each $(\eta,\lambda)$ pair, I ran batch gradient descent on the training set then tested it on the validation data.  I used the validation predictions to compute the 0/1 loss and stored it for each grid point.  I found the optimal learning rate $\eta = 10^{-4}$ and $\lambda = 10^3$ from the minimum value of the 0/1 loss grid.  
 
 \subsubsection*{2.2.3}
 
@@ -215,6 +245,49 @@ On the training set, I achieved a log-loss and a 0/1 loss of 0.439 and 0.112, re
 
 \subsection*{2.3: Softmax classification: stochastic gradient descent}
 
+In this section, I again optimize my softmax logistic classifier but this time I use stochastic gradient descent (SGD).  My SGD implementation is located in {\tt DML/optimization/gradient$\_$descent.py} in the {\tt stochastic$\_$gradient$\_$descent} function.  For my implementation, I allowed the user to specify a particular batch size where 1 corresponds to regular SGD and $> 1$ is minibatch SGD.
+
+In my implementation, I define an epoch as each complete pass through the training set.  At the start of each epoch, I randomly shuffle my training set and partition it into batches based on the batch size.  I then loop over all batches where I update $w$ and $w_0$ according to the gradient computing using just that batch as opposed to the gradient computing using the entire training set as is done in batch gradient descent.  As suggested in the homework prompt, I define an iteration as each pass through the training set.  Each iteration, I compute and store various loss metrics for subsequent analysis.  In addition, I check for convergence after each iteration.  I say my solution has converged once my log-loss changes by less than $0.5\%$.  I find that small convergence criteria do little to improve my results.  I decrease my learning rate using the same procedure outlined above in the discussion of my batch gradient descent implementation.
+
+\subsubsection*{2.3.1}
+
+I implemented SGD using a minibatch size of 1.  As discussed above, I computed the log-loss and the 0/1 loss after each iteration where an iteration is defined as a pass through 15,000 samples.  I found a learning rate $\eta = 5 \times 10^{-6}$ yielded good performance and convergence.  Using Eqn.~\ref{eqn:lambda_heuristic}, I found a regularization parameter of $\lambda = 1$ yielded the best performance.  In Fig.~\ref{fig:sgd_mnist_ll} and Fig.~\ref{fig:sgd_mnist_01} I plot the log-loss and 0/1 loss as a function of iteration for my softmax classification using SGD.  In both figures, I plot a horizontal line representing the respective loss values computed by applying the converged batch gradient descent softmax classification model on the MNIST testing set for reference.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{sgd_mnist_multi_train_test_ll.pdf}
+    \caption{Log loss as a function of iteration for both the MNIST training and testing datasets for softmax logistic regression using SGD.  The log loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  The testing set loss is always greater than the training set loss as expected.}
+    \label{fig:sgd_mnist_ll}
+\end{figure}
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{sgd_mnist_multi_train_test_01.pdf}
+    \caption{0/1 loss as a function of iteration for both the MNIST training and testing datasets for softmax logistic regression using SGD.  The 0/1 loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  Both 0/1 losses rapidly achieve comparable performance to the batch gradient descent optimized case.}
+    \label{fig:sgd_mnist_01}
+\end{figure}
+
+As seen in both figures, the losses rapidly drop to the performance of the batch gradient descent optimized problem.  Interestingly, it takes the log-loss about 12 iterations to achieve similar performance to the batch gradient descent optimized case while it takes about 4 for the 0/1 loss.  This indicated that even though the SGD is approaching closer to the minimum, it is not appreciably improving the softmax's ability to classify the MNIST digits.  I do note, however, that the SGD optimized case achieves a better 0/1 loss than the batch gradient descent case.  The SGD achieved a training set log-loss and 0/1 loss of 0.379 and 0.081 while achieving a log-loss and 0/1 loss of 0.453 and 0.09 on the testing set, respectively.  As stated previously, I used a learning rate of $\eta = 5 \times 10^{-6}$ and decayed $\eta$ as $1/\sqrt{t}$ where $t$ is the number of the current iteration.
+
+\subsubsection*{2.3.2}
+
+My SGD implementation converged to a better solution in terms of 0/1 loss than my batch gradient descent solution much more quickly.  For example, it took 42 passes through the training set for batch gradient descent to converge to an 0/1 loss of about 0.1 while my SGD implementation took only 1 pass through the training set to achieve the same 0/1 loss!  My SGD implementation took about 3 passes through the training set to achieve a similar log-loss and my batch gradient descent implementation.  This speed-up is rather impressive and suggests that the gradient is rather well-behaved in the MNIST data as gradients computed from random samples from the training set still led the solution in the proper direction.
+
+\subsubsection*{2.3.3}
+
+I implemented mini-batch SGD using a batch size of 100 samples.  In Fig.~\ref{fig:sgd_mini_mnist_ll} and Fig.~\ref{fig:sgd_mini_mnist_01} I plot the log-loss and 0/1 loss as a function of iteration for my softmax classification using SGD.  In both figures, I plot a horizontal line representing the respective loss values computed by applying the converged batch gradient descent softmax classification model on the MNIST testing set for reference.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{sgd_mini_mnist_multi_train_test_ll.pdf}
+    \caption{Log loss as a function of iteration for both the MNIST training and testing datasets for softmax logistic regression using mini-batch SGD.  The log loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  The testing set loss is always greater than the training set loss as expected.}
+    \label{fig:sgd_mini_mnist_ll}
+\end{figure}
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{sgd_mini_mnist_multi_train_test_01.pdf}
+    \caption{0/1 loss as a function of iteration for both the MNIST training and testing datasets for softmax logistic regression using mini-batch SGD.  The 0/1 loss on the testing set was evaluated using the model parameters computed by fitting on the training set for each iteration.  Both 0/1 losses rapidly achieve comparable performance to the batch gradient descent optimized case.}
+    \label{fig:sgd_mini_mnist_01}
+\end{figure}
+
+As seen in both figures, the losses immediately drop to the batch gradient descent performance after 1 iteration, or 150 batches through 15,000 samples!  After several more iterations, my mini-batch SGD algorithm converged to performance that was markedly better than the batch gradient descent implementation. 
+
+TODO: LEARNING RATE, LAMBDA DISCUSSION
 
 \end{document}
 

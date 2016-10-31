@@ -28,17 +28,18 @@ mpl.rc('text', usetex='true')
 # Flags to control functionality
 
 # Perform regularization path over lambda and eta?
-find_best_lam = False
+find_best_lam = True
 
 # Display, save plots?
-show_plots = True
-save_plots = True
+show_plots = False
+save_plots = False
 
 # Best Performance:
 # Training, testing 0-1 loss: 0.112, 0.106
 # Training, testing logloss: 0.439, 0.419
 # eta: 1.0e-4
 # eps: 5.0e-3
+# lambda: 1000
 
 # Define constants
 
@@ -100,6 +101,7 @@ if find_best_lam:
 
     # Find minimum threshold, lambda from minimum validation error
     # Mask infs
+    print(err_val)
     err_val[np.isinf(err_val)] = np.nan
     ind_e,ind_l = np.unravel_index(np.nanargmin(err_val), err_val.shape)
     best_lambda = lams[ind_l]

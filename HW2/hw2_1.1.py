@@ -33,7 +33,7 @@ import DML.regression.ridge_utils as ri
 # lambda = 1.0e4
 
 # Flags to control functionality
-find_best_lam = False
+find_best_lam = True
 
 # Define constants
 best_lambda = 1.0e4

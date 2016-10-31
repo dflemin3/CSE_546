@@ -271,7 +271,7 @@ I implemented SGD using a minibatch size of 1.  As discussed above, I computed t
     \label{fig:sgd_mnist_01}
 \end{figure}
 
-As seen in both figures, the losses rapidly drop to the performance of the batch gradient descent optimized problem.  Interestingly, it takes the log-loss about 12 iterations to achieve similar performance to the batch gradient descent optimized case while it takes about 4 for the 0/1 loss.  This indicated that even though the SGD is approaching closer to the minimum, it is not appreciably improving the softmax's ability to classify the MNIST digits.  I do note, however, that the SGD optimized case achieves a better 0/1 loss than the batch gradient descent case.  The SGD achieved a training set log-loss and 0/1 loss of 0.379 and 0.081 while achieving a log-loss and 0/1 loss of 0.453 and 0.09 on the testing set, respectively.  As stated previously, I used a learning rate of $\eta = 5 \times 10^{-6}$ and decayed $\eta$ as $1/\sqrt{t}$ where $t$ is the number of the current iteration.
+As seen in both figures, the losses rapidly drop to the performance of the batch gradient descent optimized problem.  Interestingly, it takes the log-loss about 12 iterations to achieve similar performance to the batch gradient descent optimized case while it takes about 4 for the 0/1 loss.  This indicated that even though the SGD is approaching closer to the minimum, it is not appreciably improving the softmax's ability to classify the MNIST digits.  I do note, however, that the SGD optimized case achieves a better 0/1 loss than the batch gradient descent case.  The SGD achieved a training set log-loss and 0/1 loss of 0.467 and 0.082 while achieving a log-loss and 0/1 loss of 0.570 and 0.091 on the testing set, respectively.  As stated previously, I used a learning rate of $\eta = 5 \times 10^{-6}$ and decayed $\eta$ as $1/\sqrt{t}$ where $t$ is the number of the current iteration.
 
 \subsubsection*{2.3.2}
 
@@ -292,9 +292,11 @@ I implemented mini-batch SGD using a batch size of 100 samples.  In Fig.~\ref{fi
     \label{fig:sgd_mini_mnist_01}
 \end{figure}
 
-As seen in both figures, the losses immediately drop to the batch gradient descent performance after 1 iteration, or 150 batches through 15,000 samples!  After several more iterations, my mini-batch SGD algorithm converged to performance that was markedly better than the batch gradient descent implementation.  The mini-batch SGD achieved a training set log-loss and 0/1 loss of 0.341 and 0.095 while achieving a log-loss and 0/1 loss of 0.326 and 0.09 on the testing set, respectively.
+As seen in both figures, the losses immediately drop to the batch gradient descent performance after 1 iteration, or 150 batches through 15,000 samples!  After several more iterations, my mini-batch SGD algorithm converged to performance that was markedly better than the batch gradient descent implementation.  The mini-batch SGD achieved a training set log-loss and 0/1 loss of 0.336 and 0.094 while achieving a log-loss and 0/1 loss of 0.321 and 0.088 on the testing set, respectively.
 
-After trial and error, I found that a learning rate $\eta = 5 \times 10^{-6}$ gave the best performance.  Any larger learning rate caused the algorithm to diverge.  As before, I decayed $\eta$ as $1/\sqrt{t}$ where $t$ is the number of the current iteration.  Using Eqn.~\ref{eqn:lambda_heuristic}, I found a regularization parameter of $\lambda = 1$ yielded the best performance.
+After trial and error, I found that a learning rate $\eta = 5 \times 10^{-6}$ gave the best performance.  Any larger learning rate caused the algorithm to diverge.  As before, I decayed $\eta$ as $1/\sqrt{t}$ where $t$ is the number of the current iteration.  Using Eqn.~\ref{eqn:lambda_heuristic}, I found a regularization parameter of $\lambda = 0.1$ yielded the best performance.
+
+TODO
 
 \subsubsection*{2.3.4}
 

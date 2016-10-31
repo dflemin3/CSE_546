@@ -536,7 +536,7 @@ def logistic_reg_path(X_train, y_train, X_val, y_val,
                                             batchsize=batchsize)
 
         # Now classify on both validation and training set!
-        y_hat_val = classfn(X_val, w, w0)
+        y_hat_val = classfn(X_val, w, w0, thresh=thresh, sparse=sparse)
         y_hat_train = classfn(X_train, w, w0, thresh=thresh, sparse=sparse)
 
         # Save w, w0s?

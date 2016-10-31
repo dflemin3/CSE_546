@@ -42,9 +42,6 @@ show_plots = True
 save_plots = True
 run_minibatch_sgd = True
 
-# Define constants
-
-
 # Classifier parameters
 eps = 1.0e-3
 seed = 42
@@ -82,7 +79,7 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 if run_minibatch_sgd:
     # Performance
 
-    best_lambda = 28140.0
+    best_lambda = 28140.0 # Computed previously
     best_eta = 1.0e-8
     eps = 5.0e-3
     batchsize = 100

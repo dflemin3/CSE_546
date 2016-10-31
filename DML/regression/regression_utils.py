@@ -203,7 +203,7 @@ def recall_lasso(w_true, w_pred, eps = 1.0e-3):
 
 def col_max_filt(X):
 	"""
-	Alter X according to the column-wise max(x_i, 0)
+	Alter X according to the max(x_i, 0) aka no non-zero elements allowed!
 
 	Parameters
 	----------
@@ -217,11 +217,6 @@ def col_max_filt(X):
 	X[X < 0.0] = 0.0
 	return X
 
-	#for ii in range(X.shape[-1]):
-	#	if np.sum(X[:,ii]) < 0:
-	#		X[:,ii] = np.zeros(X.shape[0])
-
-	#return X
 # end function
 
 

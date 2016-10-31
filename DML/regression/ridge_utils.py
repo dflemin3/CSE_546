@@ -52,7 +52,7 @@ def fit_ridge(X, y, lam=1, sparse=False, w=None, w_0=None):
 
     # Center data to avoid penalizing constant offset term
     yc = y - np.mean(y, axis=0)
-    Xc = X - np.mean(X,axis=0)
+    Xc = X - np.mean(X,axis=0) # Generalized for multi-class case
 
     # Compute sigma, tau as a function of lambda
     sigma = 1.0

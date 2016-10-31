@@ -26,9 +26,9 @@ mpl.rcParams['font.size'] = 20.0
 mpl.rc('text', usetex='true')
 
 # Flags to control functionality
-find_best_lam = False
-show_plots = False
-save_plots = False
+find_best_lam = True
+show_plots = True
+save_plots = True
 
 # Performance:
 # Training, testing predicted number of twos: 5693, 956
@@ -44,8 +44,6 @@ best_lambda = 1000.
 best_thresh = 0.5
 best_eta = 0.000251188643151
 eps = 1.0e-2
-#eps = 2.5e-3
-
 seed = 42
 frac = 0.1
 num = 6
@@ -99,6 +97,7 @@ if find_best_lam:
     print("Best eta:",best_eta)
 
 # With a best fit lambda, threshold, refit
+eps = 2.5e-3 # Use tighter eps for better convergence
 w0, w, ll_train, ll_test, train_01, test_01, iter_train = \
 gd.gradient_descent(cu.bin_logistic_grad, X_train, y_train_true,
                                lam=best_lambda, eta=best_eta, sparse=sparse,

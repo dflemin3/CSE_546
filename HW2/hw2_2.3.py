@@ -28,16 +28,14 @@ mpl.rc('text', usetex='true')
 # Flags to control functionality
 
 # Display, save plots?
-find_best_lambda = False
+find_best_lambda = True
 show_plots = True
-save_plots = False
-run_sgd = False
+save_plots = True
+run_sgd = True
 run_minibatch_sgd = True
 
-# Define constants
-
-
 # Classifier parameters
+best_lambda = 0.1 # Found via reg path
 eps = 1.0e-3
 seed = 42
 sparse = False
@@ -60,25 +58,48 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 #
 #######################################################
 
-# Search for the best regularization constant?
-"""
+# Search for the best regularization constant using a regularization path?
+# Use minibatch SGD to find it for speed/convergence reasons
 if find_best_lambda:
-    error_val, error_train, np.array(lams) = val.logistic_reg_path(X_train, y_train, X_val, y_val,
-                         y_train_label = None, y_val_label = None,
-                         grad=cu.bin_logistic_grad, lammax=1000.,
-                         scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
-                         eta = 1.0e-4, sparse=False, eps=5.0e-3, max_iter=1000,
-                         adaptive=True, llfn=logloss_bin, savell=False, batchsize=100,
-                         classfn=cu.logistic_classifier, **kwargs)
-"""
+    lammax = 1.0e8
+    eta = 5.0e-6
+    scale = 10.
+    num = 10
+    eps = 5.0e-3
+    frac = 0.1 # Fraction of training data to split into validation set
+    kwargs = {}
+
+    # Split training data into subtraining set, validation set
+    X_tr, y_tr, X_val, y_val = val.split_data(X_train, y_train, frac=frac, seed=seed)
+
+    # Filter y values to 0, 1 labels
+    y_tr_true = np.asarray(y_tr[:, None] == np.arange(max(y_tr)+1),dtype=int).squeeze()
+    y_val_true = np.asarray(y_val[:, None] == np.arange(max(y_val)+1),dtype=int).squeeze()
+
+    # Run reg path!
+    err_val, err_train, lams = val.logistic_reg_path(X_tr, y_tr_true, \
+                         X_val, y_val_true,
+                         y_train_label = y_tr, y_val_label = y_val,
+                         grad=cu.bin_logistic_grad, lammax=lammax,
+                         scale=scale, num=num, error_func=val.loss_01, thresh=0.5, best_w=False,
+                         eta = eta, sparse=False, eps=eps, max_iter=1000,
+                         adaptive=True, llfn=val.logloss_multi, savell=False, batchsize=100,
+                         classfn=cu.multi_logistic_classifier, **kwargs)
+
+    # Find minimum lambda from minimum validation error
+    # Mask infs
+    print(err_val)
+    err_val[np.isinf(err_val)] = np.nan
+    ind_l = np.nanargmin(err_val)
+    best_lambda = lams[ind_l]
+    print("Best lambda:",best_lambda)
 
 if run_minibatch_sgd:
     # Performance
-    # Training, testing 0-1 loss: 0.095, 0.090
-    # Training, testing logloss: 0.341, 0.326
-    # lam = 1.0, eta = 5.0e-6, eps = 5.0e-3
+    # Training, testing 0-1 loss: 0.094, 0.088
+    # Training, testing logloss: 0.336, 0.321
+    # lam = 0.1, eta = 5.0e-6, eps = 5.0e-3
 
-    best_lambda = 1.0
     best_thresh = 0.5
     best_eta = 5.0e-6
     eps = 5.0e-3
@@ -157,12 +178,11 @@ if run_minibatch_sgd:
 if run_sgd:
 
     # Performance
-    # Training, testing 0-1 loss: 0.081, 0.090
-    # Training, testing logloss: 0.379, 0.453
-    # lambda: 1.0, eps = 5.0e-3, eta = 5.0e-6
+    # Training, testing 0-1 loss: 0.082, 0.091
+    # Training, testing logloss: 0.467, 0.570
+    # lambda: 0.1, eps = 5.0e-3, eta = 5.0e-6
 
     # SGD params
-    best_lambda = 1.0
     best_thresh = 0.5
     best_eta = 5.0e-6
     eps = 5.0e-3

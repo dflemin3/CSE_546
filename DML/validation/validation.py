@@ -445,7 +445,7 @@ def logistic_reg_path(X_train, y_train, X_val, y_val,
                          grad=cu.bin_logistic_grad, lammax=1000.,
                          scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
                          eta = 1.0e-4, sparse=False, eps=5.0e-3, max_iter=1000,
-                         adaptive=True, llfn=logloss_bin, savell=False, batchsize=0.1,
+                         adaptive=True, llfn=logloss_bin, savell=False, batchsize=100,
                          classfn=cu.logistic_classifier, **kwargs):
     """
     Perform a regularization path for a regularized logistic regressor by fitting
@@ -524,10 +524,16 @@ def logistic_reg_path(X_train, y_train, X_val, y_val,
 
         # Solve logistic regression using gradient descent on the training data
         # optimizing over the logloss
-        w0, w = gd.gradient_descent(grad, X_train, y_train, lam=lam, eta=eta,
-                                        sparse=sparse, eps=eps, max_iter=max_iter,
-                                        adaptive=adaptive, llfn=llfn, savell=False)
-
+        # If no batchsize given, use BGD, else use minibatch SGD
+        if batchsize is None:
+            w0, w = gd.gradient_descent(grad, X_train, y_train, lam=lam, eta=eta,
+                                            sparse=sparse, eps=eps, max_iter=max_iter,
+                                            adaptive=adaptive, llfn=llfn, savell=False)
+        else:
+            w0, w = gd.stochastic_gradient_descent(grad, X_train, y_train, lam=lam, eta=eta,
+                                            sparse=sparse, eps=eps, max_iter=max_iter,
+                                            adaptive=adaptive, llfn=llfn, savell=False,
+                                            batchsize=batchsize)
 
         # Now classify on both validation and training set!
         y_hat_val = classfn(X_val, w, w0)

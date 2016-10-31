@@ -214,11 +214,14 @@ def col_max_filt(X):
 	Xprime : array (n x d)
 		Note: Xprime is X
 	"""
-	for ii in range(X.shape[-1]):
-		if np.sum(X[:,ii]) < 0:
-			X[:,ii] = np.zeros(X.shape[0])
-
+	X[X < 0.0] = 0.0
 	return X
+
+	#for ii in range(X.shape[-1]):
+	#	if np.sum(X[:,ii]) < 0:
+	#		X[:,ii] = np.zeros(X.shape[0])
+
+	#return X
 # end function
 
 

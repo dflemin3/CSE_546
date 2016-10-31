@@ -84,11 +84,11 @@ else:
     X_test = ru.naive_nn_layer(X_test, k=k, v=v)
 
 # Fit for the class prediction regression coefficients on transformed training set
-print("Fitting with ridge regression...")
 best_lambda = val.estimate_lambda(X_train, scale=1.0)
 print("Best lambda: %.3lf." % best_lambda)
 y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
 y_train_test = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
+print("Fitting with ridge regression...")
 w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
 
 # Using fit on training set, predict labels for train, test data by selecting whichever

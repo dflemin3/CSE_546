@@ -23,9 +23,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Performance
-# Training, testing 0-1 loss: 0.079, 0.083
-# Training, testing logloss: 0.291, 0.300
-# best_lambda = 28140.0
+# Training, testing 0-1 loss: 0.040, 0.047
+# Training, testing logloss: 0.144, 0.162
+# best_lambda = 28353.816
 # best_eta = 1.0e-8
 # eps = 5.0e-3
 # batchsize = 100

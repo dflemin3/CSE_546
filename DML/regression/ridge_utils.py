@@ -73,7 +73,7 @@ def fit_ridge(X, y, lam=1, sparse=False, w=None, w_0=None):
     w = np.dot(w,yc)
 
     # Compute w0
-    w0 = np.mean(y) - np.dot(np.transpose(np.mean(X,axis=0)),w)
+    w0 = (np.mean(y, axis=0) - np.dot(np.transpose(np.mean(X,axis=0)),w)).reshape((y.shape[-1],1))
 
     return w0, w
 # end function

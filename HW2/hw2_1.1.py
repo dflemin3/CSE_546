@@ -26,14 +26,13 @@ import DML.validation.validation as val
 import DML.regression.ridge_utils as ri
 
 # Performance
-# Training 01 Loss: 0.14065
-# Testing 01 Loss: 0.1387
-# Training Square Loss: 265.462333333
-# Testing Square Loss: 264.3616
-# lambda = 1.0e4
+# Training 01 Loss: 0.142333333333
+# Testing 01 Loss: 0.1395
+# Training Square Loss: 264.793533333
+# Testing Square Loss: 263.6672
 
 # Flags to control functionality
-find_best_lam = True
+find_best_lam = False
 
 # Define constants
 best_lambda = 1.0e4
@@ -95,6 +94,8 @@ if find_best_lam:
 
 # Fit for the class prediction regression coefficients
 w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
+
+print(w.shape,w0.shape)
 
 # Using fit on training set, predict labels for train, test data by selecting whichever
 # prediction is the largest (one vs all classification)

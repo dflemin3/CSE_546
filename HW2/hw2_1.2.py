@@ -23,7 +23,6 @@ import DML.regression.ridge_utils as ri
 import DML.regression.regression_utils as ru
 
 # Define constants
-#best_lambda = 1.0e2
 seed = 42
 kwargs = {}
 k = 10000
@@ -31,11 +30,11 @@ Nclass = 10 # classes are 0 - 9
 nn_cache = "../Data/hw2-data/MNIST_nn_cache.npz"
 
 # Performance
-# Best lambda: 2814.589.
-# Training 01 Loss: 0.140566666667
-# Testing 01 Loss: 0.2538
-# Training Square Loss: 2.48653333333
-# Testing Square Loss: 4.4585
+# Best lambda: 2835381.557.
+# Training 01 Loss: 0.00643
+# Testing 01 Loss: 0.0241
+# Training Square Loss: 273.7993
+# Testing Square Loss: 272.56
 
 # If I haven't already done it, load MNIST training data and transform it
 if not os.path.exists(nn_cache):

@@ -21,9 +21,15 @@
 
 \section*{Introduction}
 
-Please note that a copy of all the code I wrote to answer the questions in this assignment are included in my submission but also located online at \url{https://github.com/dflemin3/CSE_546/tree/master/HW2}.  Some scripts require data, such as MNIST data, to run to completion and were not included on my github or in my submission due to file size constraints.  If requested, I will happily send a compressed directory containing my homework and detailed instructions on how to reproduce my work.  My primary email is dflemin3 (at) uw (dot) edu.  Also for reproducibility, I set the random number generator seed near the top of each script such that rerunning my script will yield the same answers as presented here.
+Please note that a copy of all the code I wrote to answer the questions in this assignment are included in my submission but also located online at \url{https://github.com/dflemin3/CSE_546/tree/master/HW2}.  Some scripts require data, such as MNIST data, to run to completion and were not included on my github due to file size constraints.  The MNIST data is included in the {\tt Data} directory as python {\tt .pkl} files as this compressed format gave me quicker load times for my scripts.
 
-TODO explain code dir structure
+Overall, my code is structured as follows:  There are three main directories included in my submission: {\tt DML}, {\tt Data} and {\tt HW2}. {\tt HW2} contains all the scripts used to run my analysis.  For example to reproduce the answer for Question 2.4, one would run {\tt python hw2$\_2.4.py$}.  All scripts have relative file paths so the code should run and have detailed comments to describe functionality.  In addition, the scripts have flags near the top to control functionality.  By default, I set all flags to true so the script performs the entire analysis and plotting.  Note that some scripts, particularly those involving the transformed MNIST data (1.2 and 2.4), are rather computationally expensive since I erred on using computing time as opposed to programmer time.
+
+The {\tt Data} directory contains both the MNIST dataset and an archive of my $v$ transformation matrix computed according to the rules given in Question 1.2.  The grader should be able to run my homework scripts without alter this directory.  
+
+The {\tt DML} directory contains all the auxiliary files used to do the computations in the homework scripts and has a logical hierarchy.  For example, the directory {\tt optimization} contains the file {\tt gradient$\_$descent.py} while contains both my batch gradient descent and stochastic gradient descent implementations.  The directory {\tt data$\_$processing} contains the script {\tt mnist$\_$utils.py} which contains my functions used to load and work with the MNIST data.  The directory {\tt classification} contains the file {\tt classifier$\_$utils.py} which contains all things related to binary and softmax classification including the gradients for each respective method for use with a gradient descent algorithm.  The {\tt validation} subdirectory contains {\tt validation.py}.  This file contains all my loss functions such as 0/1 loss and also my implementations for regularization paths for both linear regression and logistic and softmax classification using gradient descent.  Finally, the {\tt regression} directory contains all utilities for a normal or multi-class regression.  In particular, this directory contains the file where my ridge regression implementation lives, {\tt ridge$\_$utils.py}. 
+
+In each section, I try to be explicit with what files I used to perform the computation including the path from the {\tt DML} directory for ease of grading.
 
 %%% QUESTION 0  %%%
 \section*{Question 0: Collaborators}
@@ -33,7 +39,7 @@ I collaborated with Matt Wilde, Serena Liu, and Janet Matsen for various questio
 
 \section*{Question 1: Multi-Class Classification using Least Squares}
 
-In this question, I solve 10 linear regression problems using regularized Ridge Regression for all 10 digits of the MNIST dataset to build a ``one vs all" classifier.  Each regression is a binary classifier for the corresponding digit.  I classify a sample according to the largest predicted score among my 10 predictors.  The code used to solve this question is in the following attached files: {\tt hw2$\_$1.1.py, hw2$\_$1.2.py, classifier$\_$utils.py, regression$\_$utils.py, validation.py, mnist$\_$utils.py}.
+In this question, I solve 10 linear regression problems using regularized Ridge Regression for all 10 digits of the MNIST dataset to build a ``one vs all" classifier.  Each regression is a binary classifier for the corresponding digit.  I classify a sample according to the largest predicted score among my 10 predictors.  The code used to solve this question is in the following attached files: {\tt hw2$\_$1.1.py, hw2$\_$1.2.py} in the {\tt HW2} directory and {\tt classification/classifier$\_$utils.py, regression/regression$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py} in the {\tt DML} directory.
 
 \subsection*{1.1: One vs all classification}
 
@@ -65,14 +71,15 @@ Following the same procedure outlined in the previous question, I ran my linear 
 \begin{equation} \label{eqn:lambda_heuristic}
 \lambda_{best} = c E[||X||^2]
 \end{equation}
-where $c$ is a scale constant.  I found $c = 1.0 \times 10^{-2}$ gave the best performance for this data.
+where $c$ is a scale constant.  I found $c = 1.0 \times 10^{-2}$ gave the best performance for this data giving a regularization constant of $\lambda = 2.8 \times 10^6$.  Although rather large, the performance was rather impressive as seen below.
  
-I fit the transformed data using a multi-class Ridge Regression algorithm as was done on the original MNIST data in the previous question.  On the training set, I found a 0/1 loss of 0.141 and a square loss of 265.5.  On the testing set, I found a 0/1 loss of 0.228 and a square loss of 260.4.  Interestingly, I found comparable losses on the training data as I did for my Ridge Regression on the original MNIST data.  Regression on the transformed testing set, however, yielded much worse losses that the regression on the original MNIST testing set.
+I fit the transformed data using a multi-class Ridge Regression algorithm as was done on the original MNIST data in the previous question.  On the training set, I found a 0/1 loss of 0.0064 and a square loss of 273.8.  On the testing set, I found a 0/1 loss of 0.024 and a square loss of 272.6.  This performance is rather impressive and is a significant increase relative to the vanilla multi-class ridge regression demonstrating that this seemingly trivial feature transformation yields significant benefits.  
 
 %%% QUESTION 2 %%%
 \section*{Question 2: Multi-Class Classification using Logistic Regression and Softmax}
 
-The code used to answer this question and all subquestions are contained within the following python files: {\tt classifier$\_$utils.py, validation.py, gradient$\_$descent.py, mnist$\_$utils.py, hw2$\_$2.1.py}.
+The code used to answer this question and all subquestions are contained within the following python files: {\tt hw2$\_$2.1.py, hw2$\_$2.2.py} in the {\tt HW2} directory and {\tt classification/classifier$\_$utils.py, regression/regression$\_$utils.py},
+ {\tt validation/validation.py, data$\_$processing/mnist$\_$utils.py, gradient$\_$descent/gradient$\_$descent.py, mnist} in the {\tt DML} directory.
 
 \subsection*{2.1: Binary Logistic Regression}
 
@@ -131,8 +138,6 @@ where the probabilities sum to 1.  For classification, I take the largest probab
 L(w) = \frac{-1}{N} \sum_{i = 1}^N \log(P(Y = y^i | x^i, w))
 \end{equation} 
 for $N$ samples.  Note that this sum is over the entire prediction vector and not just the predicted probability corresponding to the correct label.  When optimizing my model to find $w_0$ and $\hat{w}$, I seek to minimize Eqn.~\ref{eqn:softmax_logloss}.
-
-!!! DISCUSS WHERE FUNCTIONS ARE...WHAT LIVES IN WHICH FILE !!!
 
 \subsubsection*{2.2.1}
 
@@ -247,7 +252,7 @@ On the training set, I achieved a log-loss and a 0/1 loss of 0.439 and 0.112, re
 
 \subsection*{2.3: Softmax classification: stochastic gradient descent}
 
-In this section, I again optimize my softmax logistic classifier but this time I use stochastic gradient descent (SGD).  My SGD implementation is located in {\tt DML/optimization/gradient$\_$descent.py} in the {\tt stochastic$\_$gradient$\_$descent} function.  For my implementation, I allowed the user to specify a particular batch size where 1 corresponds to regular SGD and $> 1$ is minibatch SGD.
+In this section, I again optimize my softmax logistic classifier but this time I use stochastic gradient descent (SGD).  My SGD implementation is located in {\tt DML/optimization/gradient$\_$descent.py} in the {\tt stochastic$\_$gradient$\_$descent} function.  For my implementation, I allowed the user to specify a particular batch size where 1 corresponds to regular SGD and $> 1$ is minibatch SGD.  The code used to answer this question and all subquestions are contained within the following python files: {\tt hw2$\_$2.3.py} in the {\tt HW2} directory and {\tt classification/classifier$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py, gradient$\_$descent/gradient$\_$descent.py} in the {\tt DML} directory.
 
 In my implementation, I define an epoch as each complete pass through the training set.  At the start of each epoch, I randomly shuffle my training set and partition it into batches based on the batch size.  I then loop over all batches where I update $w$ and $w_0$ according to the gradient computing using just that batch as opposed to the gradient computing using the entire training set as is done in batch gradient descent.  As suggested in the homework prompt, I define an iteration as each pass through the training set.  Each iteration, I compute and store various loss metrics for subsequent analysis.  In addition, I check for convergence after each iteration.  I say my solution has converged once my log-loss changes by less than $0.5\%$.  I find that small convergence criteria do little to improve my results.  I decrease my learning rate using the same procedure outlined above in the discussion of my batch gradient descent implementation.
 
@@ -295,7 +300,10 @@ After trial and error, I found that a learning rate $\eta = 5 \times 10^{-6}$ ga
 
 My mini-batch algorithm converged more quickly than my SGD algorithm at 1 iteration to reach batch gradient descent performance as compared to over 4 for SGD.  Mini-batch SGD only needed to pass through about one quarter of the training data before achieving batch gradient descent performance while it took vanilla SGD at least one full pass through all 60,000 points.  This is likely due to the inherent noise incurred from computing the gradient with one data point as is done with SGD causing the solution to bounce around more as opposed to a smooth decent to the minimum.  In mini-batch SGD, computing the gradient over 100 samples smooths out the noise to result in a quicker convergence down towards the minimum.
 
-\subsection*{Neural Nets with a random first layer: Using more features}
+\subsection*{2.4: Neural Nets with a random first layer: Using more features}
+
+The code used to solve this question is in the following attached files: {\tt hw2$\_$2.4.py} in the {\tt HW2} directory and {\tt classification/classifier$\_$utils.py, regression/regression$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py}, 
+{\tt gradient$\_$descent/gradient$\_$descent.py} in the {\tt DML} directory.
 
 \subsubsection*{2.4.1}
 

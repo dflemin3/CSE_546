@@ -28,9 +28,9 @@ mpl.rc('text', usetex='true')
 # Flags to control functionality
 
 # Display, save plots?
-find_best_lambda = True
+find_best_lambda = False
 show_plots = True
-save_plots = True
+save_plots = False
 run_sgd = False
 run_minibatch_sgd = True
 
@@ -61,14 +61,16 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 #######################################################
 
 # Search for the best regularization constant?
+"""
 if find_best_lambda:
-    error_val, error_train, np.array(lams) = logistic_reg_path(X_train, y_train, X_val, y_val,
+    error_val, error_train, np.array(lams) = val.logistic_reg_path(X_train, y_train, X_val, y_val,
                          y_train_label = None, y_val_label = None,
                          grad=cu.bin_logistic_grad, lammax=1000.,
                          scale=2.0, num=10, error_func=loss_01, thresh=0.5, best_w=False,
                          eta = 1.0e-4, sparse=False, eps=5.0e-3, max_iter=1000,
                          adaptive=True, llfn=logloss_bin, savell=False, batchsize=100,
                          classfn=cu.logistic_classifier, **kwargs)
+"""
 
 if run_minibatch_sgd:
     # Performance

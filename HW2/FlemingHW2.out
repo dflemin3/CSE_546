@@ -7,7 +7,7 @@
 \BOOKMARK [2][-]{section*.11}{2.1: Binary Logistic Regression}{section*.10}% 7
 \BOOKMARK [2][-]{section*.15}{2.2: Softmax classification: gradient descent}{section*.10}% 8
 \BOOKMARK [2][-]{section*.20}{2.3: Softmax classification: stochastic gradient descent}{section*.10}% 9
-\BOOKMARK [2][-]{section*.25}{Neural Nets with a random first layer: Using more features}{section*.10}% 10
+\BOOKMARK [2][-]{section*.25}{2.4: Neural Nets with a random first layer: Using more features}{section*.10}% 10
 \BOOKMARK [1][-]{section*.28}{3: \(Baby\) Learning Theory: Why is statistical learning possible?}{}% 11
 \BOOKMARK [2][-]{section*.29}{3.1: A confidence interval for a coin}{section*.28}% 12
 \BOOKMARK [2][-]{section*.31}{3.2: Estimating the performance of a given classifier}{section*.28}% 13

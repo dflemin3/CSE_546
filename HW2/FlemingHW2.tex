@@ -337,19 +337,19 @@ As seen above, the mini-batch SGD quickly achieves performance comparable to the
 
 The mini-batch SGD on the transformed MNIST data achieved a training set log-loss and 0/1 loss of 0.144 and 0.040 while achieving a log-loss and 0/1 loss of 0.162 and 0.047 on the testing set, respectively.  As expected, the testing loss is greater than the training loss.  Interestingly, both the log and 0/1 losses on the transformed data are appreciably smaller than their counter-parts on the original MNIST data.  Even though I used the same optimization algorithm, mini-batch SGD, and softmax classification, the simple one layer neural network transformed MNIST data yields a markedly better performance than the original data.  Even though I did nothing particularly clever when transforming the MNIST data to a space with more features, this trivial step yielded non-trivial improvements.
 
-\section*{3: (Baby) Learning Theory: Why is statistical learning possible?}
+\section*{Question 3: (Baby) Learning Theory: Why is statistical learning possible?}
 
 For this question, I will assume a simplified Chernoff-Hoeffding bound of the following form
 \begin{equation} \label{eqn:ch_bound}
 P(|\bar{Z} - \theta| \geq \epsilon) \leq 2 \exp(-2N \epsilon^2)
 \end{equation}
-where $\bar{Z}$ is the empirical mean of N i.i.d. samples from a Bernoulli distribution where $P(Z = 1) = \theta$ and $P(Z = 0) = 1 - \theta$.  Additionally, I will be working in the hypothesis space where I have a finite set of $K$ classifiers.  For this Question, I want to note a few things that I will use in subsequent proofs.  The quantity $\bar{Z}$ is an empirical quantity learned from the respective training set $T$ whereas $\theta$ is the expected value for $\bar{Z}$ over the underlying distribution like the bias of a coin the expected value of the MLE for the Bernoulli distribution and as such the MLE is unbiased.  I use these facts to relate quantities to both $\bar{Z}$ and $\theta$ to show when the Chernoff-Hoeffding bound applies.  This is especially relevant since in this question, I work with 0/1 loss where the 0/1 loss on each sample can be considered an i.i.d. sample from a Bernoulli distribution.
+where $\bar{Z}$ is the empirical mean of N i.i.d. samples drawn from a Bernoulli distribution where $P(Z = 1) = \theta$ and $P(Z = 0) = 1 - \theta$.  Additionally, I will be working in the hypothesis space where I have a finite set of $K$ classifiers.  For this Question, I want to note a few things that I will use in subsequent proofs.  The quantity $\bar{Z}$ is an empirical quantity learned from the respective training set $T$ whereas $\theta$ is the expected value for $\bar{Z}$ over the underlying distribution.  This is similar to how the bias of a coin the expected value of the MLE for the Bernoulli distribution and as such the MLE is unbiased.  I use these facts to relate quantities to both $\bar{Z}$ and $\theta$ to show when the Chernoff-Hoeffding bound applies.  This is especially relevant since in this question, I work with 0/1 loss where the 0/1 loss on each sample can be considered an i.i.d. sample from a Bernoulli distribution.
 
 \subsection*{3.1: A confidence interval for a coin}
 
 \subsubsection*{3.1.1}
 
-A confidence interval for the quantities $|\bar{Z} - \theta|$ is for the probability of that quantity being smaller than some error threshold $\epsilon$ to be something like $95\%$ in which case $1 - \delta = 0.95$ for $\delta = 0.5$.  To quantify the confidence interval, I seek to derive a functional form for $\epsilon$ in terms of $N$ and $\delta$.
+A confidence interval for the quantities $|\bar{Z} - \theta|$ is for the probability of that quantity being smaller than some error threshold $\epsilon$ to be something like $95\%$ in which case $1 - \delta = 0.95$ for $\delta = 0.05$.  To quantify the confidence interval, I seek to derive a functional form for $\epsilon$ in terms of $N$ and $\delta$.
 
 \begin{equation}
 \begin{split}
@@ -368,13 +368,17 @@ With this expression in hand, I can solve for $\epsilon$ and complete the confid
 \begin{split}
 & \log (\delta/2) = \log(\exp(-2N \epsilon^2)) \\
 & \log(\delta/2) -2N \epsilon^2 \\
-& \sqrt{\frac{\log(2/\delta)}{2N}} = \epsilon .
+& \sqrt{\frac{\log(2/\delta)}{2N}} = \epsilon
 \end{split}
+\end{equation}
+resulting in
+\begin{equation}
+P(|\bar{Z} - \theta| \leq \sqrt{\frac{\log(2/\delta)}{2N}}) \geq 1 - \delta.
 \end{equation}
 
 \subsection*{3.2: Estimating the performance of a given classifier}
 
-In this question, I will work with a set of binary classifiers $f \in F$ for $K$ fs.  For a given classifier $f$, I define the expected 0/1 loss as
+In this question, I will work with a set of binary classifiers $f \in F$ for $K$ f's.  For a given classifier $f$, I define the expected 0/1 loss as
 \begin{equation} \label{eqn:loss_01}
 L(f) = E_{X,Y}[1(f(X) \neq Y)]
 \end{equation}
@@ -397,7 +401,10 @@ In this formalism, $L_i$ is analogous to $Z_i$ and $\hat{L}(f)$ is analogous to 
 & = |\hat{L}(f) - L(f) | \leq \epsilon
 \end{split}
 \end{equation}
-using the relations described above.  From Eqns.~\ref{eqn:ch_bound} and \ref{eqn:eps_bound}, I already have an expression for the bound $\epsilon = \sqrt{\frac{\log(2/\delta)}{2N}}$. 
+using the relations described above.  From Eqns.~\ref{eqn:ch_bound} and \ref{eqn:eps_bound}, I already have an expression for the bound $\epsilon = \sqrt{\frac{\log(2/\delta)}{2N}}$ giving the following confidence interval
+\begin{equation}
+P(|\hat{L}(f) - L(f)| \leq \sqrt{\frac{\log(2/\delta)}{2N}}) \geq 1 - \delta.
+\end{equation}
 
 \subsection*{3.3: ERM revisited}
 
@@ -537,7 +544,7 @@ R & = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(K)}{N}} \\
 & = \sqrt{\frac{1}{N}} + \sqrt{\frac{p\log(N)}{N}}
 \end{split}
 \end{equation}
-which gives $R {\sim} \mathcal{O}(\log(N)/\sqrt{N} + 1/\sqrt{N})$.  Since $R$ tends towards 0 as $N$ gets large, learning is possible for this hypothesis class.
+which gives $R {\sim} \mathcal{O}(\log(N)/\sqrt{N} + 1/\sqrt{N})$.  Since $R$ tends towards 0 as $N$ gets large since $\sqrt{N}$ grows faster than $\log(N)$, learning is possible for this hypothesis class.
 
 \subsubsection*{3.3.6c}
 
@@ -563,6 +570,6 @@ R & = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(K)}{N}} \\
 & = \sqrt{\frac{1}{N}} + \sqrt{10}
 \end{split}
 \end{equation}
-which gives $R {\sim} \mathcal{O}(10)$, a constant complexity.  Since $R$ remains constant as $N$ gets large, learning is not possible for this hypothesis class.  Hence, for reasonable hypothesis class sizes, learning is possible.  Once the class size becomes too large, learning is not possible.
+which gives $R {\sim} \mathcal{O}(10)$, a constant complexity.  Since $R$ remains constant as $N$ gets large, learning is not possible for this hypothesis class.  Hence, for reasonable hypothesis class sizes, learning is possible.  Once the class size becomes too large, learning is not possible.  This is a tricky case, however, since for large enough $N$, you will asymptote to some non-zero regret.  For an appropriate choice of the constant coefficient in the argument of the exponential, you can then limit your regret.  However, since the regret does not approach towards zero, the best answer you could achieve will always be offset from the truth.
 
 \end{document}

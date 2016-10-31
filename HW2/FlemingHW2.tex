@@ -334,7 +334,7 @@ For this question, I will assume a simplified Chernoff-Hoeffding bound of the fo
 \begin{equation} \label{eqn:ch_bound}
 P(|\bar{Z} - \theta| \geq \epsilon) \leq 2 \exp(-2N \epsilon^2)
 \end{equation}
-where $\bar{Z}$ is the empirical mean of N i.i.d. samples from a Bernoulli distribution where $P(Z = 1) = \theta$ and $P(Z = 0) = 1 - \theta$.  Additionally, I will be working in the hypothesis space where I have a finite set of $K$ classifiers.
+where $\bar{Z}$ is the empirical mean of N i.i.d. samples from a Bernoulli distribution where $P(Z = 1) = \theta$ and $P(Z = 0) = 1 - \theta$.  Additionally, I will be working in the hypothesis space where I have a finite set of $K$ classifiers.  For this Question, I want to note a few things that I will use in subsequent proofs.  The quantity $\bar{Z}$ is an empirical quantity learned from the respective training set $T$ whereas $\theta$ is the expected value for $\bar{Z}$ over the underlying distribution like the bias of a coin the expected value of the MLE for the Bernoulli distribution and as such the MLE is unbiased.  I use these facts to relate quantities to both $\bar{Z}$ and $\theta$ to show when the Chernoff-Hoeffding bound applies.  This is especially relevant since in this question, I work with 0/1 loss where the 0/1 loss on each sample can be considered an i.i.d. sample from a Bernoulli distribution.
 
 \subsection*{3.1: A confidence interval for a coin}
 
@@ -403,11 +403,11 @@ f^* = \text{argmin}_{f \in F}L(f).
 
 \subsubsection*{3.3.1}
 
-Yes.  TODO
+Yes, the previously derived confidence interval does apply to $f^*$ and leads to a valid probabilistic statement to bound $|\hat{L}(f^*) - L(f^*)|$.  The intuition behind this step is similar to the analogy I used in 3.2.1.  For this case, the quantity $\hat{L}(f^*)$ represents a quantity the explicitly depends on the training set $T$ since the estimator of the loss, $\hat{L}$, is calculated over all points in $T$.  As before, this quantity is analogous to the $\bar{Z}$ term in Eqn.~\ref{eqn:ch_bound} as $\bar{Z}$ is also calculated over its respective training set.  Similarly, $L$ is an expected quantity over the underlying distribution as is $\theta$ in Eqn.~\ref{eqn:ch_bound}.  With this relation between these quantities, the Eqn.~\ref{eqn:ch_bound} should hold giving the valid probabilistic confidence interval.  Later, I used this bound, $|\hat{L}(f^*) - L(f^*)| \leq \epsilon$ where I derived $\epsilon$ above, to quantify the regret, $R$. 
 
 \subsubsection*{3.3.2}
 
-No.   TODO
+No, the previously derived confidence interval does not apply to $\hat{f}$.  The reason for this primarily stems from the $\hat{L}(\hat{f})$ term.  Since $\hat{f}$ minimizes $\hat{L}$ by design, one minimized $\hat{f}$ on the training set $T$ to find the best $f$ out of all $K$ classifiers in the hypothesis space and then one recomputes its loss.  This operation necessarily involves the number of classifiers $K$ in the hypothesis space as I will show in my derivation for this quantity in Questions 3.3.3 and 3.3.4.
 
 \subsubsection*{3.3.3}
 
@@ -419,7 +419,7 @@ I can rewrite this via the law of total probability as
 \begin{equation} \label{eqn:3.3.3}
 P(\text{for all $f \in F$,} |\hat{L}(f) - L(f)| \geq B) \leq \delta.
 \end{equation}
-First, I define the $ith$ event $E_i = |\hat{L}(f_i) - L(f_i)|$ for all $f \in F$.  Therefore the posited Eqn.~\ref{eqn:3.3.3} becomes a probability for all $E$, or more specifically,
+This is the confidence interval for my bound.  To complete the proof, I must solve for the bound for each event, $B$.  First, I define the $ith$ event $E_i = |\hat{L}(f_i) - L(f_i)|$ for all $f \in F$.  Therefore the posited Eqn.~\ref{eqn:3.3.3} becomes a probability for all $E$, or more specifically,
 \begin{equation}
 P(E_1 \text{ or } E_2 \text{, ... , or } E_k) \leq \sum_{i = 1}^k P(E_i) = \delta
 \end{equation}
@@ -440,7 +440,10 @@ With this expression for the probability term in Eqn.~\ref{eqn:3.3.3} in hand, I
 B & = \sqrt{\log(\frac{2K}{\delta})/2N}
 \end{split}
 \end{equation}
-thus completing the proof since $|\hat{L}(f) - L(f)| \leq B$.
+thus completing the proof since $|\hat{L}(f) - L(f)| \leq B$.  With $B$ in hand, the confidence interval becomes
+\begin{equation}
+P(\text{for all $f \in F$,} |\hat{L}(f) - L(f)| \leq \sqrt{\log(\frac{2K}{\delta})/2N}) \geq 1 - \delta.
+\end{equation}
 
 \subsubsection*{3.3.4}
 
@@ -451,13 +454,13 @@ To bound $|L(\hat{f}) - \hat{L}(\hat{f})|$ that holds with a probability greater
 
 \subsubsection*{3.3.5}
 
-In this question, I seek to bound how close my loss, using the ERM, is to the best possible loss in the hypothesis space.  To do this, I leverage the previously derived error bounds from 3.2.1 and 3.3.4:
+In this question, I seek to bound how close my loss, using the ERM, is to the best possible loss in the hypothesis space.  To do this, I leverage the previously derived error bounds from 3.3.1 and 3.3.4:
 \begin{equation} \label{eqn:eps_bound}
 |L(f^*) - \hat{L}(f^*)| \leq \epsilon = \sqrt{\frac{\log(2/\delta)}{2N}}
 \end{equation}
 and
 \begin{equation} \label{eqn:B_bound}
-|L(\hat{f}) - \hat{L}(\hat{f})| \leq B = \sqrt{\frac{\log(2K/\delta)}{2N}}
+|L(\hat{f}) - \hat{L}(\hat{f})| \leq B = \sqrt{\frac{\log(2K/\delta)}{2N}},
 \end{equation}
 respectively.  I will expand the two equations using the following identities for absolute values:
 \begin{equation*}
@@ -546,26 +549,3 @@ R & = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(K)}{N}} \\
 which gives $R {\sim} \mathcal{O}(10)$, a constant complexity.  Since $R$ remains constant as $N$ gets large, learning is not possible for this hypothesis class.  Hence, for reasonable hypothesis class sizes, learning is possible.  Once the class size becomes too large, learning is not possible.
 
 \end{document}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

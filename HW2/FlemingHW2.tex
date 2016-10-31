@@ -449,8 +449,13 @@ P(\text{for all $f \in F$,} |\hat{L}(f) - L(f)| \leq \sqrt{\log(\frac{2K}{\delta
 
 To bound $|L(\hat{f}) - \hat{L}(\hat{f})|$ that holds with a probability greater than $1 - \delta$, I note that in the previous question I derived a bound $|\hat{L}(f) - L(f)| \leq B$ that holds with a probability greater than $1 - \delta$ for all $f \in F$.  Since $\hat{f}$ is an $f \in F$, that same bound applies giving 
 \begin{equation}
-|L(\hat{f}) - \hat{L}(\hat{f})| \leq B = \sqrt{\log(\frac{2K}{\delta})/2N}
+|L(\hat{f}) - \hat{L}(\hat{f})| \leq B = \sqrt{\log(\frac{2K}{\delta})/2N}.
 \end{equation}
+This gives a confidence interval of 
+\begin{equation}
+P(|L(\hat{f}) - \hat{L}(\hat{f})| \leq \sqrt{\log(\frac{2K}{\delta})/2N}) \geq 1 - \delta
+\end{equation}
+similar to 3.3.3.
 
 \subsubsection*{3.3.5}
 
@@ -489,7 +494,10 @@ Now, I insert Eqn.~\ref{eqn:eps_bound_exp} into the above expression for the $\h
 & = L(\hat{f}) - L(f^*) \leq B + \epsilon = R
 \end{split}
 \end{equation}
-where both $\epsilon$ and $B$ are given above.  This completes the proof from the regret bound.
+where both $\epsilon$ and $B$ are given above.  This completes the proof from the regret bound.  Using this regret bound, I can provide a confidence interval for how close my loss is to the best possible loss as
+\begin{equation}
+P(|L(\hat{f}) - L(f^*)| \leq \sqrt{\log(\frac{2K}{\delta})/2N} + \sqrt{\frac{\log(2/\delta)}{2N}}) \geq 1 - \delta
+\end{equation}
 
 \subsubsection*{3.3.6}
 

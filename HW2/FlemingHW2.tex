@@ -57,7 +57,7 @@ Overall, my model performs rather well as it classifies ${\sim}86\%$ of the samp
 
 \subsection*{1.2: Neural Nets with a random first layer: Using more features}
 
-I mapped $X$ from a $n \times d$ matrix to a $n \times k$ matrix for $k=10000$ according to the procedure outlined in the question.  Specifically, I generated a $d \times k$ matrix $v$ where each column $v_j$ was a vector of length $d$ whose elements were independently sampled from the standard uniform distribution.  I then mapped $X$ by taking the dot product $X \cdot v$ subject to the constraint that $h_j(x) = \max{(v_i \cdot x,0)}$ is the $jth$ column out of $k$ total of the updated $X$ matrix.  I applied this procedure to both the training and testing images from the MNIST dataset taking care to use the same $v$ for both mappings.  I cached $v$ for future questions.
+I mapped $X$ from a $n \times d$ matrix to a $n \times k$ matrix for $k=10000$ according to the procedure outlined in the question.  Specifically, I generated a $d \times k$ matrix $v$ where each column $v_j$ was a vector of length $d$ whose elements were independently sampled from the standard uniform distribution.  I then mapped $X$ by taking the dot product $X \cdot v$ subject to the constraint that $h_j(x) = \max{(v_i \cdot x,0)}$.  This condition enforces each entry of the new row corresponding to each image is positive.  I applied this procedure to both the training and testing images from the MNIST dataset taking care to use the same $v$ for both mappings.  I cached $v$ for future questions.
 
 Following the same procedure outlined in the previous question, I ran my linear regression multi-class algorithm on the mapped MNIST data.  Given the size of the data involved, namely a $60000 \times 10000$ input matrix, solving for the coefficients using Ridge Regression was rather computationally expensive.  As such, I tested a few values of $\lambda$ for regularization starting with the best fit of $10^4$ found in the previous section.  I tested other values according to the following heuristic presented by Prof. Kakade in lecture:
 \begin{equation} \label{eqn:lambda_heuristic}
@@ -316,7 +316,7 @@ As seen above, the mini-batch SGD quickly achieves performance comparable to the
 
 \subsubsection*{2.4.2}
 
-The mini-batch SGD on the transformed MNIST data achieved a training set log-loss and 0/1 loss of 0.291 and 0.079 while achieving a log-loss and 0/1 loss of 0.300 and 0.083 on the testing set, respectively.  As expected, the testing loss is greater than the training loss.  Interestingly, both the log and 0/1 losses on the transformed data are appreciably smaller than their counter-parts on the original MNIST data.  Even though I used the same optimization algorithm, mini-batch SGD, and softmax classification, the one layer neural network transformed MNIST data yields a markedly better performance than the original data.  Even though I did nothing particularly clever when transforming the MNIST data to a space with more features, this trivial step yielded non-trivial improvements.
+The mini-batch SGD on the transformed MNIST data achieved a training set log-loss and 0/1 loss of 0.144 and 0.040 while achieving a log-loss and 0/1 loss of 0.162 and 0.047 on the testing set, respectively.  As expected, the testing loss is greater than the training loss.  Interestingly, both the log and 0/1 losses on the transformed data are appreciably smaller than their counter-parts on the original MNIST data.  Even though I used the same optimization algorithm, mini-batch SGD, and softmax classification, the one layer neural network transformed MNIST data yields a markedly better performance than the original data.  Even though I did nothing particularly clever when transforming the MNIST data to a space with more features, this trivial step yielded non-trivial improvements.
 
 \section*{3: (Baby) Learning Theory: Why is statistical learning possible?}
 
@@ -345,7 +345,7 @@ via the law of total probability.  At this point, I note that the final expressi
 \delta = 2 \exp(-2N \epsilon^2).
 \end{equation}
 With this expression in hand, I can solve for $\epsilon$ and complete the confidence interval derivation as follows:
-\begin{equation}
+\begin{equation} \label{eqn:eps_bound}
 \begin{split}
 & \log (\delta/2) = \log(\exp(-2N \epsilon^2)) \\
 & \log(\delta/2) -2N \epsilon^2 \\
@@ -355,27 +355,89 @@ With this expression in hand, I can solve for $\epsilon$ and complete the confid
 
 \subsection*{3.2: Estimating the performance of a given classifier}
 
-In this question, I will work with a set of binary classifiers $f \in F$ for $K$ fs.  For a given classifier $f$, I define the 0/1 loss as
+In this question, I will work with a set of binary classifiers $f \in F$ for $K$ fs.  For a given classifier $f$, I define the expected 0/1 loss as
 \begin{equation} \label{eqn:loss_01}
-L(f) = E_{X,Y}[1(f(X) \neq Y)].
+L(f) = E_{X,Y}[1(f(X) \neq Y)]
 \end{equation}
+where the expectation is over the underlying distribution in both $X$ and $Y$.
 
 \subsubsection*{3.2.1}
 
-TODO
+Let $\hat{L}(f)$ be the estimator for the loss of a classifier $f$ defined to be
+\begin{equation} \label{eqn:lhat}
+\hat{L}(f) = \frac{1}{N} \sum_{i = 1}^N 1(f(x_i) \neq y_i).
+\end{equation}
+I can provide a confidence interval for the loss by specifying a bound $|L(f) - \hat{L}(f)| \leq \epsilon$ by noting a few things.  First, I note that the loss on the $ith$ sample is $L_i = 1(f(x_i) \neq y_i)$.  Plugging this in to Eqn.~\ref{eqn:lhat} gives
+\begin{equation}
+\hat{L}(f) = \frac{1}{N} \sum_{i = 1}^N L_i.
+\end{equation}
+In this formalism, $L_i$ is analogous to $Z_i$ and $\hat{L}(f)$ is analogous to $\bar{Z}$ as defined in the question prompt since both represent empirical quantities derived from the training set.  Similarly, I can relate $L(f)$ to $\theta$ as both are the expectation of the respective quantity over the distribution of $X$ and $Y$.  With these analogies, I can define the following
+\begin{equation}
+\begin{split}
+& |\bar{Z} - \theta | \leq \epsilon \\
+& = |\hat{L}(f) - L(f) | \leq \epsilon
+\end{split}
+\end{equation}
+using the relations described above.  From Eqns.~\ref{eqn:ch_bound} and \ref{eqn:eps_bound}, I already have an expression for the bound $\epsilon = \sqrt{\frac{\log(2/\delta)}{2N}}$. 
 
+\subsection*{3.3: ERM revisited}
 
+For this question, I will work with a N-sample training set $T$ sampled i.i.d. from an underlying distribution over $X$ and $Y$.  For this case, I define 
+\begin{equation} \label{eqn:fhat}
+\hat{f} = \text{argmin}_{f \in F}\hat{L}(f)
+\end{equation}
+where $\hat{f}$ necessarily depends on the given $T$ it was learned over and minimizes the loss on the training set and hence is the empirical risk minimizer (ERM).  The best in class function is defined as
+\begin{equation} \label{eqn:fstar}
+f^* = \text{argmin}_{f \in F}L(f).
+\end{equation}
 
+\subsubsection*{3.3.1}
 
+Yes.  TODO
 
+\subsubsection*{3.3.2}
 
+No.   TODO
 
+\subsubsection*{3.3.3}
 
+In this question, I will derive a $B$ which holds for
+\begin{equation}
+P(\text{for all $f \in F$,} |\hat{L}(f) - L(f)| \leq B) \geq 1 - \delta.
+\end{equation}
+I can rewrite this via the law of total probability as
+\begin{equation} \label{eqn:3.3.3}
+P(\text{for all $f \in F$,} |\hat{L}(f) - L(f)| \geq B) \leq \delta.
+\end{equation}
+First, I define the $ith$ event $E_i = |\hat{L}(f_i) - L(f_i)|$ for all $f \in F$.  Therefore the posited Eqn.~\ref{eqn:3.3.3} becomes a probability for all $E$, or more specifically,
+\begin{equation}
+P(E_1 \text{ or } E_2 \text{, ... , or } E_k) \leq \sum_{i = 1}^k P(E_i) = \delta
+\end{equation}
+according to the union bound for all events $E$ and Eqn.~\ref{eqn:3.3.3}.  Now, I note that each event is bounded $E_i = |\hat{L}(f_i) - L(f_i)| \geq B$ by construction.  
+Additionally by the definition of Hoeffding's inequality, Eqn.~\ref{eqn:ch_bound},
+\begin{equation}
+P(E_i) \leq 2\exp(-2NB^2)
+\end{equation}
+Therefore, 
+\begin{equation}
+P(E_1 \text{ or } E_2 \text{, ... , or } E_k) \leq \sum_{i = 1}^k P(E_i) = 2K \exp(-2NB^2) = \delta.
+\end{equation}
+With this expression for the probability term in Eqn.~\ref{eqn:3.3.3} in hand, I solve for $B$ as follows
+\begin{equation} \label{eqn:b}
+\begin{split}
+\delta & = 2K \exp(-2NB^2) \\
+-2NB^2 & = \log(\frac{\delta}{2K}) \\
+B & = \sqrt{\log(\frac{2K}{\delta})/2N}
+\end{split}
+\end{equation}
+thus completing the proof since $|\hat{L}(f) - L(f)| \leq B$.
 
+\subsubsection*{3.3.4}
 
-
-
-
+To bound $|L(\hat{f}) - \hat{L}(\hat{f})|$ that holds with a probability greater than $1 - \delta$, I note that in the previous question I derived a bound $|\hat{L}(f) - L(f)| \leq B$ that holds with a probability greater than $1 - \delta$ for all $f \in F$.  Since $\hat{f}$ is an $f \in F$, that same bound applies giving 
+\begin{equation}
+|L(\hat{f}) - \hat{L}(\hat{f})| \leq B = \sqrt{\log(\frac{2K}{\delta})/2N}
+\end{equation}
 
 \end{document}
 

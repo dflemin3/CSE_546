@@ -31,15 +31,15 @@ mpl.rc('text', usetex='true')
 find_best_lam = True
 
 # Display, save plots?
-show_plots = False
-save_plots = False
+show_plots = True
+save_plots = True
 
 # Best Performance:
 # Training, testing 0-1 loss: 0.112, 0.106
 # Training, testing logloss: 0.439, 0.419
 # eta: 1.0e-4
 # eps: 5.0e-3
-# lambda: 1000
+# lambda: 100
 
 # Define constants
 
@@ -50,7 +50,7 @@ num = 5
 frac = 0.1
 
 # Best fits from reg path
-best_lambda = 1000.0
+best_lambda = 100.0
 best_thresh = 0.5
 best_eta = 1.0e-4
 
@@ -108,6 +108,24 @@ if find_best_lam:
     best_eta = eta_arr[ind_e]
     print("Best lambda:",best_lambda)
     print("Best eta:",best_eta)
+
+    if show_plots:
+        fig, ax = plt.subplots()
+
+        ax.plot(lams,err_val[ind_e,:],lw=3,color="blue",label=r"Validation 0/1 Loss")
+        ax.plot(lams,err_train[ind_e,:],lw=3,color="green",label=r"Training 0/1 Loss")
+        ax.axvline(x=best_lambda,lw=3,ls="--",color="black",label=r"Best $\lambda$")
+
+        ax.set_xlabel(r"Regularization Constant $\lambda$")
+        ax.set_ylabel("0/1 Loss")
+        ax.set_xscale("log")
+        ax.legend()
+        fig.tight_layout()
+
+        plt.show()
+
+        if save_plots:
+            fig.savefig("bgd_reg_path.pdf")
 
 #######################################################
 #

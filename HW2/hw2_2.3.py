@@ -31,8 +31,8 @@ mpl.rc('text', usetex='true')
 find_best_lambda = True
 show_plots = True
 save_plots = True
-run_sgd = True
-run_minibatch_sgd = True
+run_sgd = False
+run_minibatch_sgd = False
 
 # Classifier parameters
 best_lambda = 0.1 # Found via reg path
@@ -93,6 +93,24 @@ if find_best_lambda:
     ind_l = np.nanargmin(err_val)
     best_lambda = lams[ind_l]
     print("Best lambda:",best_lambda)
+
+    if show_plots:
+        fig, ax = plt.subplots()
+
+        ax.plot(lams,err_val,lw=3,color="blue",label=r"Validation 0/1 Loss")
+        ax.plot(lams,err_train,lw=3,color="green",label=r"Training 0/1 Loss")
+        ax.axvline(x=best_lambda,lw=3,ls="--",color="black",label=r"Best $\lambda$")
+
+        ax.set_xlabel(r"Regularization Constant $\lambda$")
+        ax.set_ylabel("0/1 Loss")
+        ax.set_xscale("log")
+        ax.legend()
+        fig.tight_layout()
+
+        plt.show()
+
+        if save_plots:
+            fig.savefig("sgd_reg_path.pdf")
 
 if run_minibatch_sgd:
     # Performance

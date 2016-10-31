@@ -23,6 +23,8 @@
 
 Please note that a copy of all the code I wrote to answer the questions in this assignment are included in my submission but also located online at \url{https://github.com/dflemin3/CSE_546/tree/master/HW2}.  Some scripts require data, such as MNIST data, to run to completion and were not included on my github or in my submission due to file size constraints.  If requested, I will happily send a compressed directory containing my homework and detailed instructions on how to reproduce my work.  My primary email is dflemin3 (at) uw (dot) edu.  Also for reproducibility, I set the random number generator seed near the top of each script such that rerunning my script will yield the same answers as presented here.
 
+TODO explain code dir structure
+
 %%% QUESTION 0  %%%
 \section*{Question 0: Collaborators}
 I collaborated with Matt Wilde, Serena Liu, and Janet Matsen for various questions on this assignment.
@@ -438,6 +440,102 @@ To bound $|L(\hat{f}) - \hat{L}(\hat{f})|$ that holds with a probability greater
 \begin{equation}
 |L(\hat{f}) - \hat{L}(\hat{f})| \leq B = \sqrt{\log(\frac{2K}{\delta})/2N}
 \end{equation}
+
+\subsubsection*{3.3.5}
+
+In this question, I seek to bound how close my loss, using the ERM, is to the best possible loss in the hypothesis space.  To do this, I leverage the previously derived error bounds from 3.2.1 and 3.3.4:
+\begin{equation} \label{eqn:eps_bound}
+|L(f^*) - \hat{L}(f^*)| \leq \epsilon = \sqrt{\frac{\log(2/\delta)}{2N}}
+\end{equation}
+and
+\begin{equation} \label{eqn:B_bound}
+|L(\hat{f}) - \hat{L}(\hat{f})| \leq B = \sqrt{\frac{\log(2K/\delta)}{2N}}
+\end{equation}
+respectively.  I will expand the two equations using the following identities for absolute values:
+\begin{equation*}
+|x - y| \leq z \rightarrow x \leq z + y, y \leq z + x.
+\end{equation*}
+Therefore, I expand Eqn.~\ref{eqn:eps_bound} into 
+\begin{equation} \label{eqn:eps_bound_exp}
+\hat{L}(f^*) \leq \epsilon + L(f^*)
+\end{equation}
+and I expand Eqn.~\ref{eqn:B_bound} into
+\begin{equation} \label{eqn:B_bound_exp}
+L(\hat{f}) \leq B + \hat{L}(\hat{f}).
+\end{equation}
+Now, I note that
+\begin{equation*}
+\hat{L}(\hat{f}) \leq \hat{L}(f^*)
+\end{equation*}
+since $\hat{f}$ by definition minimizes $\hat{L}$.  I use this inequality to upper bound Eqn.~\ref{eqn:B_bound_exp} to get
+\begin{equation}
+L(\hat{f}) \leq B + \hat{L}(f^*).
+\end{equation}
+Now, I insert Eqn.~\ref{eqn:eps_bound_exp} into the above expression for the $\hat{L}(f^*)$ term and simplify to get
+\begin{equation}
+\begin{split}
+& L(\hat{f}) \leq B + \epsilon + L(f^*) \\
+& = L(\hat{f}) - L(f^*) \leq B + \epsilon = R
+\end{split}
+\end{equation}
+where both $\epsilon$ and $B$ are given above.  This completes the proof from the regret bound.
+
+\subsubsection*{3.3.6}
+
+For a training set of size $N$ samples, I seek to see how large a hypothesis class $K$ can I utilize.  For a given $K$, learning can be possible if the regret $R$ approaches 0 as $N$ becomes large.  Otherwise, learning is not possible.  Since this question focuses on asymptotic limits, I will express my regret $R$ only in terms of $N$ and $K$ giving
+\begin{equation} \label{eqn:3.3.6}
+R = \epsilon + B = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(K)}{N}}
+\end{equation}
+since all other constant terms can safely be neglected in the large $N$ limit.
+
+\subsubsection*{3.3.6a}
+
+Here, I insert $K = C$ into Eqn.~\ref{eqn:3.3.6} for constant C and simplify
+\begin{equation}
+\begin{split}
+R & = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(K)}{N}} \\
+& = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(C)}{N}}
+\end{split}
+\end{equation}
+which gives $R {\sim} \mathcal{O}(1/\sqrt{N})$.  Since $R$ tends towards 0 as $N$ gets large, learning is possible for this hypothesis class.
+
+\subsubsection*{3.3.6b}
+
+Here, I insert $K = N^p$ into Eqn.~\ref{eqn:3.3.6} and simplify
+\begin{equation}
+\begin{split}
+R & = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(K)}{N}} \\
+& = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(N^p)}{N}} \\
+& = \sqrt{\frac{1}{N}} + \sqrt{\frac{p\log(N)}{N}}
+\end{split}
+\end{equation}
+which gives $R {\sim} \mathcal{O}(\log(N)/\sqrt{N} + 1/\sqrt{N})$.  Since $R$ tends towards 0 as $N$ gets large, learning is possible for this hypothesis class.
+
+\subsubsection*{3.3.6c}
+
+Here, I insert $K = \exp(\sqrt{N})$ into Eqn.~\ref{eqn:3.3.6} and simplify
+\begin{equation}
+\begin{split}
+R & = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(K)}{N}} \\
+& = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(\exp(\sqrt{N}))}{N}} \\
+& = \sqrt{\frac{1}{N}} + \sqrt{\frac{\sqrt{N}}{N}} \\
+& = \sqrt{\frac{1}{N}} + \sqrt{\frac{1}{\sqrt{N}}}
+\end{split}
+\end{equation}
+which gives $R {\sim} \mathcal{O}(1/\sqrt{N} + 1/\sqrt[4]{N})$.  Since $R$ tends towards 0 as $N$ gets large, learning is possible for this hypothesis class.
+
+\subsubsection*{3.3.6c}
+
+Here, I insert $K = \exp(10N)$ into Eqn.~\ref{eqn:3.3.6} and simplify
+\begin{equation}
+\begin{split}
+R & = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(K)}{N}} \\
+& = \sqrt{\frac{1}{N}} + \sqrt{\frac{\log(\exp(10N))}{N}} \\
+& = \sqrt{\frac{1}{N}} + \sqrt{\frac{10N}{N}} \\ 
+& = \sqrt{\frac{1}{N}} + \sqrt{10}
+\end{split}
+\end{equation}
+which gives $R {\sim} \mathcal{O}(10)$, a constant complexity.  Since $R$ remains constant as $N$ gets large, learning is not possible for this hypothesis class.  Hence, for reasonable hypothesis class sizes, learning is possible.  Once the class size becomes too large, learning is not possible.
 
 \end{document}
 

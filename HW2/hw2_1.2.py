@@ -31,9 +31,9 @@ nn_cache = "../Data/hw2-data/MNIST_nn_cache.npz"
 
 # Performance
 # Best lambda: 2835381.557.
-# Training 01 Loss: 0.00643
-# Testing 01 Loss: 0.0241
-# Training Square Loss: 273.7993
+# Training 01 Loss: 0.00641
+# Testing 01 Loss: 0.0239
+# Training Square Loss: 273.74
 # Testing Square Loss: 272.56
 
 # If I haven't already done it, load MNIST training data and transform it
@@ -86,7 +86,7 @@ else:
 best_lambda = val.estimate_lambda(X_train, scale=1.0)
 print("Best lambda: %.3lf." % best_lambda)
 y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
-y_train_test = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
+y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
 print("Fitting with ridge regression...")
 w0, w = ri.fit_ridge(X_train, y_train_true, lam=best_lambda)
 

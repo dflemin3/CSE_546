@@ -31,8 +31,8 @@ mpl.rc('text', usetex='true')
 find_best_lambda = True
 show_plots = True
 save_plots = True
-run_sgd = False
-run_minibatch_sgd = False
+run_sgd = True
+run_minibatch_sgd = True
 
 # Classifier parameters
 best_lambda = 0.1 # Found via reg path

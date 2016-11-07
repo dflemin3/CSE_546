@@ -54,7 +54,7 @@ def fit_pca(X, l=None, center=True):
         l = X_in.shape[1]
 
     # Make sure shapes are correct
-    assert X.shape[0] > X_in.shape[1], "This PCA inplementation fors for N > D"
+    assert X.shape[0] > X_in.shape[1], "This PCA inplementation is for for N > D"
 
     # Solve PCA using SVD approach
     # Use thin SVD as for N > D, last N-D cols of U are irrelevant
@@ -69,7 +69,8 @@ def fit_pca(X, l=None, center=True):
 
 class PCA(object):
     """
-    PCA wrapper object.  More docs soon (TM)
+    PCA object which, surprisingly, performs PCA on input data written with
+    sklearn-ish style using thin SVD.
     """
 
     def __init__(self,l=None):
@@ -78,14 +79,21 @@ class PCA(object):
         self.vT = None # SVD output
         self.l = l # Number of principal components used in calculations
         self.components = None # Principal components
-        self.X_mean = None # Mean of data (works better when data is centered)
+        self.X_mean = None # Mean of data (works better when data is centered?)
 
-    def fit(self,X):
+    def fit(self,X, center=False):
         """
-        Fit the pca model using pca.fit (see parameters in that function)
+        Fit the pca model using pca.fit (see parameters in that function). This
+        function stores the output of SVD and the mean of the data since the
+        fitting process in general works better on centered data.  The mean is
+        used later on to re-transform data back into physical space.
         """
-        # Fit for eigenvectors and so on retaining all principal components
-        self.u, self.s, self.vT, self.X_mean = fit_pca(X, l=None, center=True)
+        # Fit for components retaining all principal components
+        if center:
+            self.u, self.s, self.vT, self.X_mean = fit_pca(X, l=None, center=center)
+        else:
+            self.u, self.s, self.vT = fit_pca(X, l=None, center=center)
+            self.X_mean = 0.0
 
         # Now set principal components
         self.components = self.vT
@@ -94,7 +102,11 @@ class PCA(object):
     def transform(self,X):
         """
         Transform to projected principal component space using first l principal
-        components
+        components given by
+
+        X_trans = US or XW (Murphy 12.58)
+
+        for principal components W
 
         Parameters
         ----------
@@ -104,23 +116,59 @@ class PCA(object):
         -------
         X : array (n x l)
         """
-        return self.u[:,:self.l] * self.s[:,:self.l]
+        return X.dot(self.components[:,:self.l])
     # end function
 
 
     def inverse_transform(self,X):
         """
         Transfrom from principal component space back to physical space using
-        first l principal components
+        first l principal components given by
+
+        X_pred = USV^T (Murphy 12.59)
+
+        where US is the transformed input data (denoted here as X)
 
         Parameters
         ----------
         X : array (n x l)
+            Transformed data (like u * s)
 
         Returns
         -------
         X : array (n x d)
         """
         return X.dot(self.components[:,:self.l].T) + self.X_mean
+    # end function
+
+
+    def reproject(self, X):
+        """
+        Combine transform, inverse_transform methods into one handy function.
+        """
+        return self.inverse_transform(self.transform(X))
+    # end function
+
+
+    def scree(self):
+        """
+        Computes the fractional reconstruction error for the first l principal
+        components according to the following formula
+
+        1 - sum(i = 1, l) lambda_i / sum(i = 1, d) lambda_i
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        err : vector (1 x l)
+            fractional reconstruction error
+        """
+
+        # Precompute sum(i = 1, d) lambda_i term
+        denom = np.sum(self.s**2)
+
+        return np.cumsum(self.s[:l]**2).reshape((self.l,1))
     # end function
 # end class

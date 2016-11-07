@@ -20,12 +20,34 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Load in MNIST data
-print("Loading MNIST Testing data...")
-X_test, y_test = mu.load_mnist(dataset='testing')
+print("Loading MNIST Training data...")
+X_train, y_train = mu.load_mnist(dataset='training')
 
-# Center data
-#X_mean = np.mean(X_test, axis=0)
-#X_scaled = norm.center(X_test)
+# Pick some digit to make the computer draw
+ind = 2222
+print(y_train[ind])
+
+# Init PCA object
+PCA = pca.PCA(l=X_train.shape[-1])
+
+# Fit model
+PCA.fit(X_train)
+
+# Using principal components, draw the reconstructed image
+image = PCA.reproject(X_train[ind])
+
+fig, ax = plt.subplots()
+
+# Plot for 0th sample, a 7
+ax.imshow(image.reshape((28, 28)), cmap='binary')
+ax.text(0.95, 0.05, 'n = {0}'.format(100), ha='right',
+        transform=ax.transAxes, color='green')
+ax.set_xticks([])
+ax.set_yticks([])
+
+plt.show()
+
+"""
 
 fig, axes = plt.subplots(4, 4, figsize=(8, 8))
 fig.subplots_adjust(hspace=0.1, wspace=0.1)
@@ -36,19 +58,17 @@ for i, ax in enumerate(axes.flat):
     PCA = pca.PCA(l=(i+1))
 
     # Fit model
-    PCA.fit(X_test)
+    PCA.fit(X_train)
 
-    # Transform to low-dimensional space
-    Xtrans = PCA.transform(X_test)
-
-    # Transform back to "physical" space
-    image = PCA.inverse_transform(Xtrans)
+    # Using principal components, draw the reconstructed image
+    image = PCA.reproject(X_train[ind])
 
     # Plot for 0th sample, a 7
-    ax.imshow(image[0].reshape((28, 28)), cmap='binary')
+    ax.imshow(image.reshape((28, 28)), cmap='binary')
     ax.text(0.95, 0.05, 'n = {0}'.format(i + 1), ha='right',
             transform=ax.transAxes, color='green')
     ax.set_xticks([])
     ax.set_yticks([])
 
 plt.show()
+"""

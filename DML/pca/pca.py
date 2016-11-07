@@ -73,27 +73,28 @@ class PCA(object):
     """
 
     def __init__(self,l=None):
-        self.u = None
-        self.s = None
-        self.vT = None
-        self.l = l
-        self.components = None
-        self.X_mean = None
+        self.u = None # SVD output
+        self.s = None # SVD output
+        self.vT = None # SVD output
+        self.l = l # Number of principal components used in calculations
+        self.components = None # Principal components
+        self.X_mean = None # Mean of data (works better when data is centered)
 
     def fit(self,X):
         """
         Fit the pca model using pca.fit (see parameters in that function)
         """
-        # Fit for eigenvectors and so on
-        self.u, self.s, self.vT, self.X_mean = fit_pca(X, l=self.l, center=True)
+        # Fit for eigenvectors and so on retaining all principal components
+        self.u, self.s, self.vT, self.X_mean = fit_pca(X, l=None, center=True)
 
         # Now set principal components
-        self.components = self.vT / self.s * np.sqrt(len(X))
+        self.components = self.vT
     # end function
 
     def transform(self,X):
         """
-        Transform to projected principal component space.
+        Transform to projected principal component space using first l principal
+        components
 
         Parameters
         ----------
@@ -103,13 +104,14 @@ class PCA(object):
         -------
         X : array (n x l)
         """
-        return self.u * self.s
+        return self.u[:,:self.l] * self.s[:,:self.l]
     # end function
 
 
     def inverse_transform(self,X):
         """
-        Transfrom from principal component space back to physical space.
+        Transfrom from principal component space back to physical space using
+        first l principal components
 
         Parameters
         ----------
@@ -119,6 +121,6 @@ class PCA(object):
         -------
         X : array (n x d)
         """
-        return X.dot((self.s ** 2 * self.components / len(X)).T) + self.X_mean
+        return X.dot(self.components[:,:self.l].T) + self.X_mean
     # end function
 # end class

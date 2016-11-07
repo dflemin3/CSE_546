@@ -27,7 +27,7 @@ X_test, y_test = mu.load_mnist(dataset='testing')
 #X_mean = np.mean(X_test, axis=0)
 #X_scaled = norm.center(X_test)
 
-fig, axes = plt.subplots(6, 6, figsize=(8, 8))
+fig, axes = plt.subplots(4, 4, figsize=(8, 8))
 fig.subplots_adjust(hspace=0.1, wspace=0.1)
 
 for i, ax in enumerate(axes.flat):

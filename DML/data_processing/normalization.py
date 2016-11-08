@@ -17,7 +17,7 @@ def normal_scale(X):
     Scale input data to have 0 mean and unit standard deviation in the feature
     direction.
 
-    I think this is broken...
+    I think this is broken... probs when a column is all 0s
 
     Parameters
     ----------

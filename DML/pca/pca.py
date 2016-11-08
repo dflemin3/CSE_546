@@ -40,7 +40,7 @@ def fit_pca(X, l=None, center=True):
     -------
     u : array (n x l)
     s : array (1 x l)
-    vT : array  (l x l)
+    v : array  (d x l)
     """
 
     # Center the data?
@@ -61,9 +61,9 @@ def fit_pca(X, l=None, center=True):
     u, s, v = np.linalg.svd(X_in, full_matrices=False)
 
     if center:
-        return u[:,:l], s[:l].reshape((1,l)), v.T[:,:l], X_mean
+        return u[:,:l], s[:l].reshape((1,l)), v[:,:l], X_mean
     else:
-        return u[:,:l], s[:l].reshape((1,l)), v.T[:,:l]
+        return u[:,:l], s[:l].reshape((1,l)), v[:,:l]
 # end function
 
 
@@ -76,7 +76,7 @@ class PCA(object):
     def __init__(self,l=None):
         self.u = None # SVD output
         self.s = None # SVD output
-        self.vT = None # SVD output
+        self.v = None # SVD output
         self.l = l # Number of principal components used in calculations
         self.components = None # Principal components
         self.X_mean = None # Mean of data (works better when data is centered?)
@@ -90,13 +90,13 @@ class PCA(object):
         """
         # Fit for components retaining all principal components
         if center:
-            self.u, self.s, self.vT, self.X_mean = fit_pca(X, l=None, center=center)
+            self.u, self.s, self.v, self.X_mean = fit_pca(X, l=None, center=center)
         else:
-            self.u, self.s, self.vT = fit_pca(X, l=None, center=center)
+            self.u, self.s, self.v = fit_pca(X, l=None, center=center)
             self.X_mean = 0.0
 
         # Now set principal components
-        self.components = self.vT
+        self.components = self.v
     # end function
 
     def transform(self,X):
@@ -146,7 +146,7 @@ class PCA(object):
         """
         Combine transform, inverse_transform methods into one handy function.
         """
-        return self.inverse_transform(self.transform(X))
+        return self.inverse_transform(self.transform(X - X.mean(axis = 0)))
     # end function
 
 
@@ -169,6 +169,6 @@ class PCA(object):
         # Precompute sum(i = 1, d) lambda_i term
         denom = np.sum(self.s**2)
 
-        return np.cumsum(self.s[:l]**2).reshape((self.l,1))
+        return 1.0 - (np.cumsum(self.s[:,:self.l]**2)/denom)
     # end function
 # end class

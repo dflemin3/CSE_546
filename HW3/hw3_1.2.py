@@ -24,7 +24,7 @@ show_plots = False
 
 # Load in MNIST data
 print("Loading MNIST Training data...")
-X_train, y_train = mu.load_mnist(dataset='training')
+X_train, y_train = mu.load_mnist(dataset='testing')
 
 # Init PCA object
 PCA = pca.PCA(l=50)
@@ -33,11 +33,31 @@ PCA = pca.PCA(l=50)
 print("Fitting PCA model...")
 PCA.fit(X_train, center=True)
 
+"""
+[ 0.          0.          0.          0.          0.          0.          0.
+  0.          0.          0.          0.          0.          0.00406667
+  0.00113333  0.00106667  0.00135     0.          0.          0.          0.
+  0.          0.          0.          0.          0.          0.          0.
+  0.          0.          0.          0.          0.          0.          0.00375
+  0.00378333  0.00388333  0.00331667  0.00143333  0.00143333  0.00353333
+  0.00405     0.00406667  0.00331667  0.00218333  0.0023      0.00345
+  0.00235     0.0022      0.00295     0.00423333]
+ """
+
+X_train = X_train - np.mean(X_train, axis=0)
+
+sigma = X_train.T.dot(X_train)/len(X_train)
+
+print(np.linalg.eig(sigma)[:50])
+
+print((PCA.s**2/len(X_train))[:50])
+
+print(np.sum(PCA.s**2)/len(X_train))
+
 if show_plots:
     # Pick some digit to make the computer draw
     ind = 2222
     print(y_train[ind])
-
 
     # Using principal components, draw the reconstructed image
     image = PCA.reproject(X_train[ind])
@@ -52,24 +72,6 @@ if show_plots:
     ax.set_yticks([])
 
     plt.show()
-
-print("Plotting scree plot...")
-# Get variance explained by singular values
-explained_variance = (PCA.s[:,:PCA.l] ** 2) / len(X_train)
-total_var = ((PCA.s ** 2) / len(X_train)).sum()
-explained_variance_ratio = explained_variance / total_var
-
-scree = PCA.scree()
-plt.plot(np.arange(PCA.l),explained_variance_ratio.squeeze(), lw=3, color="red")
-
-# Now sklearn it
-from sklearn.decomposition import PCA
-skpca = PCA(n_components=50, svd_solver="full")
-skpca.fit(X_train)
-
-plt.plot(skpca.explained_variance_ratio_, lw=2,color="blue")
-
-plt.show()
 
 """
 

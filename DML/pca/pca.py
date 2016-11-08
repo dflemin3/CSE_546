@@ -39,7 +39,7 @@ def fit_pca(X, l=None, center=True):
     Returns
     -------
     u : array (n x l)
-    s : array (1 x l)
+    s : array (l x ,)
     v : array  (d x l)
     """
 
@@ -61,9 +61,9 @@ def fit_pca(X, l=None, center=True):
     u, s, v = np.linalg.svd(X_in, full_matrices=False)
 
     if center:
-        return u[:,:l], s[:l].reshape((1,l)), v[:,:l], X_mean
+        return u[:,:l], s[:l], v[:,:l], X_mean
     else:
-        return u[:,:l], s[:l].reshape((1,l)), v[:,:l]
+        return u[:,:l], s[:l], v[:,:l]
 # end function
 
 
@@ -80,6 +80,7 @@ class PCA(object):
         self.l = l # Number of principal components used in calculations
         self.components = None # Principal components
         self.X_mean = None # Mean of data (works better when data is centered?)
+        self.evals = None # eigenvalues
 
     def fit(self,X, center=False):
         """
@@ -97,6 +98,9 @@ class PCA(object):
 
         # Now set principal components
         self.components = self.v
+
+        # Set eigenvalues lambda = s^2/n
+        self.evals = self.s**2/len(X)
     # end function
 
     def transform(self,X):
@@ -150,7 +154,7 @@ class PCA(object):
     # end function
 
 
-    def scree(self):
+    def frac_reconstruction_error(self):
         """
         Computes the fractional reconstruction error for the first l principal
         components according to the following formula
@@ -167,8 +171,8 @@ class PCA(object):
         """
 
         # Precompute sum(i = 1, d) lambda_i term
-        denom = np.sum(self.s**2)
+        denom = np.sum(self.evals)
 
-        return 1.0 - (np.cumsum(self.s[:,:self.l]**2)/denom)
+        return 1.0 - (np.cumsum(self.evals[:self.l])/denom)
     # end function
 # end class

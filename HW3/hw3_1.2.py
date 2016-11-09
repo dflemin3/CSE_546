@@ -21,21 +21,24 @@ import matplotlib.pyplot as plt
 
 # Flags to control functionality
 show_plots = True
-save_plots = False
+save_plots = True
+use_one_digit = False
 
 # Load in MNIST data
 print("Loading MNIST Training data...")
 X_train, y_train = mu.load_mnist(dataset='training')
 
-#mask = y_train.squeeze() == 5
-#X_train = X_train[mask]
-#print(X_train.shape)
-#y_train = y_train[mask]
+# Training using only one digit?
+if use_one_digit:
+    mask = y_train.squeeze() == 5
+    X_train = X_train[mask]
+    print(X_train.shape)
+    y_train = y_train[mask]
 
 # Init PCA object
 # Solve for all principal components but do calculations using only 50
 # Can reset l later if need be as all principal components are retained
-PCA = pca.PCA(l=50, center=False)
+PCA = pca.PCA(l=50, center=True)
 
 # Fit model
 print("Fitting PCA model...")
@@ -63,7 +66,7 @@ frac_err_50 = PCA.frac_reconstruction_error()
 x_arr = np.arange(len(frac_err_50)) + 1 # to shift from 0-49 -> 1-50
 
 # Plot fractional reconstruction error for 1-50 components
-if False:
+if show_plots:
 
     fig, ax = plt.subplots()
 
@@ -80,30 +83,20 @@ if False:
     if save_plots:
         fig.savefig("fractional_rec_error.pdf")
 
-ind = 1111
-ncomps = 25
-print(y_train[ind])
-PCA.l = ncomps
-#image = PCA.reproject(X_train[ind])
-image = PCA.components[:,0]
-
+# Plot fractional reconstruction error for 2-50 components
 if show_plots:
-    fig, axes = plt.subplots(ncols=2)
 
+    fig, ax = plt.subplots()
 
-    # Plot reconstructed image
-    axes[0].imshow(image.reshape((28, 28)), cmap='binary', interpolation="nearest")
-    axes[0].text(0.95, 0.05, 'n = {0}'.format(ncomps), ha='right',
-            transform=axes[0].transAxes, color='green')
-    axes[0].set_xticks([])
-    axes[0].set_yticks([])
+    ax.plot(x_arr[1:], frac_err_50[1:], "o-", lw=3, color="blue")
 
-    # Plot actual image
-    image = X_train[ind]
-    axes[1].imshow(image.reshape((28, 28)), cmap='binary', interpolation="nearest")
-    axes[1].text(0.95, 0.05, 'n = {0}'.format(y_train[ind]), ha='right',
-            transform=axes[1].transAxes, color='green')
-    axes[1].set_xticks([])
-    axes[1].set_yticks([])
+    # Format plot
+    ax.set_xlabel("k")
+    ax.set_ylabel("Fractional Reconstruction Error")
+    ax.set_ylim((0,1))
+    fig.tight_layout()
 
     plt.show()
+
+    if save_plots:
+        fig.savefig("fractional_rec_error_sans_mean.pdf")

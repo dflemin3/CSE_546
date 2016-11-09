@@ -4,3 +4,4 @@ from . import classification
 from . import optimization
 from . import regression
 from . import pca
+from . import kernel

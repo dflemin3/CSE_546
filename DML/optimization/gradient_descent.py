@@ -200,7 +200,7 @@ def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None, multi=None, classfn=None,
                      train_label=None,test_label=None, loss01fn=None, batchsize=None,
-                     nout=15000):
+                     nout=None, avg_w=False):
     """
     Performs regularized stochastic gradient descent to optimize model with an update step:
 
@@ -252,7 +252,10 @@ def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 
     batchsize : int (optional)
         size of minibatch
     nout : int (optional)
-        Number of inner loop iterations to run before saving things like loss, 0-1 loss, etc
+        Length of an epoch. Number of inner loop iterations to run before saving
+        things like loss, 0-1 loss, etc.  Defaults to length of training set.
+    avg_w : bool (optional)
+        Return the average weight vector over the last epoch.  Defaults to False
 
     Returns
     -------
@@ -260,6 +263,7 @@ def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 
         best fit weight vector
     w0 : float
         best fit constant offset
+    Tons of other stuff depending on what flags are set to True and stuff
     """
 
     #Define values
@@ -268,6 +272,10 @@ def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 
     else:
         n = batchsize
     d = X.shape[1]
+
+    # Default length of epoch
+    if nout is None:
+        nout = X.shape[0]
 
     # No multi == no multiclasses
     if multi is None:
@@ -286,10 +294,6 @@ def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 
             w0 = 0.0
         else: # Multiclass -> w0 becomes a vector
 	        w0 = np.zeros((multi,1))
-
-    # While not converged, do
-    iters = 0
-    converged = False
 
     # Save ll values on training set?
     if savell:
@@ -315,8 +319,12 @@ def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 
     old_ll = 1.0e10
     scale = 1.0/n
 
+    # While not converged, do
+    iters = 0
+    converged = False
+
     while not converged:
-    	# Too many iterations!
+    	# Too many iterations! (this probably shouldn't happen)
     	if iters >= max_iter:
     		print("Maximum iteration threshold hit %d." % iters)
     		print("Returning current solution: Convergence not guarenteed.")
@@ -332,7 +340,7 @@ def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 
         X_per = X[inds]
         y_per = y[inds]
 
-        # Loop over samples
+        # Loop over samples (run an epoch)
         ii = 0 # Keeps track of how many samples have been used for gradient estimation
         for batch in make_batches(X_per, y_per, size=n):
             X_b = batch[0].reshape((n,batch[0].shape[-1]))
@@ -349,7 +357,7 @@ def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 
             # Do so in a vectorized manner
             w_pred = w_pred - eta * scale * (lam * w_pred + wgrad)
 
-            # Compute loss for this fit over entire set?
+            # If epoch is complete, compute loss for this fit over entire set?
             if ii % nout == 0:
                 ll = llfn(X, y, w_pred, w0)
                 print(ll)

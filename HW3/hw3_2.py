@@ -28,19 +28,24 @@ save_plots = False
 
 # Load in MNIST data
 print("Loading MNIST Training data...")
-X_train, y_train = mu.load_mnist(dataset='testing')
+X_train, y_train = mu.load_mnist(dataset='training')
 y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
+
+print("Loading MNIST Testing data...")
+X_test, y_test = mu.load_mnist(dataset='testing')
+y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).squeeze()
 
 # Init PCA object
 # Solve for all principal components but do calculations using only 50
 # Can reset l later if need be as all principal components are retained
-PCA = pca.PCA(l=100, center=True)
+PCA = pca.PCA(l=50, center=True)
 
 print("Training the model...")
 PCA.fit(X_train)
 
-# Reproject training data using PCA approximation
+# Reproject data using PCA approximation
 X_train = PCA.reproject(X_train)
+X_test = PCA.reproject(X_test)
 
 best_eta = 1.0e-7
 eps = 1.0e-4
@@ -49,20 +54,23 @@ sparse = False
 Nclass = 10
 
 print("Running minibatch SGD...")
-w0, w, ll_train, train_01, iter_train = \
+w0, w, ll_train, ll_test, train_01, test_01, iter_train = \
 gd.stochastic_gradient_descent(ru.linear_grad, X_train, y_train_true,
+                               X_test=X_test, y_test=y_test_true,
                                lam=0.0, eta=best_eta, sparse=sparse,
                                savell=True, adaptive=True, eps=eps,
                                multi=Nclass, llfn=val.MSE_multi,
-                               train_label=y_train,
+                               train_label=y_train, test_label=y_test,
                                classfn=cu.multi_linear_classifier,
-                               loss01fn=val.loss_01, batchsize=batchsize)
+                               loss01fn=val.loss_01, batchsize=batchsize,
+                               nout=X_train.shape[0])
 
 # Plot Training, testing ll vs iteration number
 fig, ax = plt.subplots()
 
 # Plot 0/1 loss
 ax.plot(iter_train, train_01, lw=2, color="green", label=r"Train")
+ax.plot(iter_train, ll_test, lw=2, color="blue", label=r"Test")
 
 # Format plot
 ax.legend(loc="upper right")

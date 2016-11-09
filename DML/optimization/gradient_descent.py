@@ -15,7 +15,7 @@ import numpy as np
 from ..classification import classifier_utils as cu
 
 
-def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
+def gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None, multi=None, classfn=None,
                      train_label=None,test_label=None, loss01fn=None):
@@ -38,7 +38,7 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
     y : array (n x 1)
         training labels
     lam : float (optional)
-        l2 regularization constant
+        l2 regularization constant.  Defaults to 0 (no regularization)
     eta : float (optional)
         learning rate
     w : array (d x 1) (optional)
@@ -196,7 +196,7 @@ def gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, spa
 # end function
 
 
-def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
+def stochastic_gradient_descent(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = False,
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
                      savell = False, X_test = None, y_test = None, multi=None, classfn=None,
                      train_label=None,test_label=None, loss01fn=None, batchsize=None,
@@ -222,7 +222,7 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
     y : array (n x 1)
         training labels
     lam : float (optional)
-        l2 regularization constant
+        l2 regularization constant.  Defaults to 0 (no regularization)
     eta : float (optional)
         learning rate
     w : array (d x 1) (optional)

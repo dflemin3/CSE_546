@@ -112,6 +112,39 @@ def linear_model(X, w, w0, sparse=False):
 # end function
 
 
+def linear_grad(X, y, w, w0, sparse=False):
+    """
+    Compute the gradient of the loglikelihood function for ordinary least
+    squares regression
+
+    Parameters
+    ----------
+    X : array (n x d)
+        Input data
+    y : array (n x 1)
+        labels
+    w : vector (d x 1)
+        weight coefficients
+    w0 : float
+        constant offset term
+    sparse : bool (optional, not implemented)
+        whether or not X is a scipy.sparse array
+
+    Returns
+    -------
+    wgrad : array (d x 1)
+        gradient of weight vector
+    w0grad : float
+        gradient of constant offset
+    """
+
+    arg = y - X.dot(w)
+
+    wgrad = X.T.dot(arg)
+    w0grad = np.sum(arg)
+    return wgrad, w0grad
+# end function
+
 def r_squared(X, y, w, w0, sparse=False):
     """
 	Compute r^2 for a simple linear model of the form
@@ -253,9 +286,3 @@ def naive_nn_layer(X, k=10000, v=None):
 	else:
 		return col_max_filt(X.dot(v))
 # end function
-
-
-
-
-
-

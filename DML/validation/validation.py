@@ -50,25 +50,57 @@ def normalize(X, y=None):
 # end function
 
 
-def MSE(y, y_hat):
+def MSE(X, y, w, w0):
     """
-    Compute the mean squared error of a prediction
+    Compute the mean squared loss of a prediction
 
     Parameters
     ----------
+    X : array (n x d)
+        input data
     y : array (n x 1)
         array of observations
-    y_hat : array (n x 1)
-        array of predictions
+    w : array (d x 1)
+        weight vector
+    w0 : float
+        constant offset
 
     Returns
     -------
-    mse : float
-        mean squared error
+    ll : float
+        ll
     """
+
+    y_hat = w0 + X.dot(w)
 
     return np.sum(np.power(y - y_hat,2))/len(y)
 # end function
+
+
+def MSE_multi(X, y, w, w0):
+    """
+    Compute the mean squared loss of a prediction for a multiclass predictor.
+
+    Parameters
+    ----------
+    X : array (n x d)
+        input data
+    y : array (n x 1)
+        array of observations
+    w : array (d x 1)
+        weight vector
+    w0 : float
+        constant offset
+
+    Returns
+    -------
+    ll : float
+        ll
+    """
+
+    y_hat = w0.T + X.dot(w)
+
+    return np.sum(np.power(y - y_hat,2))/len(y)
 
 
 def RMSE(y, y_hat):

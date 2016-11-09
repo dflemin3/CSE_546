@@ -138,7 +138,7 @@ def linear_grad(X, y, w, w0, sparse=False):
         gradient of constant offset
     """
 
-    arg = y - X.dot(w)
+    arg = X.dot(w) - y
 
     wgrad = X.T.dot(arg)
     w0grad = np.sum(arg)

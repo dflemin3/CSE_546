@@ -12,6 +12,7 @@ of regression algorithms for speed, accuracy, etc.
 from __future__ import print_function, division
 import numpy as np
 import scipy.sparse as sp
+#from numba import jit, float64, int8
 
 def generate_norm_data(n, k, d, sigma=1.0,sparse=False, w0 = 0, seed = None):
     """
@@ -83,7 +84,8 @@ def generate_norm_data(n, k, d, sigma=1.0,sparse=False, w0 = 0, seed = None):
     return w, X, y.reshape((len(y),1))
 # end function
 
-
+#@jit(float64[:,:](float64[:,:], float64[:,:], float64[:,:], int8), nopython=True,
+#cache=True)
 def linear_model(X, w, w0, sparse=False):
     """
     Evaluate a simple linear model of the form

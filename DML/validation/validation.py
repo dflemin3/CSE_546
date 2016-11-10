@@ -16,6 +16,8 @@ from ..regression import regression_utils as ru
 from ..regression import ridge_utils as ri
 from ..classification import classifier_utils as cu
 from ..optimization import gradient_descent as gd
+#from numba import jit, float64
+
 
 def normalize(X, y=None):
     """
@@ -76,7 +78,8 @@ def MSE(X, y, w, w0):
     return np.sum(np.power(y - y_hat,2))/len(y)
 # end function
 
-
+#@jit(float64(float64[:,:], float64[:,:], float64[:,:], float64[:,:]),
+#nopython=True, cache=True)
 def MSE_multi(X, y, w, w0):
     """
     Compute the mean squared loss of a prediction for a multiclass predictor.
@@ -98,7 +101,7 @@ def MSE_multi(X, y, w, w0):
         ll
     """
 
-    y_hat = w0.T + X.dot(w)
+    y_hat = w0.T + np.dot(X,w)#X.dot(w)
 
     return np.sum(np.power(y - y_hat,2))/len(y)
 # end function
@@ -160,6 +163,7 @@ def loss_01(y, y_hat):
     loss : float
         0-1 loss
     """
+    
     return np.sum(y != y_hat)/len(y)
 # end function
 

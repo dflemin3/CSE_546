@@ -1,3 +1,5 @@
+*__pycache__
+*.hdf5
 HW2/DP_Fleming_HW2/*
 /HW1/hw1-data/*
 *.DS_Store

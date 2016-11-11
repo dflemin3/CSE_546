@@ -589,7 +589,7 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
             avg_w += w_pred*n/len(X)
 
             # If epoch is complete, compute losses for this fit
-            if (ii+n) % nout == 0 or iters == 0: 
+            if (ii+n) % nout == 0 or iters == 0:
 
                 ll = 0.0
                 ll_avg = 0.0

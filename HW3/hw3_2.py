@@ -160,7 +160,8 @@ cache_name = "test_run.npz"
 np.savez(cache_name, w0=w0, avg_w0=avg_w0, w=w, avg_w=avg_w, train_ll=train_ll,
          avg_train_ll=avg_train_ll, test_ll=test_ll, avg_test_ll=avg_test_ll,
          train_01=train_01, avg_train_01=avg_train_01, test_01=test_01,
-         avg_test_01=avg_test_01, iter_arr=iter_arr)
+         avg_test_01=avg_test_01, iter_arr=iter_arr,sigma=sigma,best_eta=best_eta,
+         eps=eps)
 
 # Load cache and print something out to make sure it's legit
 res = np.load(cache_name)

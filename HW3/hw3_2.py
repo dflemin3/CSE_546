@@ -25,11 +25,12 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Flags to control functionality
+show_plots = True
 save_plots = False
 
 # Load in MNIST data
 print("Loading MNIST Training data...")
-X_train, y_train = mu.load_mnist(dataset='testing')
+X_train, y_train = mu.load_mnist(dataset='training')
 y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
 
 #print("Loading MNIST Testing data...")
@@ -46,7 +47,7 @@ PCA.fit(X_train)
 X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
-cut = 2000
+cut = 1000
 
 X_train = X_train[:cut]
 y_train = y_train[:cut]
@@ -56,17 +57,17 @@ y_test = y_test[:cut]
 y_test_true = y_test_true[:cut]
 
 # Estimate kernel bandwidth
-sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 10.0)
+sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 8.0) # 5-10 works
 print("Estimted kernel bandwidth: %lf" % sigma)
 
 best_eta = 1.0e-3
-eps = 1.0e-3
+eps = 1.0e-4
 batchsize = 100
 sparse = False
 Nclass = 10
 
 print("Running minibatch SGD...")
-w0, avg_w0, w_pred, avg_w, train_ll, avg_train_ll, test_ll, avg_test_ll, \
+w0, avg_w0, w, avg_w, train_ll, avg_train_ll, test_ll, avg_test_ll, \
 train_01, avg_train_01, test_01, avg_test_01, iter_arr = \
 gd.SGD_chunks(ru.linear_grad, X_train, y_train_true,
                                X_test=X_test, y_test=y_test_true,
@@ -80,21 +81,87 @@ gd.SGD_chunks(ru.linear_grad, X_train, y_train_true,
                                transform=kernel.RBF, alpha=sigma)
 
 
-# Plot Training, testing ll vs iteration number
-fig, ax = plt.subplots()
+if show_plots:
 
-# Plot 0/1 loss
-ax.plot(iter_arr, train_ll, lw=2, color="green", label=r"Train")
-ax.plot(iter_arr, test_ll, lw=2, color="blue", label=r"Test")
-ax.plot(iter_arr, avg_train_ll, lw=2, color="green", ls="--", label=r"Avg Train")
-ax.plot(iter_arr, avg_test_ll, lw=2, color="blue", ls="--", label=r"Avg Test")
+    # Plot Training, testing ll vs iteration number
+    fig, ax = plt.subplots()
 
-# Format plot
-ax.legend(loc="upper right")
-ax.set_xlabel("Iteration")
-ax.set_ylabel("0/1 Loss")
-fig.tight_layout()
-if save_plots:
-        fig.savefig("sgd_nn_mnist_multi_train_test_01.pdf")
+    # Plot 0/1 loss
+    ax.plot(iter_arr, train_ll, lw=2, color="green", label=r"Train")
+    ax.plot(iter_arr, test_ll, lw=2, color="blue", label=r"Test")
+    ax.plot(iter_arr, avg_train_ll, lw=2, color="green", ls="--", label=r"Avg Train")
+    ax.plot(iter_arr, avg_test_ll, lw=2, color="blue", ls="--", label=r"Avg Test")
 
-plt.show()
+    # Format plot
+    ax.legend(loc="best")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Mean Square Loss")
+    fig.tight_layout()
+    if save_plots:
+            fig.savefig("pca_square_loss.pdf")
+
+    plt.show()
+
+    # Plot Training, testing 0/1 loss vs iteration number
+    fig, ax = plt.subplots()
+
+    # Plot 0/1 loss
+    ax.plot(iter_arr, train_01, lw=2, color="green", label=r"Train")
+    ax.plot(iter_arr, test_01, lw=2, color="blue", label=r"Test")
+    ax.plot(iter_arr, avg_train_01, lw=2, color="green", ls="--", label=r"Avg Train")
+    ax.plot(iter_arr, avg_test_01, lw=2, color="blue", ls="--", label=r"Avg Test")
+
+    # Format plot
+    ax.legend(loc="best")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("0/1 Loss")
+    fig.tight_layout()
+    if save_plots:
+            fig.savefig("pca_01_loss.pdf")
+
+    plt.show()
+
+    # Plot Training, testing 0/1 loss vs iteration number once 0/1 loss < 0.05
+    fig, ax = plt.subplots()
+
+    mask = test_01 <= 0.05
+
+    # Plot 0/1 loss
+    ax.plot(iter_arr[mask], train_01[mask], lw=2, color="green", label=r"Train")
+    ax.plot(iter_arr[mask], test_01[mask], lw=2, color="blue", label=r"Test")
+    ax.plot(iter_arr[mask], avg_train_01[mask], lw=2, color="green", ls="--", label=r"Avg Train")
+    ax.plot(iter_arr[mask], avg_test_01[mask], lw=2, color="blue", ls="--", label=r"Avg Test")
+
+    # Format plot
+    ax.legend(loc="best")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("0/1 Loss")
+    fig.tight_layout()
+    if save_plots:
+            fig.savefig("pca_01_loss_masked.pdf")
+
+    plt.show()
+
+#######################################################
+#
+# Compute, output final losses
+#
+#######################################################
+print("Best fit losses:")
+print("Training square loss, 0/1 loss:",train_ll[-1],train_01[-1])
+print("Testing square loss, 0/1 loss:",test_ll[-1],test_01[-1])
+
+print("Best fit losses averaged over last epoch:")
+print("Training square loss, 0/1 loss:",avg_train_ll[-1],avg_train_01[-1])
+print("Testing square loss, 0/1 loss:",avg_test_ll[-1],avg_test_01[-1])
+
+# Cache results...
+cache_name = "test_run.npz"
+np.savez(cache_name, w0=w0, avg_w0=avg_w0, w=w, avg_w=avg_w, train_ll=train_ll,
+         avg_train_ll=avg_train_ll, test_ll=test_ll, avg_test_ll=avg_test_ll,
+         train_01=train_01, avg_train_01=avg_train_01, test_01=test_01,
+         avg_test_01=avg_test_01, iter_arr=iter_arr)
+
+# Load cache and print something out to make sure it's legit
+res = np.load(cache_name)
+print(res["w0"])

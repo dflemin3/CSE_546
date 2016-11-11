@@ -101,7 +101,7 @@ def MSE_multi(X, y, w, w0):
         ll
     """
 
-    y_hat = w0.T + np.dot(X,w)#X.dot(w)
+    y_hat = w0.T + np.dot(X,w)
 
     return np.sum(np.power(y - y_hat,2))/len(y)
 # end function
@@ -163,7 +163,7 @@ def loss_01(y, y_hat):
     loss : float
         0-1 loss
     """
-    
+
     return np.sum(y != y_hat)/len(y)
 # end function
 

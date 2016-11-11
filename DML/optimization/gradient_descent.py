@@ -593,9 +593,12 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
 
                 ll = 0.0
                 ll_avg = 0.0
-                for batch in make_batches(X, y, size=n):
+                loss_01 = 0.0
+                loss_01_avg = 0.0
+                for batch in make_batches(X, y, label=train_label, size=n):
                     X_b = batch[0].reshape((n,batch[0].shape[-1]))
                     y_b = batch[1].reshape((n,batch[1].shape[-1]))
+                    y_l = batch[2].reshape((n,batch[2].shape[-1]))
 
                     # Transform data on the fly?
                     if transform is not None:
@@ -604,6 +607,10 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
                     ll += llfn(X_b, y_b, w_pred, w0)*n/len(X)
                     ll_avg += llfn(X_b, y_b, avg_w, avg_w0)*n/len(X)
 
+                    if classfn is not None:
+                        loss_01 += loss01fn(y_l,classfn(X_b, w_pred, w0))*n/len(X)
+                        loss_01_avg += loss01fn(y_l,classfn(X_b, avg_w, avg_w0))*n/len(X)
+
                 print(ll)
 
                 if savell:
@@ -611,23 +618,9 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
                     avg_ll_arr.append(ll_avg)
                     iter_arr.append(iters)
 
-                # Compute training set 0/1 loss in batches?
-                if classfn is not None:
-                    loss_01 = 0.0
-                    loss_01_avg = 0.0
-                    for batch in make_batches(X, train_label, size=n):
-                        X_b = batch[0].reshape((n,batch[0].shape[-1]))
-                        y_b = batch[1].reshape((n,batch[1].shape[-1]))
-
-                        # Transform data on the fly?
-                        if transform is not None:
-                            X_b = transform(X_b, X, alpha)
-
-                        loss_01 += loss01fn(y_b,classfn(X_b, w_pred, w0))*n/len(X)
-                        loss_01_avg += loss01fn(y_b,classfn(X_b, avg_w, avg_w0))*n/len(X)
-
-                    train_01_loss.append(loss_01)
-                    avg_train_01_loss.append(loss_01_avg)
+                    if classfn is not None:
+                        train_01_loss.append(loss_01)
+                        avg_train_01_loss.append(loss_01_avg)
 
                 # Compute testing set loss for this iteration using fit from training set?
                 if X_test is not None and y_test is not None:

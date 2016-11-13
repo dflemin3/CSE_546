@@ -1,3 +1,4 @@
+*.npz
 *__pycache__
 *.hdf5
 HW2/DP_Fleming_HW2/*

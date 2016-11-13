@@ -12,6 +12,7 @@ This script solves question 2 of CSE 546 HW3
 from __future__ import print_function, division
 import numpy as np
 import sys
+import os
 sys.path.append("..")
 import DML.pca.pca as pca
 import DML.data_processing.mnist_utils as mu
@@ -25,11 +26,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Flags to control functionality
-show_plots = True
+show_plots = False
 save_plots = False
 
 # Load in MNIST data
-print("Loading MNIST Training data...")
+print("Loading MNIST data...")
 X_train, y_train = mu.load_mnist(dataset='training')
 y_train_true = np.asarray(y_train[:, None] == np.arange(max(y_train)+1),dtype=int).squeeze()
 
@@ -47,7 +48,8 @@ PCA.fit(X_train)
 X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
-cut = 1000
+"""
+cut = 2000
 
 X_train = X_train[:cut]
 y_train = y_train[:cut]
@@ -55,31 +57,53 @@ y_train_true = y_train_true[:cut]
 X_test = X_test[:cut]
 y_test = y_test[:cut]
 y_test_true = y_test_true[:cut]
+"""
 
 # Estimate kernel bandwidth
-sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 8.0) # 5-10 works
+sigma = kernel.estimate_bandwidth(X_train, num = 1000, scale = 10.0) # 5-10 works
 print("Estimted kernel bandwidth: %lf" % sigma)
 
-best_eta = 1.0e-3
-eps = 1.0e-4
+best_eta = 2.0e-5
+eps = 5.0e-4
 batchsize = 100
 sparse = False
 Nclass = 10
+cache_name = "mnist_sgd_run2.npz"
 
-print("Running minibatch SGD...")
-w0, avg_w0, w, avg_w, train_ll, avg_train_ll, test_ll, avg_test_ll, \
-train_01, avg_train_01, test_01, avg_test_01, iter_arr = \
-gd.SGD_chunks(ru.linear_grad, X_train, y_train_true,
-                               X_test=X_test, y_test=y_test_true,
-                               lam=0.0, eta=best_eta, sparse=sparse,
-                               savell=True, adaptive=True, eps=eps,
-                               multi=Nclass, llfn=val.MSE_multi,
-                               batchsize=batchsize,
-                               train_label=y_train, test_label=y_test,
-                               classfn = cu.multi_linear_classifier,
-                               nout=X_train.shape[0], loss01fn=val.loss_01,
-                               transform=kernel.RBF, alpha=sigma)
+# Only run if it doesn't exist
+if not os.path.exists(cache_name):
+    print("Running minibatch SGD...")
+    w0, avg_w0, w, avg_w, train_ll, avg_train_ll, test_ll, avg_test_ll, \
+    train_01, avg_train_01, test_01, avg_test_01, iter_arr = \
+    gd.SGD_chunks(ru.linear_grad, X_train, y_train_true,
+                                   X_test=X_test, y_test=y_test_true,
+                                   lam=0.0, eta=best_eta, sparse=sparse,
+                                   savell=True, adaptive=True, eps=eps,
+                                   multi=Nclass, llfn=val.MSE_multi,
+                                   batchsize=batchsize,
+                                   train_label=y_train, test_label=y_test,
+                                   classfn = cu.multi_linear_classifier,
+                                   nout=X_train.shape[0], loss01fn=val.loss_01,
+                                   transform=kernel.RBF, alpha=sigma)
 
+    # Cache results...
+    np.savez(cache_name, w0=w0, avg_w0=avg_w0, w=w, avg_w=avg_w, train_ll=train_ll,
+             avg_train_ll=avg_train_ll, test_ll=test_ll, avg_test_ll=avg_test_ll,
+             train_01=train_01, avg_train_01=avg_train_01, test_01=test_01,
+             avg_test_01=avg_test_01, iter_arr=iter_arr,sigma=sigma,best_eta=best_eta,
+             eps=eps)
+# Cache exists, load it
+else:
+    res = np.load(cache_name)
+    iter_arr = res["iter_arr"]
+    train_ll = res["train_ll"]
+    avg_train_ll = res["avg_train_ll"]
+    test_ll = res["test_ll"]
+    avg_test_ll = res["test_ll"]
+    train_01 = res["train_01"]
+    avg_train_01 = res["avg_train_01"]
+    test_01 = res["test_01"]
+    avg_test_01 = res["avg_test_01"]
 
 if show_plots:
 
@@ -154,15 +178,3 @@ print("Testing square loss, 0/1 loss:",test_ll[-1],test_01[-1])
 print("Best fit losses averaged over last epoch:")
 print("Training square loss, 0/1 loss:",avg_train_ll[-1],avg_train_01[-1])
 print("Testing square loss, 0/1 loss:",avg_test_ll[-1],avg_test_01[-1])
-
-# Cache results...
-cache_name = "test_run.npz"
-np.savez(cache_name, w0=w0, avg_w0=avg_w0, w=w, avg_w=avg_w, train_ll=train_ll,
-         avg_train_ll=avg_train_ll, test_ll=test_ll, avg_test_ll=avg_test_ll,
-         train_01=train_01, avg_train_01=avg_train_01, test_01=test_01,
-         avg_test_01=avg_test_01, iter_arr=iter_arr,sigma=sigma,best_eta=best_eta,
-         eps=eps)
-
-# Load cache and print something out to make sure it's legit
-res = np.load(cache_name)
-print(res["w0"])

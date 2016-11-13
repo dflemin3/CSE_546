@@ -13,7 +13,17 @@ This file contains routines for computing kernels, like an RBF kernel.
 from __future__ import print_function, division, absolute_import, unicode_literals
 import numpy as np
 from scipy.spatial.distance import cdist
-from numba import jit, float64
+#from numba import jit, float64
+
+"""
+@jit(cache=True, nopython=True)
+def fast_dist(x, X, X2):
+    #If you expand the 2-norm you can use: X2+X2(i)-X*(2*X(i,:))'
+
+    #where X2 is a pre-computed vector: X2 = sum(X.^2,2)
+    #X2 = np.sum(X*X, axis=1)
+    return X2 + np.sum(x*x, axis=1) - np.dot(X,((2.0*x).T))
+"""
 
 
 def RBF(x, X, sigma=None):

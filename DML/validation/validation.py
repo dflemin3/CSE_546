@@ -103,7 +103,8 @@ def MSE_multi(X, y, w, w0):
 
     y_hat = w0.T + np.dot(X,w)
 
-    return np.sum(np.power(y - y_hat,2))/len(y)
+    return np.sum((y - y_hat)**2)/len(y)
+    #return np.sum(np.power(y - y_hat,2))/len(y)
 # end function
 
 

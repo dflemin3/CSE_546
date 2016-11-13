@@ -612,7 +612,6 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
                         loss_01_avg += loss01fn(y_l,classfn(X_b, avg_w, avg_w0))*n/len(X)
 
                 print(ll)
-
                 if savell:
                     ll_arr.append(ll)
                     avg_ll_arr.append(ll_avg)
@@ -624,38 +623,31 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
 
                 # Compute testing set loss for this iteration using fit from training set?
                 if X_test is not None and y_test is not None:
-                    loss = 0.0
-                    loss_avg = 0.0
-                    for batch in make_batches(X_test, y_test, size=n):
+                    ll = 0.0
+                    ll_avg = 0.0
+                    loss_01 = 0.0
+                    loss_01_avg = 0.0
+                    for batch in make_batches(X_test, y_test, label=test_label, size=n):
                         X_b = batch[0].reshape((n,batch[0].shape[-1]))
                         y_b = batch[1].reshape((n,batch[1].shape[-1]))
+                        y_l = batch[2].reshape((n,batch[2].shape[-1]))
 
                         # Transform data on the fly?
                         if transform is not None:
                             X_b = transform(X_b, X, alpha)
 
-                        loss += llfn(X_b, y_b, w_pred, w0)*n/len(X_test)
-                        loss_avg += llfn(X_b, y_b, avg_w, avg_w0)*n/len(X_test)
+                        ll += llfn(X_b, y_b, w_pred, w0)*n/len(X_test)
+                        ll_avg += llfn(X_b, y_b, avg_w, avg_w0)*n/len(X_test)
+
+                        if classfn is not None:
+                            loss_01 += loss01fn(y_l,classfn(X_b, w_pred, w0))*n/len(X_test)
+                            loss_01_avg += loss01fn(y_l,classfn(X_b, avg_w, avg_w0))*n/len(X_test)
 
                     # Store test ll
-                    test_ll_arr.append(loss)
-                    avg_test_ll_arr.append(loss_avg)
+                    test_ll_arr.append(ll)
+                    avg_test_ll_arr.append(ll_avg)
 
-                    # Compute 01 loss?
                     if classfn is not None:
-                        loss_01 = 0.0
-                        loss_01_avg = 0.0
-                        for batch in make_batches(X_test, test_label, size=n):
-                            X_b = batch[0].reshape((n,batch[0].shape[-1]))
-                            y_b = batch[1].reshape((n,batch[1].shape[-1]))
-
-                            # Transform data on the fly?
-                            if transform is not None:
-                                X_b = transform(X_b, X, alpha)
-
-                            loss_01 += loss01fn(y_b,classfn(X_b,w_pred, w0))*n/len(X_test)
-                            loss_01_avg += loss01fn(y_b,classfn(X_b,avg_w,avg_w0))*n/len(X_test)
-
                         test_01_loss.append(loss_01)
                         avg_test_01_loss.append(loss_01_avg)
 

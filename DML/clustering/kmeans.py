@@ -17,7 +17,6 @@ import numpy as np
 import random
 from scipy.spatial.distance import cdist
 from ..validation import validation as val
-#from numba import jit, float64
 
 
 def kmeans(X, k, verbose=False, max_iters=500):
@@ -104,4 +103,67 @@ def kmeans(X, k, verbose=False, max_iters=500):
                np.asarray(iter_arr)
     else:
         return y_hat.reshape(X.shape[0],1), mu
+# end function
+
+
+def k_mapper(y_cluster, y_label):
+    """
+    Create mapping array from cluster number to label.
+
+    Parameters
+    ----------
+    y_cluster : array (n x 1)
+        cluster labels (from running k-means)
+    y_label : array (n x 1)
+        actual point labels
+
+    Returns
+    -------
+    classifier : array (k x 1)
+        mapping array from cluster to label
+
+    """
+    # First, create mapping from cluster label to label (like MNIST digit label)
+    clusters = np.unique(y_cluster)
+    classifier = np.zeros(len(clusters))
+
+    for ii in range(len(clusters)):
+        a = y_label[y_cluster == clusters[ii]]
+        classifier[ii] = np.argmax(np.bincount(a))
+
+    return classifier
+# end function
+
+
+def k_classify(X, mu, classifier):
+    """
+    Get a label for each center based on most frequent digit assigned to it.
+    To classify, find closest center, then use corresponding label for said
+    center.
+
+    Parameters
+    ----------
+    X : array (n x d)
+        data to classify
+    mu : array (k x d)
+        centroid matrix
+    classifier : array (k x 1)
+        mapping array from cluster to label
+
+    Returns
+    -------
+    y_hat : array (n x 1)
+        predicted label vector
+    """
+
+    # For all points in X, see which cluster they belong to and translate
+    # that into a label then return
+    # Compute distance from each point to each class mean (n x k)
+    normsq = cdist(X, mu, 'sqeuclidean')
+    y_hat = np.argmin(normsq, axis=1)
+
+    for ii in range(len(y_hat)):
+        y_hat[ii] = classifier[y_hat[ii]]
+
+    return y_hat.reshape(len(y_hat),1)
 # end function

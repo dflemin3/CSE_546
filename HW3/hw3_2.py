@@ -48,19 +48,8 @@ PCA.fit(X_train)
 X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
-"""
-cut = 2000
-
-X_train = X_train[:cut]
-y_train = y_train[:cut]
-y_train_true = y_train_true[:cut]
-X_test = X_test[:cut]
-y_test = y_test[:cut]
-y_test_true = y_test_true[:cut]
-"""
-
 # Estimate kernel bandwidth
-sigma = kernel.estimate_bandwidth(X_train, num = 1000, scale = 2.0) # 5-10 works
+sigma = kernel.estimate_bandwidth(X_train, num = 100c, scale = 2.0) # 5-10 works
 print("Estimted kernel bandwidth: %lf" % sigma)
 
 best_eta = 2.0e-5
@@ -68,7 +57,7 @@ eps = 5.0e-4
 batchsize = 100
 sparse = False
 Nclass = 10
-cache_name = "mnist_sgd_run4.npz"
+cache_name = "mnist_sgd_run2.npz"
 
 # Only run if it doesn't exist
 if not os.path.exists(cache_name):

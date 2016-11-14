@@ -16,6 +16,7 @@ from __future__ import print_function, division
 import numpy as np
 import random
 from scipy.spatial.distance import cdist
+from ..validation import validation as val
 #from numba import jit, float64
 
 
@@ -40,6 +41,8 @@ def kmeans(X, k, verbose=False, max_iters=500):
     -------
     y_hat : array (n x 1)
         prediction vector of cluster labels in [0,k-1]
+    mu : array (k x d)
+        centroids
     """
 
     # Get dimensions for convenience
@@ -50,17 +53,19 @@ def kmeans(X, k, verbose=False, max_iters=500):
     inds = random.sample(range(0, X.shape[0]-1), k)
     mu = X[inds]
 
-    print(mu.shape,X.shape)
-
     # Init label arrays
     y_hat = np.zeros(n, dtype=int)
     y_hat_old = np.zeros_like(y_hat)
+
+    # Init error arrays if need be
+    if verbose:
+        rec_err = []
+        iter_arr = []
 
     converged = False
     iters = 0
     # Run as long as labels keep changing
     while not converged:
-        print(iters)
 
         if iters >= max_iters:
             print("Too many iterations!.  Returning current labels.")
@@ -81,6 +86,12 @@ def kmeans(X, k, verbose=False, max_iters=500):
             mask = (y_hat == ii)
             mu[ii] = np.mean(X[mask], axis=0)
 
+        # Compute errors and such
+        if verbose:
+            print(iters)
+            rec_err.append(val.reconstruction_error(X, y_hat, mu))
+            iter_arr.append(iters)
+
         # If labels didn't change, done!
         if np.array_equal(y_hat, y_hat_old):
             converged = True
@@ -88,5 +99,9 @@ def kmeans(X, k, verbose=False, max_iters=500):
 
         iters += 1
 
-    return y_hat
+    if verbose:
+        return y_hat.reshape(X.shape[0],1), mu, np.asarray(rec_err), \
+               np.asarray(iter_arr)
+    else:
+        return y_hat.reshape(X.shape[0],1), mu
 # end function

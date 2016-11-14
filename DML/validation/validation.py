@@ -169,6 +169,28 @@ def loss_01(y, y_hat):
 # end function
 
 
+def reconstruction_error(X, y_hat, mu):
+    """
+    Compute the mean reconstruction error for an unsupervised algorithm
+
+    Parameters
+    ----------
+    X : array (n x d)
+        input data
+    y_hat : (n x 1)
+        encoding vector
+    mu : (k x d)
+        centroid matrix
+    """
+
+    err = 0.0
+    for ii in range(X.shape[0]):
+        err += np.linalg.norm(X[ii,:] - mu[y_hat[ii],:],ord=2)
+
+    return err/X.shape[0]
+# end function
+
+
 def logloss_bin(X, y, w, w0):
     """
     Compute the log loss of a probabilistic prediction for a binary classifier.

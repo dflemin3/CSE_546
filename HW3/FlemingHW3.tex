@@ -170,6 +170,46 @@ Now I perform PCA on the MNIST training set keeping the first 100 principal comp
 
 Broadly, the images reconstructed using at least $k = 20$ principal components appear to be a good, albeit grainy, approximation of the true image.  Some images, in particular the reconstructed 9 and 5, are decently approximated using 10 principal components.  Other digits that have large scatter in how they are drawn, such as 4s, require more principal components to adequately approximate the true image.  All digits reconstructed with at least 50 principal components are good approximations of the original images.  As expected, the more principal components used, the better the approximation becomes since as $k \rightarrow d$, we expect the reconstruction to become equal to the original $X$.
 
+\section*{2: Let's get to state of the art of MNIST!}
+
+In this section, I use one-against least-squares classification to attempt to get to ``state of the art" on the MNIST dataset.  The code used to solve this question is in the following attached files: {\tt hw3$\_$2.py} in the {\tt HW3} directory and {\tt pca/pca.py, regression/regression$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py, optimization/gradient$\_$descent.py, kernel/kernel.py} all in the {\tt DML} directory.
+
+For computational speed purposes, I first performed dimension reduction using PCA.  I fit my PCA algorithm on the MNIST training set with the mean subtracted out then projected each image using the first $k = 100$ components.  Even though the question prompt said to use $k = 50$ principal components, I found that the best error I could achieve was about $3\%$ 0/1 loss on the testing case after trying a myriad of combinations of kernel bandwidth, SGD step sizes and convergence criteria.  With a factor of 2 more principal components, I was able to achieve ``state of the art", ${\lesssim}1.2\%$ testing set 0/1 loss while still exploiting the speed increase of PCA dimensionality reduction.
+
+I mapped the $n \times k$ reduced MNIST training data for $n$ samples to a $n \times n$ transformed MNIST training set using an RBF kernel of the form
+\begin{equation} \label{eqn:rbf_kernel}
+h_j(x) = \exp \left( - \frac{||x - X_j ||^2_2}{2\sigma^2} \right)
+\end{equation}
+where $h_j(x)$ is the $jth$ feature out of $n$ of the transformed image $x$.  I selected the bandwidth $\sigma$ by taking the mean of the pairwise distance of about 100 samples and scaling that value by TODO.  I explored several other values for $\sigma$, TODO, TODO, ..., and TODO and found that TODO yielded the best performance.  
+
+Since the transformed training data matrix was so large, I used mini-batch SGD with a mini-batch size of 100 for all gradient calculations.  Each epoch, or each complete pass through a randomly permuted training set, I performed 60,000/100 = 600 mini-batch gradient updates.  I computed the loss of the entire transformed training set and testing set (to which I applied the same transformation as the training set for consistency).  In addition over a given epoch, I averaged the weight vectors and offset terms to get $\bar{w}$ and $\bar{w}_0$ and used these to compute losses as well.  I called my algorithm converged once the mean square loss on the training set did not change by more than $0.1\%$ (TODO).  I did not explicitly use regularization since the early-stopping from my learning rate decay scheme (described below) and my convergence criterion implicitly $l_2$ regularize my solution.
+
+\subsection*{2.1 Least Squares}
+
+I used a learning rate $\eta = 2 \times 10^{-5}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 2 \times 10^{-5}$.  I used a mini-batch size of 100 and a kernel bandwidth of TODO computing using the scheme described above.
+
+\subsubsection*{2.1.1}
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{4_recon_mnist.pdf}
+    \caption{Reconstruction of a number 4 from the MNIST data set (see Fig.~\ref{fig:mnist_digits}) using $k \in [2,5,10,20,50,100]$ principal components where the given $k$ is denoted in red in the lower-righthand corner of the respective subplot.}
+    \label{fig:recon_4}
+\end{figure}
+
+\subsubsection*{2.1.2}
+
+TODO
+
+\subsubsection*{2.1.3}
+
+TODO
+
+\subsubsection*{2.1.4}
+
+TODO
+
+\subsubsection*{2.1.5}
+
 \section*{5: K-Means}
 
 In this question, I implement the K-means clustering algorithm and apply it to the MNIST dataset.  The code used to solve this question is in the following attached files: {\tt hw3$\_$5.1.py, hw3$\_$5.2.py} in the {\tt HW3} directory and {\tt clustering/kmeans.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py} in the {\tt DML} directory.
@@ -188,7 +228,7 @@ where there are $N_k$ samples in the $kth$ cluster.  I call the algorithm conver
 
 \subsection*{5.1: Run the algorithm}
 
-I ran the K-means algorithm with $k = 16$ on the full MNIST training set.  As stated above, I initialized my centers $mu_k$ using $k$ random samples from the training set.
+I ran the K-means algorithm with $k = 16$ on the full MNIST training set.  As stated above, I initialized my centers $\mu_k$ using $k$ random samples from the training set.
 
 \subsubsection*{5.1.1a}
 
@@ -220,7 +260,7 @@ As can be seen in the above figure, cluster 10 contains the most members at abou
 
 \subsubsection*{5.1.1c}
 
-In Fig.~\ref{fig:k_16_means}, I visualize the $k = 16$ centers my K-means algorithm learned on the MNIST training set.
+In Fig.~\ref{fig:k_16_means}, I visualize the $k = 16$ centers my K-means algorithm learned on the MNIST training set in descending order for number of assignments.
 
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{k_16_means.pdf}
@@ -230,15 +270,56 @@ In Fig.~\ref{fig:k_16_means}, I visualize the $k = 16$ centers my K-means algori
 
 \subsubsection*{5.1.2}
 
-TODO: $k = 16$ interpretation
+For my $k = 16$ cluster visualization, I find it interesting that all 10 digits are not represented amongst the 16 cluster centers.  Instead, there appears to be two classes of clusters: some that are different rotations or transformations of a given digit or some that are amalgamations of similar digits.  For example, there are several ``6"s in the clusters that are rotations or transformations of a 6, and similarly for 1s and 0s.  On the other hand, some cluster centers look like combinations of digits, such as combinations of 3s and 5s and combinations of 4s and 9s.  These behaviors make sense because of the inherent variance in how people write digits.  Not all digits are written in the same orientation or with the same curvature at certain parts of the digit causing some to look like others.
+
+I ran the K-means algorithm with $k = 250$ on the full MNIST training set.  As stated above, I initialized my centers $\mu_k$ using $k$ random samples from the training set.
+
+\subsubsection*{5.1.2a}
+
+In Fig.~\ref{fig:k_250_rec_err}, I plot the squared reconstruction error versus iteration number for $k = 250$ clusters.  I compute the squared reconstruction error as in Eqn.~\ref{eqn:sq_rec_err}.
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{k_250_rec_err.pdf}
+    \caption{Squared reconstruction error versus iteration number for $k = 250$ clusters.}
+    \label{fig:k_250_rec_err}
+\end{figure}
+
+The mean squared reconstruction error reaches near its local minimum after about 5 iterations and does not change significantly over the next 125 iterations it takes the algorithm to converge.  The final 125 or so iterations likely involved just a few points flipping labels, explaining why the error did not change appreciably and slowly decreased.
+
+\subsubsection*{5.1.2b}
+
+In Fig.~\ref{fig:k_250_num_assignments}, I plot the number of assignments per cluster for $k = 250$ clusters ordered in descending order.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{k_250_num_assignments.pdf}
+    \caption{Number of assignments per cluster for $k = 250$ clusters ordered in descending order.}
+    \label{fig:k_250_num_assignments}
+\end{figure}
+
+Interestingly, there appears to be 3 regimes that each cluster center falls into.  The first regime involves the first 30 centers or so in which the number of assignments rapidly drops off, indicating that perhaps a smaller number of cluster centers really matter in terms of clustering, perhaps analogous to how PCA picks out the most important ``directions" in a dataset.  The next regime is a smooth, linear decrease in assignments due to clusters have less and less importance.  The final regime is a steep decrease in assignments and corresponds to the least important clusters.
+
+\subsubsection*{5.1.2c}
+
+In Fig.~\ref{fig:k_250_means}, I visualize the top 16 from my $k = 250$ centers my K-means algorithm learned on the MNIST training set in descending order for number of assignments.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{k_250_means.pdf}
+    \caption{Visualization of the $k = 250$ centers orders by number of members.  The number of members for each center is shown in each respective center's subplot in red in the lower-righthand corner.}
+    \label{fig:k_250_means}
+\end{figure}
+
+From the figure it appears that the algorithm picked out various representations of a ``1'' as some of the most important cluster centers!  What I believe is going on is that a dominant feature in the MNIST digits is the right hand side of the digits.  Digits like 1, 3, 4, 5, 7, and 9 all have a more or less linear right hand side that, depending on who writes it, can slant in various orientations.  What this learning procedure did is identify, more or less, how certain digits tended to slope in some ways.  For example, one of the ``1''s is sloped in such a way that it looks like the base of a 7, so perhaps many 7s were attributed to that cluster.
 
 \subsection*{5.2: Classification with K-means}
 
-TODO
+In this section I used my $k = 16$ and $k = 250$ K-means algorithms learned on the entire MNIST training set to classify digits.  I classified a digit by finding a label for each center based on the most frequent digit assigned to it.  For each sample, I found its closest center according to the squared Euclidean distance and used the label for that center.
 
-\subsection*{5.3: Your thoughts?}
+\subsubsection*{5.2.1}
 
-TODO
+My $k = 16$ cluster K-means fit achieved 0/1 loss of 0.333 and 0.327 on the training and testing sets, respectfully.  Interestingly, the testing error was lower than the training error but I note that there was appreciable scatter between 0/1 losses for different fits using $k = 16$ on the training set.
+
+\subsubsection*{5.2.2}
+
+My $k = 250$ cluster K-means fit achieved 0/1 loss of 0.089 and 0.084 on the training and testing sets, respectfully.  Interestingly, the testing error was lower than the training error but I note that there was appreciable scatter between 0/1 losses for different fits using $k = 250$ on the training set.  The 0/1 loss in this case is roughly a factor of 3 lower than for the $k = 16$ case.  This likely occurred because the additional clusters can help distinguish between differently drawn digits of the same class, such as 4s written differently by different people.
 
 \end{document}
 

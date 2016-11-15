@@ -48,8 +48,18 @@ PCA.fit(X_train)
 X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
+"""
+cut = 1000
+X_train = X_train[:cut]
+y_train = y_train[:cut]
+y_train_true = y_train_true[:cut]
+X_test = X_test[:cut]
+y_test = y_test[:cut]
+y_test_true = y_test_true[:cut]
+"""
+
 # Estimate kernel bandwidth
-sigma = kernel.estimate_bandwidth(X_train, num = 100c, scale = 2.0) # 5-10 works
+sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 2.0) # 5-10 works
 print("Estimted kernel bandwidth: %lf" % sigma)
 
 best_eta = 2.0e-5
@@ -57,7 +67,7 @@ eps = 5.0e-4
 batchsize = 100
 sparse = False
 Nclass = 10
-cache_name = "mnist_sgd_run2.npz"
+cache_name = "tmp.npz"
 
 # Only run if it doesn't exist
 if not os.path.exists(cache_name):
@@ -66,7 +76,7 @@ if not os.path.exists(cache_name):
     train_01, avg_train_01, test_01, avg_test_01, iter_arr = \
     gd.SGD_chunks(ru.linear_grad, X_train, y_train_true,
                                    X_test=X_test, y_test=y_test_true,
-                                   lam=0.0, eta=best_eta, sparse=sparse,
+                                   lam=1.0e2, eta=best_eta, sparse=sparse,
                                    savell=True, adaptive=True, eps=eps,
                                    multi=Nclass, llfn=val.MSE_multi,
                                    batchsize=batchsize,

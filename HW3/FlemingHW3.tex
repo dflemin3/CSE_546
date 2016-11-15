@@ -11,7 +11,7 @@
 
 \title{CSE 546: Machine Learning Homework 3}
 \author{David P. Fleming}
-\date{November xxx$^{th}$, 2016}
+\date{November 21st, 2016}
 
 %%% BEGIN DOCUMENT
 \begin{document}
@@ -170,6 +170,94 @@ Now I perform PCA on the MNIST training set keeping the first 100 principal comp
 
 Broadly, the images reconstructed using at least $k = 20$ principal components appear to be a good, albeit grainy, approximation of the true image.  Some images, in particular the reconstructed 9 and 5, are decently approximated using 10 principal components.  Other digits that have large scatter in how they are drawn, such as 4s, require more principal components to adequately approximate the true image.  All digits reconstructed with at least 50 principal components are good approximations of the original images.  As expected, the more principal components used, the better the approximation becomes since as $k \rightarrow d$, we expect the reconstruction to become equal to the original $X$.
 
+\section*{5: K-Means}
 
+In this question, I implement the K-means clustering algorithm and apply it to the MNIST dataset.  The code used to solve this question is in the following attached files: {\tt hw3$\_$5.1.py, hw3$\_$5.2.py} in the {\tt HW3} directory and {\tt clustering/kmeans.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py} in the {\tt DML} directory.
+
+\subsection*{5.0: K-Means Algorithm Implementation}
+
+My K-means algorithm follows the algorithm presented in the Murphy textbook.  First, I initialize my $k$ clusters using $k$ random samples from the MNIST training set to make a $k \times d$ cluster matrix $\mu$ for $d$ features.  Each iteration, I perform the following E and M steps.  In the E step, I assign a label $z$ to each sample $X_i$ subject to
+\begin{equation} \label{eqn:E_step}
+z_i = \text{argmin}_k ||X_i - \mu_k ||_2^2
+\end{equation}
+which assigns a point $X_i$ to the closest cluster center $\mu_k$ according to the squared Euclidean distance.  After passing through the training set and assigning each point to its nearest cluster center, I perform the M step in which I calculate the new cluster centers to be the centroids of the samples in each cluster as follows
+\begin{equation} \label{eqn:M_step}
+\mu_k = \frac{1}{N_k} \sum_{i = 1}^{N_k} X_i
+\end{equation}
+where there are $N_k$ samples in the $kth$ cluster.  I call the algorithm converged once all the samples' labels no longer change.
+
+\subsection*{5.1: Run the algorithm}
+
+I ran the K-means algorithm with $k = 16$ on the full MNIST training set.  As stated above, I initialized my centers $mu_k$ using $k$ random samples from the training set.
+
+\subsubsection*{5.1.1a}
+
+In Fig.~\ref{fig:k_16_rec_err}, I plot the squared reconstruction error versus iteration number for $k = 16$ clusters.  I compute the squared reconstruction error as
+\begin{equation} \label{eqn:sq_rec_err}
+\text{SRE} = \frac{1}{N} \sum_{j = 1}^k\sum_{X_i \in \mu_j} || X_i - \mu_j ||_2^2
+\end{equation}
+where $\mu_j$ is the cluster $X_i$ belongs to.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{k_16_rec_err.pdf}
+    \caption{Squared reconstruction error versus iteration number for $k = 16$ clusters.}
+    \label{fig:k_16_rec_err}
+\end{figure}
+
+The mean squared reconstruction error reaches near its local minimum after about 10 iterations and does not change significantly over the next 60 iterations it takes the algorithm to converge.  The final 60 or so iterations likely involved just a few points flipping labels, explaining why the error did not change appreciably.
+
+\subsubsection*{5.1.1b}
+
+Let us define the number of assignments for a mean to be the number of samples assigned to that mean's cluster.  In Fig.~\ref{fig:k_16_num_assignments}, I plot the number of assignments per cluster for $k = 16$ clusters ordered in descending order.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{k_16_num_assignments.pdf}
+    \caption{Number of assignments per cluster for $k = 16$ clusters ordered in descending order.}
+    \label{fig:k_16_num_assignments}
+\end{figure}
+
+As can be seen in the above figure, cluster 10 contains the most members at about 5,500 while cluster 3 contains the least with around 1,750 members.  I note that cluster number does not in general equal the MNIST digit label.
+
+\subsubsection*{5.1.1c}
+
+In Fig.~\ref{fig:k_16_means}, I visualize the $k = 16$ centers my K-means algorithm learned on the MNIST training set.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{k_16_means.pdf}
+    \caption{Visualization of the $k = 16$ centers orders by number of members.  The number of members for each center is shown in each respective center's subplot in red in the lower-righthand corner.}
+    \label{fig:k_16_means}
+\end{figure}
+
+\subsubsection*{5.1.2}
+
+TODO: $k = 16$ interpretation
+
+\subsection*{5.2: Classification with K-means}
+
+TODO
+
+\subsection*{5.3: Your thoughts?}
+
+TODO
 
 \end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

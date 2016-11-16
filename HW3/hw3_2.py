@@ -48,22 +48,23 @@ PCA.fit(X_train)
 X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
-"""
-cut = 1000
+cut = 2000
 X_train = X_train[:cut]
 y_train = y_train[:cut]
 y_train_true = y_train_true[:cut]
 X_test = X_test[:cut]
 y_test = y_test[:cut]
 y_test_true = y_test_true[:cut]
-"""
 
 # Estimate kernel bandwidth
-sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 2.0) # 5-10 works
+sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 2.0)
 print("Estimted kernel bandwidth: %lf" % sigma)
 
-best_eta = 2.0e-5
-eps = 5.0e-4
+# Generate transformation matrix v
+v = kernel.generate_fourier_v(X_train.shape[-1], X_train.shape[0])
+
+best_eta = 1.0e-3#2.0e-5
+eps = 1.0e-3#5.0e-4
 batchsize = 100
 sparse = False
 Nclass = 10
@@ -76,14 +77,15 @@ if not os.path.exists(cache_name):
     train_01, avg_train_01, test_01, avg_test_01, iter_arr = \
     gd.SGD_chunks(ru.linear_grad, X_train, y_train_true,
                                    X_test=X_test, y_test=y_test_true,
-                                   lam=1.0e2, eta=best_eta, sparse=sparse,
+                                   lam=0.0, eta=best_eta, sparse=sparse,
                                    savell=True, adaptive=True, eps=eps,
                                    multi=Nclass, llfn=val.MSE_multi,
                                    batchsize=batchsize,
                                    train_label=y_train, test_label=y_test,
                                    classfn = cu.multi_linear_classifier,
                                    nout=X_train.shape[0], loss01fn=val.loss_01,
-                                   transform=kernel.RBF, alpha=sigma)
+                                   transform=kernel.fourier_rbf, sigma=sigma,
+                                   v=v)
 
     # Cache results...
     np.savez(cache_name, w0=w0, avg_w0=avg_w0, w=w, avg_w=avg_w, train_ll=train_ll,

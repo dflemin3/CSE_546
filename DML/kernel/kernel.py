@@ -13,20 +13,9 @@ This file contains routines for computing kernels, like an RBF kernel.
 from __future__ import print_function, division, absolute_import, unicode_literals
 import numpy as np
 from scipy.spatial.distance import cdist
-#from numba import jit, float64
+from numba import jit, float64
 
-"""
-@jit(cache=True, nopython=True)
-def fast_dist(x, X, X2):
-    #If you expand the 2-norm you can use: X2+X2(i)-X*(2*X(i,:))'
-
-    #where X2 is a pre-computed vector: X2 = sum(X.^2,2)
-    #X2 = np.sum(X*X, axis=1)
-    return X2 + np.sum(x*x, axis=1) - np.dot(X,((2.0*x).T))
-"""
-
-
-def RBF(x, X, sigma=None):
+def RBF(x, X, v=None, sigma=1.0):
     """
     Radial basis function (RBF) kernel transformation of the form:
 
@@ -40,6 +29,8 @@ def RBF(x, X, sigma=None):
         input samples(s)
     X : array (n x d)
         input data
+    v : array (d x n)
+        transformation matrix (Not used here)
     sigma : float
         bandwidth parameter
 
@@ -54,6 +45,55 @@ def RBF(x, X, sigma=None):
 
     return np.exp(-normsq/(2.0*sigma*sigma))
 # end function
+
+
+@jit(float64[:,:](float64[:,:], float64[:,:], float64[:,:], float64),
+nopython=True, cache=True)
+def fourier_rbf(x, X, v, sigma=1.0):
+    """
+    Fourier approximation to a radial basis function (RBF) kernel transformation
+     of the form:
+
+    h_j(x) = sin(vx/sigma)
+
+    Parameters
+    ----------
+    x : array (samples x d)
+        input samples(s)
+    X : array (n x d)
+        input data
+    v : array (d x n)
+        transformation matrix (required)
+    sigma : float
+        bandwidth parameter
+
+    Returns
+    -------
+    K : array (samples x n)
+        kernel transformation
+    """
+    return np.sin(np.dot(x,v)/sigma)
+# end function
+
+
+def generate_fourier_v(d, k):
+    """
+    Generate a matrix with d by k matrix where each of the k columns has all
+    its coordinates independently sampled form the standard normal distribution.
+
+    Parameters
+    ----------
+    d : int
+        number of rows
+    k : int
+        number of columns
+
+    Returns
+    -------
+    v : array (d x k)
+        transformation matrix
+    """
+    return np.random.normal(size=(d,k))
 
 
 def estimate_bandwidth(X, num = 100, scale = 10.0):

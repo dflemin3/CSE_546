@@ -345,7 +345,7 @@ def stochastic_gradient_descent(grad, X, y, lam=1.0, eta = 1.0e-3, w = None, w0 
             w_pred = w_pred - eta * scale * (lam * w_pred + wgrad)
 
             # Compute loss for this fit over entire set?
-            if ii % nout == 0:
+            if ii % nout == 0 or iters == 0:
                 ll = llfn(X, y, w_pred, w0)
                 print(ll)
 
@@ -402,7 +402,7 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
                      eps = 5.0e-3, max_iter = 500, adaptive = True, llfn = None,
                      savell = True, X_test = None, y_test = None, multi=None, classfn=None,
                      train_label=None,test_label=None, loss01fn=None, batchsize=None,
-                     nout=None, transform=None, alpha=None):
+                     nout=None, transform=None, sigma=None, v=None):
     """
     Performs regularized stochastic gradient descent to optimize model with an update step:
 
@@ -461,8 +461,10 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
     transform : function (optional)
         function to transform a given batch.  Defaults to None.  Requires args
         of the form (batch, X_train, alpha)
-    alpha : float (optional)
+    sigma : float (optional)
         transform function parameter
+    v : array (d x n) (optional)
+        transform function array
 
     Returns
     -------
@@ -482,7 +484,7 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
     # Estimate dimension size if performing some transformation
     # by performing transformation on small subset of data
     if transform is not None:
-        X_b = transform(X[:2], X, alpha)
+        X_b = transform(X[:2], X, v=v, sigma=sigma)
         d = X_b.shape[1]
     else:
         d = X.shape[1]
@@ -538,7 +540,7 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
         llfn = validation.logloss_bin
 
     # Dummy old super huge loss
-    old_ll = 1.0e10
+    train_old_ll = 1.0e10
     scale = 1.0/n
 
     # While not converged, do
@@ -551,7 +553,7 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
     		print("Maximum iteration threshold hit %d." % iters)
     		print("Returning current solution: Convergence not guarenteed.")
     		print("lambda = %.3e" % lam)
-    		print("Old ll, current ll: %e, %e" % (old_ll, ll))
+    		print("Old ll, current ll: %e, %e" % (train_old_ll, train_ll))
     		if saveloss:
     		    return w0, w_pred, np.asarray(loss_arr), np.asarray(iter_arr)
     		else:
@@ -572,7 +574,7 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
 
             # Transform data on the fly?
             if transform is not None:
-                X_b = transform(X_b, X, alpha)
+                X_b = transform(X_b, X, v=v, sigma=sigma)
 
             # Precompute gradient using w^(t), w0 since this doesn't change in a given iteration
             # using either one or a batch of samples
@@ -588,13 +590,13 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
             avg_w0 += w0*n/len(X)
             avg_w += w_pred*n/len(X)
 
-            # If epoch is complete, compute losses for this fit
+            # If epoch is complete (or 1st iter), compute losses for this fit
             if (ii+n) % nout == 0 or iters == 0:
 
-                ll = 0.0
-                ll_avg = 0.0
-                loss_01 = 0.0
-                loss_01_avg = 0.0
+                train_ll = 0.0
+                train_ll_avg = 0.0
+                train_loss_01 = 0.0
+                train_loss_01_avg = 0.0
                 for batch in make_batches(X, y, label=train_label, size=n):
                     X_b = batch[0].reshape((n,batch[0].shape[-1]))
                     y_b = batch[1].reshape((n,batch[1].shape[-1]))
@@ -602,31 +604,32 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
 
                     # Transform data on the fly?
                     if transform is not None:
-                        X_b = transform(X_b, X, alpha)
+                        X_b = transform(X_b, X, v=v, sigma=sigma)
 
-                    ll += llfn(X_b, y_b, w_pred, w0)*n/len(X)
-                    ll_avg += llfn(X_b, y_b, avg_w, avg_w0)*n/len(X)
+                    train_ll += llfn(X_b, y_b, w_pred, w0)*n/len(X)
+                    train_ll_avg += llfn(X_b, y_b, avg_w, avg_w0)*n/len(X)
 
                     if classfn is not None:
-                        loss_01 += loss01fn(y_l,classfn(X_b, w_pred, w0))*n/len(X)
-                        loss_01_avg += loss01fn(y_l,classfn(X_b, avg_w, avg_w0))*n/len(X)
+                        train_loss_01 += loss01fn(y_l,classfn(X_b, w_pred, w0))*n/len(X)
+                        train_loss_01_avg += loss01fn(y_l,classfn(X_b, avg_w, avg_w0))*n/len(X)
 
-                print(ll)
                 if savell:
-                    ll_arr.append(ll)
-                    avg_ll_arr.append(ll_avg)
+                    ll_arr.append(train_ll)
+                    avg_ll_arr.append(train_ll_avg)
                     iter_arr.append(iters)
 
                     if classfn is not None:
-                        train_01_loss.append(loss_01)
-                        avg_train_01_loss.append(loss_01_avg)
+                        train_01_loss.append(train_loss_01)
+                        avg_train_01_loss.append(train_loss_01_avg)
+
+                print("Training loss, 0/1 loss:",train_ll,train_loss_01)
 
                 # Compute testing set loss for this iteration using fit from training set?
                 if X_test is not None and y_test is not None:
-                    ll = 0.0
-                    ll_avg = 0.0
-                    loss_01 = 0.0
-                    loss_01_avg = 0.0
+                    test_ll = 0.0
+                    test_ll_avg = 0.0
+                    test_loss_01 = 0.0
+                    test_loss_01_avg = 0.0
                     for batch in make_batches(X_test, y_test, label=test_label, size=n):
                         X_b = batch[0].reshape((n,batch[0].shape[-1]))
                         y_b = batch[1].reshape((n,batch[1].shape[-1]))
@@ -634,36 +637,36 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
 
                         # Transform data on the fly?
                         if transform is not None:
-                            X_b = transform(X_b, X, alpha)
+                            X_b = transform(X_b, X, v=v, sigma=sigma)
 
-                        ll += llfn(X_b, y_b, w_pred, w0)*n/len(X_test)
-                        ll_avg += llfn(X_b, y_b, avg_w, avg_w0)*n/len(X_test)
+                        test_ll += llfn(X_b, y_b, w_pred, w0)*n/len(X_test)
+                        test_ll_avg += llfn(X_b, y_b, avg_w, avg_w0)*n/len(X_test)
 
                         if classfn is not None:
-                            loss_01 += loss01fn(y_l,classfn(X_b, w_pred, w0))*n/len(X_test)
-                            loss_01_avg += loss01fn(y_l,classfn(X_b, avg_w, avg_w0))*n/len(X_test)
+                            test_loss_01 += loss01fn(y_l,classfn(X_b, w_pred, w0))*n/len(X_test)
+                            test_loss_01_avg += loss01fn(y_l,classfn(X_b, avg_w, avg_w0))*n/len(X_test)
 
                     # Store test ll
-                    test_ll_arr.append(ll)
-                    avg_test_ll_arr.append(ll_avg)
+                    test_ll_arr.append(test_ll)
+                    avg_test_ll_arr.append(test_ll_avg)
 
                     if classfn is not None:
-                        test_01_loss.append(loss_01)
-                        avg_test_01_loss.append(loss_01_avg)
+                        test_01_loss.append(test_loss_01)
+                        avg_test_01_loss.append(test_loss_01_avg)
 
                 # Using an adaptive step size?
                 if adaptive:
                     scale = 1.0/(n * np.sqrt(1.0 + iters))
 
                 # Is it converged (is loss not changing by some %?)
-                if np.fabs((ll - old_ll)/old_ll) > eps:
+                if np.fabs((train_ll - train_old_ll)/train_old_ll) > eps:
                     converged = False
                 else:
                     converged = True
                     break
 
                 # Store old loss, iterate
-                old_ll = ll
+                train_old_ll = train_ll
                 iters += 1
 
             ii = ii + n

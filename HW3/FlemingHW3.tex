@@ -174,6 +174,8 @@ Broadly, the images reconstructed using at least $k = 20$ principal components a
 
 In this section, I use one-against least-squares classification to attempt to get to ``state of the art" on the MNIST dataset.  The code used to solve this question is in the following attached files: {\tt hw3$\_$2.py} in the {\tt HW3} directory and {\tt pca/pca.py, regression/regression$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py, optimization/gradient$\_$descent.py, kernel/kernel.py} all in the {\tt DML} directory.
 
+\subsection*{2.1 Least Squares}
+
 For computational speed purposes, I first performed dimension reduction using PCA.  I fit my PCA algorithm on the MNIST training set with the mean subtracted out then projected each image using the first $k = 100$ components.  Even though the question prompt said to use $k = 50$ principal components, I found that the best error I could achieve was about $3\%$ 0/1 loss on the testing case after trying a myriad of combinations of kernel bandwidth, SGD step sizes and convergence criteria.  With a factor of 2 more principal components, I was able to achieve ``state of the art", ${\lesssim}1.2\%$ testing set 0/1 loss while still exploiting the speed increase of PCA dimensionality reduction.
 
 I mapped the $n \times k$ reduced MNIST training data for $n$ samples to a $n \times n$ transformed MNIST training set using an RBF kernel of the form
@@ -184,31 +186,43 @@ where $h_j(x)$ is the $jth$ feature out of $n$ of the transformed image $x$.  I 
 
 Since the transformed training data matrix was so large, I used mini-batch SGD with a mini-batch size of 100 for all gradient calculations.  Each epoch, or each complete pass through a randomly permuted training set, I performed 60,000/100 = 600 mini-batch gradient updates.  I computed the loss of the entire transformed training set and testing set (to which I applied the same transformation as the training set for consistency).  In addition over a given epoch, I averaged the weight vectors and offset terms to get $\bar{w}$ and $\bar{w}_0$ and used these to compute losses as well.  I called my algorithm converged once the mean square loss on the training set did not change by more than $0.1\%$ (TODO).  I did not explicitly use regularization since the early-stopping from my learning rate decay scheme (described below) and my convergence criterion implicitly $l_2$ regularize my solution.
 
-\subsection*{2.1 Least Squares}
+\subsubsection*{2.1.1}
 
 I used a learning rate $\eta = 2 \times 10^{-5}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 2 \times 10^{-5}$.  I used a mini-batch size of 100 and a kernel bandwidth of TODO computing using the scheme described above.
 
-\subsubsection*{2.1.1}
-
-\begin{figure}[H]
-	\includegraphics[width=\columnwidth]{4_recon_mnist.pdf}
-    \caption{Reconstruction of a number 4 from the MNIST data set (see Fig.~\ref{fig:mnist_digits}) using $k \in [2,5,10,20,50,100]$ principal components where the given $k$ is denoted in red in the lower-righthand corner of the respective subplot.}
-    \label{fig:recon_4}
-\end{figure}
-
 \subsubsection*{2.1.2}
 
-TODO
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{pca_square_loss.pdf}
+    \caption{Mean square loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$. Note that the curves for the training and testing errors overlap.}
+    \label{fig:pca_square_loss}
+\end{figure}
+
+TODO description
 
 \subsubsection*{2.1.3}
 
-TODO
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{pca_01_loss.pdf}
+    \caption{0/1 loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$.}
+    \label{fig:pca_01_loss}
+\end{figure}
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{pca_01_loss_masked.pdf}
+    \caption{0/1 loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$ computed after the testing loss dipped below $5\%$.}
+    \label{fig:pca_01_loss_masked}
+\end{figure}
+
+TODO description
 
 \subsubsection*{2.1.4}
 
-TODO
+The final training squared loss and 0/1 loss are TODO and TODO, respectively.  The total number of mistakes made on the training set of the final point are TODO.  The same values computed using $\bar{w}_{\tau}$ are TODO, TODO, and TODO.
 
 \subsubsection*{2.1.5}
+
+The final testing squared loss and 0/1 loss are TODO and TODO, respectively.  The total number of mistakes made on the testing set of the final point are TODO.  The same values computed using $\bar{w}_{\tau}$ are TODO, TODO, and TODO.
 
 \section*{5: K-Means}
 

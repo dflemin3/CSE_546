@@ -13,7 +13,7 @@ This file contains routines for computing kernels, like an RBF kernel.
 from __future__ import print_function, division, absolute_import, unicode_literals
 import numpy as np
 from scipy.spatial.distance import cdist
-from numba import jit, float64
+#from numba import jit, float64
 
 def RBF(x, X, v=None, sigma=1.0):
     """
@@ -47,8 +47,8 @@ def RBF(x, X, v=None, sigma=1.0):
 # end function
 
 
-@jit(float64[:,:](float64[:,:], float64[:,:], float64[:,:], float64),
-nopython=True, cache=True)
+#@jit(float64[:,:](float64[:,:], float64[:,:], float64[:,:], float64),
+#nopython=True, cache=True)
 def fourier_rbf(x, X, v, sigma=1.0):
     """
     Fourier approximation to a radial basis function (RBF) kernel transformation

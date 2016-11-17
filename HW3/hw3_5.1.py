@@ -40,6 +40,7 @@ X_test, y_test = mu.load_mnist(dataset='testing')
 if run_k_16:
 
     k = 16
+
     verbose = True
 
     print("Running k-means with %d clusters..." % k)

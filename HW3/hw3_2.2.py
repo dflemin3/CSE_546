@@ -6,9 +6,9 @@ Created on Nov 2016
 
 @email: dflemin3 (at) uw (dot) edu
 
-This script solves question 2 of CSE 546 HW3 of using one-against-all linear
-regression classification on PCA-reduced and RBF fourier kernel transformend
-MNIST data.
+This script solves question 2.2 of CSE 546 HW3 [Extra Credit!]
+of using softmax classification on PCA-reduced and RBF fourier kernel
+transformend MNIST data.
 """
 
 from __future__ import print_function, division
@@ -50,15 +50,13 @@ PCA.fit(X_train)
 X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
-"""
-cut = 2000
+cut = 5000
 X_train = X_train[:cut]
 y_train = y_train[:cut]
 y_train_true = y_train_true[:cut]
 X_test = X_test[:cut]
 y_test = y_test[:cut]
 y_test_true = y_test_true[:cut]
-"""
 
 # Estimate kernel bandwidth
 sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 2.0)
@@ -68,8 +66,8 @@ print("Estimted kernel bandwidth: %lf" % sigma)
 v = kernel.generate_fourier_v(X_train.shape[-1], X_train.shape[0])
 
 # Set SGD parameters
-best_eta = 1.0e-3#2.0e-5
-eps = 1.0e-3#5.0e-4
+best_eta = 1.0e-2
+eps = 1.0e-3
 batchsize = 100
 sparse = False
 Nclass = 10
@@ -80,14 +78,14 @@ if not os.path.exists(cache_name):
     print("Running minibatch SGD...")
     w0, avg_w0, w, avg_w, train_ll, avg_train_ll, test_ll, avg_test_ll, \
     train_01, avg_train_01, test_01, avg_test_01, iter_arr = \
-    gd.SGD_chunks(ru.linear_grad, X_train, y_train_true,
+    gd.SGD_chunks(cu.multi_logistic_grad, X_train, y_train_true,
                                    X_test=X_test, y_test=y_test_true,
                                    lam=0.0, eta=best_eta, sparse=sparse,
                                    savell=True, adaptive=True, eps=eps,
-                                   multi=Nclass, llfn=val.MSE_multi,
+                                   multi=Nclass, llfn=val.logloss_multi,
                                    batchsize=batchsize,
                                    train_label=y_train, test_label=y_test,
-                                   classfn = cu.multi_linear_classifier,
+                                   classfn = cu.multi_logistic_classifier,
                                    nout=X_train.shape[0], loss01fn=val.loss_01,
                                    transform=kernel.fourier_rbf, sigma=sigma,
                                    v=v)
@@ -125,10 +123,10 @@ if show_plots:
     # Format plot
     ax.legend(loc="best")
     ax.set_xlabel("Epoch")
-    ax.set_ylabel("Mean Square Loss")
+    ax.set_ylabel("Mean Log Loss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("pca_square_loss.pdf")
+            fig.savefig("logistic_log_loss.pdf")
 
     plt.show()
 
@@ -147,7 +145,7 @@ if show_plots:
     ax.set_ylabel("0/1 Loss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("pca_01_loss.pdf")
+            fig.savefig("logistic_01_loss.pdf")
 
     plt.show()
 
@@ -168,7 +166,7 @@ if show_plots:
     ax.set_ylabel("0/1 Loss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("pca_01_loss_masked.pdf")
+            fig.savefig("logistic_01_loss_masked.pdf")
 
     plt.show()
 

@@ -8,7 +8,18 @@
 \BOOKMARK [2][-]{section*.15}{1.4: Visualization and Reconstruction}{section*.4}% 8
 \BOOKMARK [1][-]{section*.19}{2: Let's get to state of the art of MNIST!}{}% 9
 \BOOKMARK [2][-]{section*.20}{2.1 Least Squares}{section*.19}% 10
-\BOOKMARK [1][-]{section*.26}{5: K-Means}{}% 11
-\BOOKMARK [2][-]{section*.27}{5.0: K-Means Algorithm Implementation}{section*.26}% 12
-\BOOKMARK [2][-]{section*.28}{5.1: Run the algorithm}{section*.26}% 13
-\BOOKMARK [2][-]{section*.36}{5.2: Classification with K-means}{section*.26}% 14
+\BOOKMARK [2][-]{section*.26}{2.2: EXTRA CREDIT: Softmax Classification}{section*.19}% 11
+\BOOKMARK [1][-]{section*.32}{3: SVMs: Hinge loss and mistake bounds}{}% 12
+\BOOKMARK [2][-]{section*.33}{3.1}{section*.32}% 13
+\BOOKMARK [2][-]{section*.34}{3.2}{section*.32}% 14
+\BOOKMARK [2][-]{section*.35}{3.3}{section*.32}% 15
+\BOOKMARK [1][-]{section*.36}{4: Fitting an SVM classifier by hand}{}% 16
+\BOOKMARK [2][-]{section*.37}{4.1}{section*.36}% 17
+\BOOKMARK [2][-]{section*.38}{4.2}{section*.36}% 18
+\BOOKMARK [2][-]{section*.39}{4.3}{section*.36}% 19
+\BOOKMARK [2][-]{section*.40}{4.4}{section*.36}% 20
+\BOOKMARK [2][-]{section*.41}{4.5}{section*.36}% 21
+\BOOKMARK [1][-]{section*.42}{5: K-Means}{}% 22
+\BOOKMARK [2][-]{section*.43}{5.0: K-Means Algorithm Implementation}{section*.42}% 23
+\BOOKMARK [2][-]{section*.44}{5.1: Run the algorithm}{section*.42}% 24
+\BOOKMARK [2][-]{section*.52}{5.2: Classification with K-means}{section*.42}% 25

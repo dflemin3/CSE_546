@@ -659,14 +659,14 @@ def SGD_chunks(grad, X, y, lam=0.0, eta = 1.0e-3, w = None, w0 = None, sparse = 
                     scale = 1.0/(n * np.sqrt(1.0 + iters))
 
                 # Is it converged (is loss not changing by some %?)
-                if np.fabs((train_ll - train_old_ll)/train_old_ll) > eps:
+                if np.fabs((train_ll_avg - train_old_ll)/train_old_ll) > eps:
                     converged = False
                 else:
                     converged = True
                     break
 
                 # Store old loss, iterate
-                train_old_ll = train_ll
+                train_old_ll = train_ll_avg
                 iters += 1
 
             ii = ii + n

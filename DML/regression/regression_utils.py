@@ -288,3 +288,48 @@ def naive_nn_layer(X, k=10000, v=None):
 	else:
 		return col_max_filt(X.dot(v))
 # end function
+
+
+def neural_net(x, X, v, sigma=1.0):
+    """
+    Random neural network layer transformation.
+
+    Parameters
+    ----------
+    x : array (samples x d)
+        input samples(s)
+    X : array (n x d)
+        input data
+    v : array (d x n)
+        transformation matrix (required)
+    sigma : float
+        bandwidth parameter
+
+    Returns
+    -------
+    K : array (samples x n)
+        kernel transformation
+    """
+    return x.dot(v)
+# end function
+
+
+def neural_net_v(d, k):
+    """
+    Create naive random neural net feature transformations matrix that is d x k
+
+    Parameters
+    ----------
+    d : int
+        number of rows
+    k : int
+        number of columns
+
+    Returns
+    -------
+    v : array (d x k)
+        transformation matrix
+    """
+
+    return np.random.normal(size=(d,k))
+# end function

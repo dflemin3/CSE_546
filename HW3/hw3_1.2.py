@@ -16,8 +16,13 @@ sys.path.append("..")
 import DML.pca.pca as pca
 import DML.data_processing.mnist_utils as mu
 import DML.data_processing.normalization as norm
-import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+#Typical plot parameters that make for pretty plots
+mpl.rcParams['figure.figsize'] = (9,8)
+mpl.rcParams['font.size'] = 20.0
+mpl.rc('font',**{'family':'serif','serif':['Computer Modern']})
+mpl.rc('text', usetex=True)
 
 # Flags to control functionality
 show_plots = True

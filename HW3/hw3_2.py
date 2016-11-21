@@ -24,8 +24,13 @@ import DML.regression.regression_utils as ru
 import DML.optimization.gradient_descent as gd
 import DML.validation.validation as val
 import DML.kernel.kernel as kernel
-import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+#Typical plot parameters that make for pretty plots
+mpl.rcParams['figure.figsize'] = (9,8)
+mpl.rcParams['font.size'] = 20.0
+mpl.rc('font',**{'family':'serif','serif':['Computer Modern']})
+mpl.rc('text', usetex=True)
 
 # Flags to control functionality
 show_plots = True
@@ -73,7 +78,7 @@ eps = 1.0e-3#5.0e-4
 batchsize = 100
 sparse = False
 Nclass = 10
-cache_name = "tmp.npz"
+cache_name = "sgd_fourier_best.npz"
 
 # Only run if cache doesn't exist
 if not os.path.exists(cache_name):

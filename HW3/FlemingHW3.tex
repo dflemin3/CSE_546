@@ -180,13 +180,13 @@ For computational speed purposes, I first performed dimension reduction using PC
 \begin{equation} \label{eqn:rbf_kernel}
 h_j(x) = \sin \left( \frac{v_i \cdot x}{\sigma} \right)
 \end{equation}
-where $h_j(x)$ is the $jth$ feature out of $n$ of the transformed image $x$.  The transformation matrix $v$ is composed of $k = 60,000$ columns where each coordinate of the $k$ columns are independently sampled from the standard normal distribution.  The same matrix $v$ was used to transform both the training and testing sets.  I selected the bandwidth $\sigma$ by taking the mean of the pairwise distance of about 100 samples and scaling that value by TODO.  I explored several other values for $\sigma$, TODO, TODO, ..., and TODO and found that TODO yielded the best performance.  
+where $h_j(x)$ is the $jth$ feature out of $n$ of the transformed image $x$.  The transformation matrix $v$ is composed of $k = 60,000$ columns where each coordinate of the $k$ columns are independently sampled from the standard normal distribution.  The same matrix $v$ was used to transform both the training and testing sets.  I selected the bandwidth $\sigma = 780$ by taking the mean of the pairwise distance of about 100 samples and scaling that value by 3.  I explored several other values for $\sigma$ and found no improvement in performance.  
 
-Since the transformed training data matrix was so large, I used mini-batch SGD with a mini-batch size of 100 for all gradient calculations.  Each epoch, or each complete pass through a randomly permuted training set, I performed 60,000/100 = 600 mini-batch gradient updates.  I computed the loss of the entire transformed training set and testing set (to which I applied the same transformation as the training set for consistency).  In addition over a given epoch, I averaged the weight vectors and offset terms to get $\bar{w}$ and $\bar{w}_0$ and used these to compute losses as well.  I called my algorithm converged once the mean square loss on the training set did not change by more than $0.1\%$ (TODO).  I did not explicitly use regularization since the early-stopping from my learning rate decay scheme (described below) and my convergence criterion implicitly $l_2$ regularize my solution.
+Since the transformed training data matrix was so large, I used mini-batch SGD with a mini-batch size of 10 for all gradient calculations.  Each epoch, or each complete pass through a randomly permuted training set, I performed 60,000/10 = 6,000 mini-batch gradient updates.  I computed the loss of the entire transformed training set and testing set (to which I applied the same transformation as the training set for consistency).  In addition over a given epoch, I averaged the weight vectors and offset terms to get $\bar{w}$ and $\bar{w}_0$ and used these to compute losses as well.  I called my algorithm converged once the mean square loss on the training set did not change by more than $0.1\%$.  I did not explicitly use regularization since the early-stopping from my learning rate decay scheme (described below) and my convergence criterion implicitly $l_2$ regularize my solution.
 
 \subsubsection*{2.1.1}
 
-I used a learning rate $\eta = 2 \times 10^{-5}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 2 \times 10^{-5}$.  I used a mini-batch size of 100 and a kernel bandwidth of TODO computing using the scheme described above.
+I used a learning rate $\eta = 3 \times 10^{-5}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 3 \times 10^{-5}$.  I used a mini-batch size of 100 and a kernel bandwidth of 780 computed using the scheme described above.
 
 \subsubsection*{2.1.2}
 
@@ -210,11 +210,11 @@ TODO description
 
 \subsubsection*{2.1.4}
 
-The final training squared loss and 0/1 loss are TODO and TODO, respectively.  The total number of mistakes made on the training set of the final point are TODO.  The same values computed using $\bar{w}_{\tau}$ are TODO, TODO, and TODO.
+The final training squared loss and 0/1 loss are 0.0584 and 0.0029, respectively.  The total number of mistakes made on the training set of the final point are 171.  The same values computed using $\bar{w}_{\tau}$ are 0.0584, 0.0029, and 171.
 
 \subsubsection*{2.1.5}
 
-The final testing squared loss and 0/1 loss are TODO and TODO, respectively.  The total number of mistakes made on the testing set of the final point are TODO.  The same values computed using $\bar{w}_{\tau}$ are TODO, TODO, and TODO.
+The final testing squared loss and 0/1 loss are 0.0912 and 0.016, respectively.  The total number of mistakes made on the testing set of the final point are 160.  The same values computed using $\bar{w}_{\tau}$ are 0.0912, 0.0161, and 161.
 
 \subsection*{2.2: EXTRA CREDIT: Softmax Classification}
 
@@ -285,27 +285,75 @@ The sum over the correct predictions will always be $\geq 0$ since in the above 
 
 \section*{4: Fitting an SVM classifier by hand}
 
-TODO
+The code used for this question is given in {\tt hw3$\_$4.py} in the {\tt DML} directory.  For this section, I applied the $\phi(x) = (1, \sqrt{2}x, x^2)^T$ transformation to the two one dimensional samples.
 
 \subsection*{4.1}
 
-TODO
+Since the optimal vector $\hat{w}$ is perpendicular to the decision boundary, I need to find a vector parallel to any line which is perpendicular to the decision boundary.  Here I only deal with two points, so the decision boundary is readily identified as the plane going through the midpoint between the two points.  A vector pointing to the midpoint of the two points will then be perpendicular to the decision boundary and parallel to $\hat{w}$.  I can calculate that point as 
+\begin{equation}
+\begin{split}
+& \vec{\phi}(x_2) - \vec{\phi}(x_1) \\
+& = (1,2,2) - (1,0,0) \\
+& = (0,1,1) = w
+\end{split}
+\end{equation}
 
 \subsection*{4.2}
 
-TODO
+The margin is the distance from one point to the decision boundary.  Since the decision boundary is the midpoint between the two points, the margin will be half the distance between the two points and is given by
+\begin{equation}
+\gamma = \frac{1}{2}\sqrt{(1-1)^2 + (2-0)^2 + (2-0)^2} = \sqrt{8}/2 = \sqrt{2}.
+\end{equation}
 
 \subsection*{4.3}
 
-TODO
+Given that the margin is given by $\gamma = 1/||w||$ and that $\hat{w}$ is parallel to $w$ by design, I can solve for $\hat{w}$ as follows
+\begin{equation}
+\begin{split}
+& \gamma = 1/||w|| \\
+& 1/\sqrt{2} = \sqrt{2c^2} \\ 
+& 1/2 \ 2c^2 \\
+& 1/4 = c^2 \\
+& 1/2 = c 
+\end{split}
+\end{equation}
+where $\hat{w} = (0,c,c) = (0,1/2,1/2)$.
 
 \subsection*{4.4}
 
-TODO
+I compress the tight inequality into an equality to satisfy equations 1-3.  Inserting $\hat{w}$ into equation 2 gives
+\begin{equation}
+\begin{split}
+& y_1(w^T\phi(x_1) + w_0) = 1 \\
+& -1((0,1/2,1/2) \cdot (1,0,0) + w_0) = 1 \\
+& -w_0 = 1 \\
+& w_0 = -1
+\end{split}
+\end{equation}
+and similarly equation 3 becomes 
+\begin{equation}
+\begin{split}
+& y_2(w^T\phi(x_2) + w_0) = 1 \\
+& 1((0,1/2,1/2) \cdot (1,2,2) + w_0) = 1 \\
+& 1 + 1 + w_0 = 1 \\
+& w_0 = -1.
+\end{split}
+\end{equation}
+Therefore, $w_0 = -1$.
 
 \subsection*{4.5}
 
-TODO
+If $f(x) = w_0 + \hat{w}^T \phi(x)$, I can write
+\begin{equation} \label{eqn:f}
+f(x) = \frac{1}{2}x^2 + \frac{\sqrt{2}}{2}x - 1.
+\end{equation}
+I plot Eqn.~\ref{eqn:f} and the two points $\vec{x_1}$ and $\vec{x_2}$ in Fig.~\ref{fig:svm}.
+
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{svm_by_hand.pdf}
+    \caption{A plot of $f(x)$ and $\vec{x_1}$ and $\vec{x_2}$ projected into 2D space.}
+    \label{fig:svm}
+\end{figure}
 
 \section*{5: K-Means}
 

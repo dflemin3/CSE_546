@@ -23,8 +23,8 @@ import matplotlib.pyplot as plt
 # Flags to control functionality
 show_plots = True
 save_plots = True
-run_k_16 = False
-run_k_250 = True
+run_k_16 = True
+run_k_250 = False
 
 # Load in MNIST data
 print("Loading MNIST data...")

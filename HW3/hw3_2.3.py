@@ -69,7 +69,7 @@ eps = 1.0e-4
 batchsize = 100
 sparse = False
 Nclass = 10
-cache_name = "sgd_nn.npz"
+cache_name = "sgd_nn_best.npz"
 
 
 # Only run if cache doesn't exist
@@ -122,10 +122,10 @@ if show_plots:
     # Format plot
     ax.legend(loc="best")
     ax.set_xlabel("Epoch")
-    ax.set_ylabel("Mean Log Loss")
+    ax.set_ylabel("Mean Square Loss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("logistic_log_loss.pdf")
+            fig.savefig("nn_square_loss.pdf")
 
     plt.show()
 
@@ -144,7 +144,7 @@ if show_plots:
     ax.set_ylabel("0/1 Loss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("logistic_01_loss.pdf")
+            fig.savefig("nn_01_loss.pdf")
 
     plt.show()
 
@@ -165,7 +165,7 @@ if show_plots:
     ax.set_ylabel("0/1 Loss")
     fig.tight_layout()
     if save_plots:
-            fig.savefig("logistic_01_loss_masked.pdf")
+            fig.savefig("nn_01_loss_masked.pdf")
 
     plt.show()
 

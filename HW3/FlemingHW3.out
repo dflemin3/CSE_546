@@ -1,25 +1,25 @@
-\BOOKMARK [1][-]{section*.2}{Introduction}{}% 1
-\BOOKMARK [1][-]{section*.3}{Question 0: Collaborators}{}% 2
-\BOOKMARK [1][-]{section*.4}{Question 1: PCA and reconstruction}{}% 3
-\BOOKMARK [2][-]{section*.5}{1.0: Details of my PCA implementation}{section*.4}% 4
-\BOOKMARK [2][-]{section*.6}{1.1: Matrix Algebra Review}{section*.4}% 5
-\BOOKMARK [2][-]{section*.7}{1.2: PCA}{section*.4}% 6
-\BOOKMARK [2][-]{section*.12}{1.3: Visualization of the Eigen-Directions}{section*.4}% 7
-\BOOKMARK [2][-]{section*.15}{1.4: Visualization and Reconstruction}{section*.4}% 8
-\BOOKMARK [1][-]{section*.19}{2: Let's get to state of the art of MNIST!}{}% 9
-\BOOKMARK [2][-]{section*.20}{2.1 Least Squares}{section*.19}% 10
-\BOOKMARK [2][-]{section*.26}{2.2: EXTRA CREDIT: Softmax Classification}{section*.19}% 11
-\BOOKMARK [1][-]{section*.32}{3: SVMs: Hinge loss and mistake bounds}{}% 12
-\BOOKMARK [2][-]{section*.33}{3.1}{section*.32}% 13
-\BOOKMARK [2][-]{section*.34}{3.2}{section*.32}% 14
-\BOOKMARK [2][-]{section*.35}{3.3}{section*.32}% 15
-\BOOKMARK [1][-]{section*.36}{4: Fitting an SVM classifier by hand}{}% 16
-\BOOKMARK [2][-]{section*.37}{4.1}{section*.36}% 17
-\BOOKMARK [2][-]{section*.38}{4.2}{section*.36}% 18
-\BOOKMARK [2][-]{section*.39}{4.3}{section*.36}% 19
-\BOOKMARK [2][-]{section*.40}{4.4}{section*.36}% 20
-\BOOKMARK [2][-]{section*.41}{4.5}{section*.36}% 21
-\BOOKMARK [1][-]{section*.42}{5: K-Means}{}% 22
-\BOOKMARK [2][-]{section*.43}{5.0: K-Means Algorithm Implementation}{section*.42}% 23
-\BOOKMARK [2][-]{section*.44}{5.1: Run the algorithm}{section*.42}% 24
-\BOOKMARK [2][-]{section*.52}{5.2: Classification with K-means}{section*.42}% 25
+\BOOKMARK [1][-]{section*.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section*.2}{Question 0: Collaborators}{}% 2
+\BOOKMARK [1][-]{section*.3}{Question 1: PCA and reconstruction}{}% 3
+\BOOKMARK [2][-]{section*.4}{1.0: Details of my PCA implementation}{section*.3}% 4
+\BOOKMARK [2][-]{section*.5}{1.1: Matrix Algebra Review}{section*.3}% 5
+\BOOKMARK [2][-]{section*.8}{1.2: PCA}{section*.3}% 6
+\BOOKMARK [2][-]{section*.13}{1.3: Visualization of the Eigen-Directions}{section*.3}% 7
+\BOOKMARK [2][-]{section*.16}{1.4: Visualization and Reconstruction}{section*.3}% 8
+\BOOKMARK [1][-]{section*.20}{2: Let's get to state of the art of MNIST!}{}% 9
+\BOOKMARK [2][-]{section*.21}{2.1 Least Squares}{section*.20}% 10
+\BOOKMARK [2][-]{section*.27}{2.2: EXTRA CREDIT: Softmax Classification}{section*.20}% 11
+\BOOKMARK [1][-]{section*.33}{3: SVMs: Hinge loss and mistake bounds}{}% 12
+\BOOKMARK [2][-]{section*.34}{3.1}{section*.33}% 13
+\BOOKMARK [2][-]{section*.35}{3.2}{section*.33}% 14
+\BOOKMARK [2][-]{section*.36}{3.3}{section*.33}% 15
+\BOOKMARK [1][-]{section*.37}{4: Fitting an SVM classifier by hand}{}% 16
+\BOOKMARK [2][-]{section*.38}{4.1}{section*.37}% 17
+\BOOKMARK [2][-]{section*.39}{4.2}{section*.37}% 18
+\BOOKMARK [2][-]{section*.40}{4.3}{section*.37}% 19
+\BOOKMARK [2][-]{section*.41}{4.4}{section*.37}% 20
+\BOOKMARK [2][-]{section*.42}{4.5}{section*.37}% 21
+\BOOKMARK [1][-]{section*.43}{5: K-Means}{}% 22
+\BOOKMARK [2][-]{section*.44}{5.0: K-Means Algorithm Implementation}{section*.43}% 23
+\BOOKMARK [2][-]{section*.45}{5.1: Run the algorithm}{section*.43}% 24
+\BOOKMARK [2][-]{section*.53}{5.2: Classification with K-means}{section*.43}% 25

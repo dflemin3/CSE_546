@@ -57,11 +57,68 @@ Note that for all questions, I first centered the training data before running P
 
 \subsection*{1.1: Matrix Algebra Review}
 
+For this question, I will use the following definitions:
+
 \begin{equation} \label{eqn:sigma}
-\Sigma = \frac{1}{N}\sum_i x_i x_i^T
+\Sigma = \frac{1}{N}\sum_i x_i x_i^T.
 \end{equation}
 
-TODO
+\subsubsection*{1.1.1}
+
+For brevity, I define $B^T = C$  First, I expand
+\begin{equation}
+\begin{split}
+Tr(AC) & = \sum_{i = 1}^N (AC)_{ii} \\
+& = \sum_{i = 1}^N \left( \sum_{k = 1}^d A_{ik}C_{ki} \right) \\
+& = \sum_{i = 1}^N \sum_{k = 1}^d A_{ik}C_{ki}.
+\end{split}
+\end{equation}
+Similarly, I expand
+\begin{equation}
+\begin{split}
+Tr(CA) & = \sum_{k = 1}^d (CA)_{kk} \\
+& = \sum_{k = 1}^d \left( \sum_{i = 1}^N C_{ki}A_{ik} \right) \\
+& = \sum_{k = 1}^d \sum_{i = 1}^N C_{ki}A_{ik} \\
+& = \sum_{i = 1}^N \sum_{k = 1}^d A_{ik}C_{ki}
+\end{split}
+\end{equation}
+which is equal to the above expression for $Tr(AC)$, completing the proof.
+
+\subsubsection*{1.1.2}
+
+I will do this proof piece-wise.  First, I note that $\Sigma = UDU^{-1}$ via a typical eigenvalue decomposition where $D$ is the diagonal matrix with the eigenvalues of $\Sigma$ along the $d$ diagonals of $D$.  Now,
+\begin{equation}
+\begin{split}
+& Tr(\Sigma) \\
+& = Tr(UDU^{-1}) \\
+& = Tr(DU^{-1}U) \\
+& = Tr(D) \\
+& = \sum_{i = 1}^d \lambda_i
+\end{split}
+\end{equation}
+completing one equality using the relation derived in 1.1.1.  Now for the last one, I expand $\Sigma$ as
+\begin{equation}
+\begin{split}
+& \Sigma = X^TX \\
+& = [\vec{X}_1^T, \vec{X}_2^T, ..., \vec{X}_n^T]^T \cdot [\vec{X}_1^T, \vec{X}_2^T, ..., \vec{X}_n^T]
+\end{split}
+\end{equation}
+which is a matrix with diagonals given by
+\begin{equation}
+\begin{split}
+& [\vec{X}_1 \cdot \vec{X}_1, \vec{X}_2 \cdot \vec{X}_2, ..., \vec{X}_n \cdot \vec{X}_n] \\
+& = \sum_{i = 1}^n (X^TX)_{ii}.
+\end{split}
+\end{equation}
+Therefore, 
+\begin{equation}
+\begin{split}
+& Tr(\Sigma) = \frac{1}{n}Tr(X^TX) \\
+& = \frac{1}{n}\sum_{i = 1}^n (X^TX)_{ii} \\
+& = \frac{1}{n} \sum_{i = 1}^n ||X_i||^2
+\end{split}
+\end{equation}
+completing the proof.
 
 \subsection*{1.2: PCA}
 

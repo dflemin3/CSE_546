@@ -34,14 +34,11 @@ In each section, I try to be explicit with what files I used to perform the comp
 I collaborated with Matt Wilde, Serena Liu, and Janet Matsen for various questions on this assignment.
 
 %%% QUESTION 1 %%%
-
 \section*{Question 1: PCA and reconstruction}
-
-In this question, I derive matrix algebra relations and I use my PCA implementation to reduce the dimensionality of the MNIST dataset and visualize the results.  The code used to solve this question is in the following attached files: {\tt hw3$\_$1.2.py, hw3$\_$1.3.py, hw3$\_$1.4.py} in the {\tt HW3} directory and {\tt classification/classifier$\_$utils.py, regression/regression$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py} in the {\tt DML} directory.
+In this question, I derive matrix algebra relations and I use my PCA implementation to reduce the dimensionality of the MNIST dataset and visualize the results.  The code used to solve this question is in the following attached files: {\tt hw3$\_$1.2.py, hw3$\_$1.3.py, hw3$\_$1.4.py} in the {\tt HW3} directory and {\tt classification/classifier$\_$utils.py, regression/regression$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py, pca/pca.py} in the {\tt DML} directory.
 
 \subsection*{1.0: Details of my PCA implementation}
-
-My PCA implementation performs a SVD on the MNIST training datat $X$ to derive the principal components and the eigenvectors of the empirical covariance matrix, Eqn.~\ref{eqn:sigma}.   Performing PCA using a SVD gives me the following matrices: $u$, $s$, and $v$ where the columns of $v$ are the eigenvectors of Eqn.~\ref{eqn:sigma}.  The eigenvalues of Eqn.~\ref{eqn:sigma} are given by the square of the singular values divided by the length of the dataset, $\lambda = s^2/N$.
+My PCA implementation performs a SVD on the MNIST training data $X$ to derive the principal components and the eigenvectors of the empirical covariance matrix, Eqn.~\ref{eqn:sigma}.   Performing PCA using a SVD gives me the following matrices: $u$, $s$, and $v$ where the columns of $v$ are the eigenvectors of Eqn.~\ref{eqn:sigma}.  The eigenvalues of Eqn.~\ref{eqn:sigma} are given by the square of the singular values divided by the length of the dataset, $\lambda = s^2/N$.
 
 To transform the dataset to a lower dimensional space using the first $l$ principal components, the first $l$ columns of $v$, I evaluate
 \begin{equation} \label{eqn:pca_transform}
@@ -56,15 +53,12 @@ since $X_{trans}$ is $N \times l$ and $v^T$ is $l \times d$ resulting in a $N \t
 Note that for all questions, I first centered the training data before running PCA.  Specifically, for each feature (column) of $X$, I subtracted off its mean.  In addition to the textbook suggesting this as a good practice, I found that it yielded better performance and hence do so for all PCA questions in this homework set in less explicitly stated otherwise.
 
 \subsection*{1.1: Matrix Algebra Review}
-
 For this question, I will use the following definitions:
-
 \begin{equation} \label{eqn:sigma}
 \Sigma = \frac{1}{N}\sum_i x_i x_i^T.
 \end{equation}
 
 \subsubsection*{1.1.1}
-
 For brevity, I define $B^T = C$  First, I expand
 \begin{equation}
 \begin{split}
@@ -85,7 +79,6 @@ Tr(CA) & = \sum_{k = 1}^d (CA)_{kk} \\
 which is equal to the above expression for $Tr(AC)$, completing the proof.
 
 \subsubsection*{1.1.2}
-
 I will do this proof piece-wise.  First, I note that $\Sigma = UDU^{-1}$ via a typical eigenvalue decomposition where $D$ is the diagonal matrix with the eigenvalues of $\Sigma$ along the $d$ diagonals of $D$.  Now,
 \begin{equation}
 \begin{split}
@@ -121,36 +114,26 @@ Therefore,
 completing the proof.
 
 \subsection*{1.2: PCA}
-
-Here I performed PCA on the MNIST training data and retained the first 50 principal components and singular values.  The code used to answer this question is located in files: {\tt hw3$\_$1.2.py} in the {\tt HW3} directory and {\tt pca/pca.py} in the {\tt DML} directory.
-
 \subsubsection*{1.2.1}
-
 The eigenvalues $\lambda_1, \lambda_2, \lambda_{10}, \lambda_{30}, \lambda_{50}$ are 332719.1, 243279.9, 80808.5, 23685.7, and 11035.3, respectively. The sum of all eigenvalues is 3428445.4.  Again, I calculate $\lambda = s^2/N$ for singular value $s$ and dataset size $N$.
 
 \subsubsection*{1.2.2}
-
 I plot the fractional reconstruction error for $k \in [1,50]$ for the $k$ principal components in Fig.~\ref{fig:frac_rec_error}.  The fractional reconstruction error is defined as
 \begin{equation} \label{eqn:frac_rec_error}
 F = 1 - \frac{\sum_{i=1}^k \lambda_i}{\sum_{i=1}^d \lambda_i}
 \end{equation}
 for $d$ total features and $k$ principal components.  Note how the first principal component is the largest eigenvalue as shown above.
- 
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{fractional_rec_error.pdf}
     \caption{Fractional reconstruction error as a function of $k$ principal components out of $d$ total dimensions for $k \in [1,50]$.}
     \label{fig:frac_rec_error}
 \end{figure}
 
-
 \subsubsection*{1.2.3}
-
 The first eigenvalue, and its corresponding principal component, represent the component of the data that captures the most variance.  That is, the first eigenvalue represents the intensity dimensions.  If the data is not centered, the first eigenvector captures the mean of the data.
 
 \subsubsection*{1.2.4}
-
 I plot the fractional reconstruction error for $k \in [2,50]$ for the $k$ principal components in Fig.~\ref{fig:frac_rec_error_sans_mean}.  As expected, we see that the absence of the first eigenvalue demonstrates its importance.
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{fractional_rec_error_sans_mean.pdf}
     \caption{Fractional reconstruction error as a function of $k$ principal components out of $d$ total dimensions for $k \in [2,50]$.}
@@ -158,11 +141,8 @@ I plot the fractional reconstruction error for $k \in [2,50]$ for the $k$ princi
 \end{figure}
 
 \subsection*{1.3: Visualization of the Eigen-Directions}
-
 \subsubsection*{1.3.1}
-
 I plot the first 16 eigenvectors in Fig.~\ref{fig:eigendirections} as images.  To do so, I reshaped each vector into a $28 \times 28$ pixel image.  For each image, I also annotate it with its number such that the second eigendirection would have a ``2'' in its image.  I plotted 16 instead of 10 since 16 gives a nice symmetric collection of subplots.
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{eigendirections.pdf}
     \caption{Visualization of the first 16 eigendirections as $28 \times 28$ pixel images.  The respective eigendirection number is given in red in a subplot's lower righthand corner.}
@@ -170,11 +150,9 @@ I plot the first 16 eigenvectors in Fig.~\ref{fig:eigendirections} as images.  T
 \end{figure}
 
 \subsubsection*{1.3.2}
-
-Each individual eigendirection, or principal component, captures a fundamental basis vector in an orthogonal set which each explain a decreasing variation in the data with increasing principal component number.  That is, the first principal component accounts for the most variability in the data while subsequent components account for less and less variability.  This intuitive picture makes sense upon examining Fig.~\ref{fig:eigendirections}.  The first four components themselves appear to represent the numbers 0, 9, 3, and 5, respectively.  Although the components do not explicitly represent those numbers, instead the represent characteristics of numbers in the dataset that are commonly shared.  Many of the digits share features with 9, 3, and 5, for example, like their openings on the lefthand side of the digit and the solid vertical line on the righthand side of the digit.
+Each individual eigendirection, or principal component, captures a fundamental basis vector in an orthogonal set which each explain a decreasing variation in the data with increasing principal component number.  That is, the first principal component accounts for the most variability in the data while subsequent components account for less and less variability.  This intuitive picture makes sense upon examining Fig.~\ref{fig:eigendirections}.  The first four components themselves appear to represent the numbers 0, 9, 3, and 5, respectively.  Although the components are not actually those numbers, instead they capture characteristics of numbers in the dataset that are commonly shared.  Many of the digits share features with 9, 3, and 5, for example, like their openings on the lefthand side of the digit and the solid vertical line on the righthand side of the digit.
 
 \subsection*{1.4: Visualization and Reconstruction}
-
 \subsubsection*{1.4.1}
 Here, I choose 6 unique digits from the MNIST training set and plot them in Fig.~\ref{fig:mnist_digits}.  I annotate each digit's image with its label in the lower-righthand corner.  I chose 6 digits instead of 5 for symmetry's sake.
 \begin{figure}[H]
@@ -186,37 +164,31 @@ Here, I choose 6 unique digits from the MNIST training set and plot them in Fig.
 \subsubsection*{1.4.2}
 
 Now I perform PCA on the MNIST training set keeping the first 100 principal components.  Using this fit and the same digits displayed in Fig.~\ref{fig:mnist_digits}, I reconstruct the digits using 2, 5, 10, 20, 50, and 100 principal components using the reconstruction $X_{recon} = Xvv^T$.  The reconstructions are displayed in Fig.~\ref{fig:recon_5}, Fig.~\ref{fig:recon_3}, Fig.~\ref{fig:recon_9}, Fig.~\ref{fig:recon_1}, Fig.~\ref{fig:recon_2}, and Fig.~\ref{fig:recon_4}.  For each reconstructed image using $k$ principal components, $k$ is shown in red in the lower-righthand corner.
-
-\begin{figure}[H]
+\begin{figure}[!ht]
 	\includegraphics[width=\columnwidth]{5_recon_mnist.pdf}
     \caption{Reconstruction of a number 5 from the MNIST data set (see Fig.~\ref{fig:mnist_digits} using $k \in [2,5,10,20,50,100]$ principal components where the given $k$ is denoted in red in the lower-righthand corner of the respective subplot.}
     \label{fig:recon_5}
 \end{figure}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{3_recon_mnist.pdf}
     \caption{Reconstruction of a number 3 from the MNIST data set (see Fig.~\ref{fig:mnist_digits}) using $k \in [2,5,10,20,50,100]$ principal components where the given $k$ is denoted in red in the lower-righthand corner of the respective subplot.}
     \label{fig:recon_3}
 \end{figure}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{9_recon_mnist.pdf}
     \caption{Reconstruction of a number 9 from the MNIST data set (see Fig.~\ref{fig:mnist_digits}) using $k \in [2,5,10,20,50,100]$ principal components where the given $k$ is denoted in red in the lower-righthand corner of the respective subplot.}
     \label{fig:recon_9}
 \end{figure}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{1_recon_mnist.pdf}
     \caption{Reconstruction of a number 1 from the MNIST data set (see Fig.~\ref{fig:mnist_digits}) using $k \in [2,5,10,20,50,100]$ principal components where the given $k$ is denoted in red in the lower-righthand corner of the respective subplot.}
     \label{fig:recon_1}
 \end{figure}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{2_recon_mnist.pdf}
     \caption{Reconstruction of a number 2 from the MNIST data set (see Fig.~\ref{fig:mnist_digits}) using $k \in [2,5,10,20,50,100]$ principal components where the given $k$ is denoted in red in the lower-righthand corner of the respective subplot.}
     \label{fig:recon_2}
 \end{figure}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{4_recon_mnist.pdf}
     \caption{Reconstruction of a number 4 from the MNIST data set (see Fig.~\ref{fig:mnist_digits}) using $k \in [2,5,10,20,50,100]$ principal components where the given $k$ is denoted in red in the lower-righthand corner of the respective subplot.}
@@ -224,12 +196,11 @@ Now I perform PCA on the MNIST training set keeping the first 100 principal comp
 \end{figure}
 
 \subsubsection*{1.4.3}
-
 Broadly, the images reconstructed using at least $k = 20$ principal components appear to be a good, albeit grainy, approximation of the true image.  Some images, in particular the reconstructed 9 and 5, are decently approximated using 10 principal components.  Other digits that have large scatter in how they are drawn, such as 4s, require more principal components to adequately approximate the true image.  All digits reconstructed with at least 50 principal components are good approximations of the original images.  As expected, the more principal components used, the better the approximation becomes since as $k \rightarrow d$, we expect the reconstruction to become equal to the original $X$.
 
 \section*{2: Let's get to state of the art of MNIST!}
 
-In this section, I use one-against least-squares classification to attempt to get to ``state of the art" on the MNIST dataset.  The code used to solve this question is in the following attached files: {\tt hw3$\_$2.py} in the {\tt HW3} directory and {\tt pca/pca.py, regression/regression$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py, optimization/gradient$\_$descent.py, kernel/kernel.py} all in the {\tt DML} directory.
+In this section, I use one-against least-squares classification to attempt to get to ``state of the art" on the MNIST dataset.  The code used to solve this question is in the following attached files: {\tt hw3$\_$2.py, hw3$\_$2.2.py, hw3$\_$2.4.py} in the {\tt HW3} directory and {\tt pca/pca.py, regression/regression$\_$utils.py, classification$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py, optimization/gradient$\_$descent.py, kernel/kernel.py} all in the {\tt DML} directory.
 
 \subsection*{2.1 Least Squares}
 
@@ -243,35 +214,30 @@ Since the transformed training data matrix was so large, I used mini-batch SGD w
 
 \subsubsection*{2.1.1}
 
-I used a learning rate $\eta = 3 \times 10^{-5}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 3 \times 10^{-5}$.  I used a mini-batch size of 100 and a kernel bandwidth of 780 computed using the scheme described above.
+I used a learning rate $\eta = 3 \times 10^{-5}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 3 \times 10^{-5}$.  I used a mini-batch size of 10 and a kernel bandwidth of 780 computed using the scheme described above.
 
 \subsubsection*{2.1.2}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{pca_square_loss.pdf}
-    \caption{Mean square loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$. Note that the curves for the training and testing errors overlap.}
+    \caption{Mean square loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ (train, test) and $\bar{w}_{\tau}$ (avg train, avg test).}
     \label{fig:pca_square_loss}
 \end{figure}
 
-TODO description
+After the first iteration, both the training and testing losses drop dramatically and then slowly converge over the last iterations.  Both the average training and test losses computing with the average weight vector over the epoch, $\bar{w}_{\tau}$ and $\bar{w}_0$, perform slightly better than their unaveraged counterparts.  As expected, the training loss is lower than the testing loss for all epochs.
 
 \subsubsection*{2.1.3}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{pca_01_loss_masked.pdf}
     \caption{0/1 loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$ computed after the testing loss dipped below $5\%$.}
     \label{fig:pca_01_loss_masked}
 \end{figure}
-
-TODO description
+As before, all 0/1 losses drop dramatically, well below $5\%$, after the first pass through the training set.  From there on, they gradually converge with the testing loss ending up at about $1.6\%$.  Interestingly, the averaged weight 0/1 losses for both the training and testing sets only start to perform as well as the un-averaged weight losses near the final iterations when the solution did not vary too much.
 
 \subsubsection*{2.1.4}
-
-The final training squared loss and 0/1 loss are 0.0584 and 0.0029, respectively.  The total number of mistakes made on the training set of the final point are 171.  The same values computed using $\bar{w}_{\tau}$ are 0.0584, 0.0029, and 171.
+The final training squared loss and 0/1 loss are 0.0584 and 0.0029, respectively.  The total number of mistakes made on the training set of the final point are 171.  The same values computed using the weights averaged over the last epoch, $\bar{w}_{\tau}$, are 0.0584, 0.0029, and 171, respectively.
 
 \subsubsection*{2.1.5}
-
-The final testing squared loss and 0/1 loss are 0.0912 and 0.016, respectively.  The total number of mistakes made on the testing set of the final point are 160.  The same values computed using $\bar{w}_{\tau}$ are 0.0912, 0.0161, and 161.
+The final testing squared loss and 0/1 loss are 0.0912 and 0.016, respectively.  The total number of mistakes made on the testing set of the final point are 160.  The same values computed using the weights averaged over the last epoch, $\bar{w}_{\tau}$, are 0.0912, 0.0161, and 161, respectively.
 
 \subsection*{2.2: EXTRA CREDIT: Softmax Classification}
 
@@ -321,14 +287,12 @@ for $y \in [-1,1]$.
 
 \subsection*{3.1}
 
-I can show that a function is convex if it is lower-bounded by its gradient (or subgradient, more generally).  Here, I will examine the $y = 1$ case since the $y = -1$ case proceeds analogously.   For the $w^Tx > 1$ case, Eqn.~\ref{eqn:hinge_loss} gives 0.  The gradient with respect to $w$ in this regime is 0 and lower-bounds then function.  When $w^Tx < 1, w^Tx \neq 0$, the gradient with respect to $w$ in this regime is $X$.  Since this is linear and $w^TX$, is linear with $w$, its gradient lower bounds it.  Finally when $w^Tx = 1$, the hinge point, the derivative is undefined so instead I use a subgradient.  For the subgradient, it can be anything tangent line with slope between $[0,X]$, so I will use 0 for simplicity.  This too lower bounds the function.  Since the function is lower-bounded by its (sub)gradient at all points, it is convex.  A similar argument applies for the $y = -1$ case.
+I can show that a function is convex if it is lower-bounded by its gradient (or subgradient, more generally).  Here, I will examine the $y = 1$ case since the $y = -1$ case proceeds analogously.   For the $w^Tx > 1$ case, Eqn.~\ref{eqn:hinge_loss} gives 0.  The gradient with respect to $w$ in this regime is 0 and lower-bounds then function.  When $w^Tx < 1, w^Tx \neq 0$, the gradient with respect to $w$ in this regime is $-X$.  Since this is linear and $w^TX$ is linear with $w$, its gradient lower bounds it.  Finally when $w^Tx = 1$, the hinge point, the derivative is undefined so instead I use a subgradient.  For the subgradient, it can be anything tangent line with slope between $[-X,0]$, so I will use 0 for simplicity.  This too lower bounds the function.  Since the function is lower-bounded by its (sub)gradient at all points, it is convex.  A similar argument applies for the $y = -1$ case.
 
 \subsection*{3.2}
-
-For a correct prediction, $y_i = \text{sgn}(w^Tx_i)$ holds.  Here, I will just consider the $y = 1$ case for simplicity since the $y = -1$ case proceeds analogously.  Here, the hinge loss is given as $HL = \max(0,1-w^TX)$.  Since $w^TX < 0$ cannot hold when $y_i = 1 = \text{sgn}(w^Tx_i)$, I will not consider it.  If $w^TX = 0$, then the hinge loss is 1.  If $w^TX \geq 1$, the hinge loss is 0.  Therefore for correct predictions, the hinge loss ranges from $HL \in [0,1]$.
+For a correct prediction, $y_i = \text{sgn}(w^Tx_i)$ holds.  Here, I will just consider the $y = 1$ case for simplicity since the $y = -1$ case proceeds analogously.  Here, the hinge loss is given as $HL = \max(0,1-w^TX)$.  Since $w^TX < 0$ cannot occur when $y_i = 1 = \text{sgn}(w^Tx_i)$, I will not consider it.  If $w^TX = 0$, then the hinge loss is 1.  If $w^TX \geq 1$, the hinge loss is 0.  Therefore for correct predictions, the hinge loss ranges from $HL \in [0,1]$.
 
 \subsection*{3.3}
-
 Define the mistake bound as
 \begin{equation} \label{eqn:mistake_bound}
 \frac{1}{n}M(w) \leq \frac{1}{n}\sum_{i = 1}^n \max(0, 1 - y_i w^T x_i)
@@ -337,7 +301,6 @@ where in my proof I will ignore the $1/n$ factor since it is merely a normalizat
 \begin{equation} \label{eqn:mb} 
 M(w) \leq \sum_{w^Tx_i \in \text{correct}} \max(0, 1 - y_i w^T x_i) + \sum_{w^Tx_i \in \text{incorrect}} \max(0, 1 - y_i w^T x_i).
 \end{equation}
-
 The sum over the correct predictions will always be $\geq 0$ since in the above question I showed that the hinge loss ranges from $[0,1]$ for correct predictions.  The sum over incorrect predictions will be at least to $M(w)$ since for the hinge loss for an incorrect prediction, the best you can do is 1 when $w^Tx = 0$.  Therefore if all your all your incorrect predictions are these ``best" incorrect predictions, the sum over all incorrect predictions will be $M(w)$, giving you the stated lower bound and proving Eqn.~\ref{eqn:mistake_bound}.  
 
 \section*{4: Fitting an SVM classifier by hand}
@@ -345,31 +308,28 @@ The sum over the correct predictions will always be $\geq 0$ since in the above 
 The code used for this question is given in {\tt hw3$\_$4.py} in the {\tt DML} directory.  For this section, I applied the $\phi(x) = (1, \sqrt{2}x, x^2)^T$ transformation to the two one dimensional samples.
 
 \subsection*{4.1}
-
 Since the optimal vector $\hat{w}$ is perpendicular to the decision boundary, I need to find a vector parallel to any line which is perpendicular to the decision boundary.  Here I only deal with two points, so the decision boundary is readily identified as the plane going through the midpoint between the two points.  A vector pointing to the midpoint of the two points will then be perpendicular to the decision boundary and parallel to $\hat{w}$.  I can calculate that point as 
 \begin{equation}
 \begin{split}
-& \vec{\phi}(x_2) - \vec{\phi}(x_1) \\
-& = (1,2,2) - (1,0,0) \\
-& = (0,1,1) = w
+& (\vec{\phi}(x_2) - \vec{\phi}(x_1))/2 \\
+& = ((1,2,2) - (1,0,0))/2 \\
+& = (0,1,1) = w.
 \end{split}
 \end{equation}
 
 \subsection*{4.2}
-
 The margin is the distance from one point to the decision boundary.  Since the decision boundary is the midpoint between the two points, the margin will be half the distance between the two points and is given by
 \begin{equation}
 \gamma = \frac{1}{2}\sqrt{(1-1)^2 + (2-0)^2 + (2-0)^2} = \sqrt{8}/2 = \sqrt{2}.
 \end{equation}
 
 \subsection*{4.3}
-
 Given that the margin is given by $\gamma = 1/||w||$ and that $\hat{w}$ is parallel to $w$ by design, I can solve for $\hat{w}$ as follows
 \begin{equation}
 \begin{split}
 & \gamma = 1/||w|| \\
 & 1/\sqrt{2} = \sqrt{2c^2} \\ 
-& 1/2 \ 2c^2 \\
+& 1/2 = 2c^2 \\
 & 1/4 = c^2 \\
 & 1/2 = c 
 \end{split}
@@ -377,7 +337,6 @@ Given that the margin is given by $\gamma = 1/||w||$ and that $\hat{w}$ is paral
 where $\hat{w} = (0,c,c) = (0,1/2,1/2)$.
 
 \subsection*{4.4}
-
 I compress the tight inequality into an equality to satisfy equations 1-3.  Inserting $\hat{w}$ into equation 2 gives
 \begin{equation}
 \begin{split}
@@ -399,7 +358,6 @@ and similarly equation 3 becomes
 Therefore, $w_0 = -1$.
 
 \subsection*{4.5}
-
 If $f(x) = w_0 + \hat{w}^T \phi(x)$, I can write
 \begin{equation} \label{eqn:f}
 f(x) = \frac{1}{2}x^2 + \frac{\sqrt{2}}{2}x - 1.
@@ -429,41 +387,32 @@ which assigns a point $X_i$ to the closest cluster center $\mu_k$ according to t
 where there are $N_k$ samples in the $kth$ cluster.  I call the algorithm converged once all the samples' labels no longer change.
 
 \subsection*{5.1: Run the algorithm}
-
 I ran the K-means algorithm with $k = 16$ on the full MNIST training set.  As stated above, I initialized my centers $\mu_k$ using $k$ random samples from the training set.
 
 \subsubsection*{5.1.1a}
-
 In Fig.~\ref{fig:k_16_rec_err}, I plot the squared reconstruction error versus iteration number for $k = 16$ clusters.  I compute the squared reconstruction error as
 \begin{equation} \label{eqn:sq_rec_err}
 \text{SRE} = \frac{1}{N} \sum_{j = 1}^k\sum_{X_i \in \mu_j} || X_i - \mu_j ||_2^2
 \end{equation}
 where $\mu_j$ is the cluster $X_i$ belongs to.
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{k_16_rec_err.pdf}
     \caption{Squared reconstruction error versus iteration number for $k = 16$ clusters.}
     \label{fig:k_16_rec_err}
 \end{figure}
-
 The mean squared reconstruction error reaches near its local minimum after about 10 iterations and does not change significantly over the next 60 iterations it takes the algorithm to converge.  The final 60 or so iterations likely involved just a few points flipping labels, explaining why the error did not change appreciably.
 
 \subsubsection*{5.1.1b}
-
 Let us define the number of assignments for a mean to be the number of samples assigned to that mean's cluster.  In Fig.~\ref{fig:k_16_num_assignments}, I plot the number of assignments per cluster for $k = 16$ clusters ordered in descending order.
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{k_16_num_assignments.pdf}
     \caption{Number of assignments per cluster for $k = 16$ clusters ordered in descending order.}
     \label{fig:k_16_num_assignments}
 \end{figure}
-
-As can be seen in the above figure, cluster 10 contains the most members at about 5,500 while cluster 3 contains the least with around 1,750 members.  I note that cluster number does not in general equal the MNIST digit label.
+As can be seen in the above figure, cluster 9 contains the most members at about 5,000 while cluster 1 contains the least with around 2,700 members.  I note that cluster number does not in general equal the MNIST digit label.
 
 \subsubsection*{5.1.1c}
-
 In Fig.~\ref{fig:k_16_means}, I visualize the $k = 16$ centers my K-means algorithm learned on the MNIST training set in descending order for number of assignments.
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{k_16_means.pdf}
     \caption{Visualization of the $k = 16$ centers orders by number of members.  The number of members for each center is shown in each respective center's subplot in red in the lower-righthand corner.}
@@ -471,56 +420,42 @@ In Fig.~\ref{fig:k_16_means}, I visualize the $k = 16$ centers my K-means algori
 \end{figure}
 
 \subsubsection*{5.1.2}
-
-For my $k = 16$ cluster visualization, I find it interesting that all 10 digits are not represented amongst the 16 cluster centers.  Instead, there appears to be two classes of clusters: some that are different rotations or transformations of a given digit or some that are amalgamations of similar digits.  For example, there are several ``6"s in the clusters that are rotations or transformations of a 6, and similarly for 1s and 0s.  On the other hand, some cluster centers look like combinations of digits, such as combinations of 3s and 5s and combinations of 4s and 9s.  These behaviors make sense because of the inherent variance in how people write digits.  Not all digits are written in the same orientation or with the same curvature at certain parts of the digit causing some to look like others.
-
-I ran the K-means algorithm with $k = 250$ on the full MNIST training set.  As stated above, I initialized my centers $\mu_k$ using $k$ random samples from the training set.
+For my $k = 16$ cluster visualization, I find it interesting that there appears to be two classes of clusters: some that are different rotations or transformations of a given digit or some that are amalgamations of similar digits.  For example, there are several ``6"s in the clusters that are rotations or transformations of a 6, and similarly for 1s and 0s.  On the other hand, some cluster centers look like combinations of digits, such as combinations of 3s and 5s and combinations of 4s and 9s.  These behaviors make sense because of the inherent variance in how people write digits.  Not all digits are written in the same orientation or with the same curvature at certain parts of the digit causing some to look like others.
 
 \subsubsection*{5.1.2a}
-
-In Fig.~\ref{fig:k_250_rec_err}, I plot the squared reconstruction error versus iteration number for $k = 250$ clusters.  I compute the squared reconstruction error as in Eqn.~\ref{eqn:sq_rec_err}.
+I ran the K-means algorithm with $k = 250$ on the full MNIST training set.  As stated above, I initialized my centers $\mu_k$ using $k$ random samples from the training set.  In Fig.~\ref{fig:k_250_rec_err}, I plot the squared reconstruction error versus iteration number for $k = 250$ clusters.  I compute the squared reconstruction error as in Eqn.~\ref{eqn:sq_rec_err}.
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{k_250_rec_err.pdf}
     \caption{Squared reconstruction error versus iteration number for $k = 250$ clusters.}
     \label{fig:k_250_rec_err}
 \end{figure}
-
 The mean squared reconstruction error reaches near its local minimum after about 5 iterations and does not change significantly over the next 125 iterations it takes the algorithm to converge.  The final 125 or so iterations likely involved just a few points flipping labels, explaining why the error did not change appreciably and slowly decreased.
 
 \subsubsection*{5.1.2b}
-
 In Fig.~\ref{fig:k_250_num_assignments}, I plot the number of assignments per cluster for $k = 250$ clusters ordered in descending order.
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{k_250_num_assignments.pdf}
     \caption{Number of assignments per cluster for $k = 250$ clusters ordered in descending order.}
     \label{fig:k_250_num_assignments}
 \end{figure}
-
 Interestingly, there appears to be 3 regimes that each cluster center falls into.  The first regime involves the first 30 centers or so in which the number of assignments rapidly drops off, indicating that perhaps a smaller number of cluster centers really matter in terms of clustering, perhaps analogous to how PCA picks out the most important ``directions" in a dataset.  The next regime is a smooth, linear decrease in assignments due to clusters have less and less importance.  The final regime is a steep decrease in assignments and corresponds to the least important clusters.
 
 \subsubsection*{5.1.2c}
-
 In Fig.~\ref{fig:k_250_means}, I visualize the top 16 from my $k = 250$ centers my K-means algorithm learned on the MNIST training set in descending order for number of assignments.
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{k_250_means.pdf}
     \caption{Visualization of the $k = 250$ centers orders by number of members.  The number of members for each center is shown in each respective center's subplot in red in the lower-righthand corner.}
     \label{fig:k_250_means}
 \end{figure}
-
 From the figure it appears that the algorithm picked out various representations of a ``1'' as some of the most important cluster centers!  What I believe is going on is that a dominant feature in the MNIST digits is the right hand side of the digits.  Digits like 1, 3, 4, 5, 7, and 9 all have a more or less linear right hand side that, depending on who writes it, can slant in various orientations.  What this learning procedure did is identify, more or less, how certain digits tended to slope in some ways.  For example, one of the ``1''s is sloped in such a way that it looks like the base of a 7, so perhaps many 7s were attributed to that cluster.
 
 \subsection*{5.2: Classification with K-means}
-
 In this section I used my $k = 16$ and $k = 250$ K-means algorithms learned on the entire MNIST training set to classify digits.  I classified a digit by finding a label for each center based on the most frequent digit assigned to it.  For each sample, I found its closest center according to the squared Euclidean distance and used the label for that center.
 
 \subsubsection*{5.2.1}
-
-My $k = 16$ cluster K-means fit achieved 0/1 loss of 0.333 and 0.327 on the training and testing sets, respectfully.  Interestingly, the testing error was lower than the training error but I note that there was appreciable scatter between 0/1 losses for different fits using $k = 16$ on the training set.
+My $k = 16$ cluster K-means fit achieved 0/1 loss of 0.333 and 0.327 on the training and testing sets, respectfully.  Interestingly, the testing error was lower than the training error but I note that there was appreciable scatter between 0/1 losses for different fits using $k = 16$ on the training set and both 0/1 losses were quite high.
 
 \subsubsection*{5.2.2}
-
 My $k = 250$ cluster K-means fit achieved 0/1 loss of 0.089 and 0.084 on the training and testing sets, respectfully.  Interestingly, the testing error was lower than the training error but I note that there was appreciable scatter between 0/1 losses for different fits using $k = 250$ on the training set.  The 0/1 loss in this case is roughly a factor of 3 lower than for the $k = 16$ case.  This likely occurred because the additional clusters can help distinguish between differently drawn digits of the same class, such as 4s written differently by different people.
 
 \end{document}

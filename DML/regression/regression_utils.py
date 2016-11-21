@@ -292,7 +292,11 @@ def naive_nn_layer(X, k=10000, v=None):
 
 def neural_net(x, X, v, sigma=1.0):
     """
-    Random neural network layer transformation.
+    Random neural network layer transformation using a d x k matrix v whose
+    elements are sampled from the standard normal distribution.  The jth element
+    for a sample of x will be of the form
+
+    h_j(x) = max(X.dot(v), 0)
 
     Parameters
     ----------
@@ -310,7 +314,9 @@ def neural_net(x, X, v, sigma=1.0):
     K : array (samples x n)
         kernel transformation
     """
-    return x.dot(v)
+    tmp = x.dot(v)
+    tmp[tmp < 0.0] = 0.0
+    return tmp
 # end function
 
 

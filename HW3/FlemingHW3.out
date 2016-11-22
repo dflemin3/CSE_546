@@ -9,17 +9,18 @@
 \BOOKMARK [1][-]{section*.21}{2: Let's get to state of the art of MNIST!}{}% 9
 \BOOKMARK [2][-]{section*.22}{2.1 Least Squares}{section*.21}% 10
 \BOOKMARK [2][-]{section*.28}{2.2: EXTRA CREDIT: Softmax Classification}{section*.21}% 11
-\BOOKMARK [1][-]{section*.34}{3: SVMs: Hinge loss and mistake bounds}{}% 12
-\BOOKMARK [2][-]{section*.35}{3.1}{section*.34}% 13
-\BOOKMARK [2][-]{section*.36}{3.2}{section*.34}% 14
-\BOOKMARK [2][-]{section*.37}{3.3}{section*.34}% 15
-\BOOKMARK [1][-]{section*.38}{4: Fitting an SVM classifier by hand}{}% 16
-\BOOKMARK [2][-]{section*.39}{4.1}{section*.38}% 17
-\BOOKMARK [2][-]{section*.40}{4.2}{section*.38}% 18
-\BOOKMARK [2][-]{section*.41}{4.3}{section*.38}% 19
-\BOOKMARK [2][-]{section*.42}{4.4}{section*.38}% 20
-\BOOKMARK [2][-]{section*.43}{4.5}{section*.38}% 21
-\BOOKMARK [1][-]{section*.44}{5: K-Means}{}% 22
-\BOOKMARK [2][-]{section*.45}{5.0: K-Means Algorithm Implementation}{section*.44}% 23
-\BOOKMARK [2][-]{section*.46}{5.1: Run the algorithm}{section*.44}% 24
-\BOOKMARK [2][-]{section*.54}{5.2: Classification with K-means}{section*.44}% 25
+\BOOKMARK [2][-]{section*.34}{2.3: EXTRA CREDIT: Back to those random Neural Net Features}{section*.21}% 12
+\BOOKMARK [1][-]{section*.40}{3: SVMs: Hinge loss and mistake bounds}{}% 13
+\BOOKMARK [2][-]{section*.41}{3.1}{section*.40}% 14
+\BOOKMARK [2][-]{section*.42}{3.2}{section*.40}% 15
+\BOOKMARK [2][-]{section*.43}{3.3}{section*.40}% 16
+\BOOKMARK [1][-]{section*.44}{4: Fitting an SVM classifier by hand}{}% 17
+\BOOKMARK [2][-]{section*.45}{4.1}{section*.44}% 18
+\BOOKMARK [2][-]{section*.46}{4.2}{section*.44}% 19
+\BOOKMARK [2][-]{section*.47}{4.3}{section*.44}% 20
+\BOOKMARK [2][-]{section*.48}{4.4}{section*.44}% 21
+\BOOKMARK [2][-]{section*.49}{4.5}{section*.44}% 22
+\BOOKMARK [1][-]{section*.50}{5: K-Means}{}% 23
+\BOOKMARK [2][-]{section*.51}{5.0: K-Means Algorithm Implementation}{section*.50}% 24
+\BOOKMARK [2][-]{section*.52}{5.1: Run the algorithm}{section*.50}% 25
+\BOOKMARK [2][-]{section*.60}{5.2: Classification with K-means}{section*.50}% 26

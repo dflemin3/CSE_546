@@ -200,7 +200,7 @@ Broadly, the images reconstructed using at least $k = 20$ principal components a
 
 \section*{2: Let's get to state of the art of MNIST!}
 
-In this section, I use one-against least-squares classification to attempt to get to ``state of the art" on the MNIST dataset.  The code used to solve this question is in the following attached files: {\tt hw3$\_$2.py, hw3$\_$2.2.py, hw3$\_$2.4.py} in the {\tt HW3} directory and {\tt pca/pca.py, regression/regression$\_$utils.py, classification$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py, optimization/gradient$\_$descent.py, kernel/kernel.py} all in the {\tt DML} directory.
+In this section, I use one-against least-squares classification to attempt to get to ``state of the art" on the MNIST dataset.  The code used to solve this question is in the following attached files: {\tt hw3$\_$2.py, hw3$\_$2.2.py, hw3$\_$2.3.py} in the {\tt HW3} directory and {\tt pca/pca.py, regression/regression$\_$utils.py, classification$\_$utils.py, validation/validation.py, data$\_$processing/mnist$\_$utils.py, optimization/gradient$\_$descent.py, kernel/kernel.py} all in the {\tt DML} directory.
 
 \subsection*{2.1 Least Squares}
 
@@ -243,35 +243,60 @@ The final testing squared loss and 0/1 loss are 0.0912 and 0.016, respectively. 
 
 \subsubsection*{2.2.1}
 
-I used a learning rate $\eta = 2 \times 10^{-5}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 2 \times 10^{-5}$.  I used a mini-batch size of 100 and a kernel bandwidth of TODO computing using the scheme described above.
+I used a learning rate $\eta = 1 \times 10^{-4}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 1 \times 10^{-4}$.  I used a mini-batch size of 100 and a kernel bandwidth of 780 computing using the scheme described above.  In order to prevent my weights from becoming too large and causing the solution to diverge, I used a regularization constant of $\lambda = 1$.  I empirically found that larger values yielded a worse solution and smaller values did not provide enough regularization to keep the solution stable.
 
 \subsubsection*{2.2.2}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{logistic_log_loss.pdf}
     \caption{Mean log loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$.}
     \label{fig:logistic_log_loss}
 \end{figure}
-
 TODO description
 
 \subsubsection*{2.2.3}
-
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{logistic_01_loss_masked.pdf}
     \caption{0/1 loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$ computed after the testing loss dipped below $5\%$.}
     \label{fig:logistic_01_loss_masked}
 \end{figure}
-
 TODO description
 
 \subsubsection*{2.2.4}
-
-The final training log loss and 0/1 loss are TODO and TODO, respectively.  The total number of mistakes made on the training set of the final point are TODO.  The same values computed using $\bar{w}_{\tau}$ are TODO, TODO, and TODO.
+The final training log loss and 0/1 loss are 0.0458 and 0.0035, respectively.  The total number of mistakes made on the training set of the final point are 212.  The same values computed using $\bar{w}_{\tau}$ are 0.0458, 0.0035, and 212, respectively.
 
 \subsubsection*{2.2.5}
+The final testing log loss and 0/1 loss are 0.0922 and 0.0224, respectively.  The total number of mistakes made on the testing set of the final point are 224.  The same values computed using $\bar{w}_{\tau}$ are 0.0922, 0.0225, and 225, respectively.
 
-The final testing log loss and 0/1 loss are TODO and TODO, respectively.  The total number of mistakes made on the testing set of the final point are TODO.  The same values computed using $\bar{w}_{\tau}$ are TODO, TODO, and TODO.
+\subsection*{2.3: EXTRA CREDIT: Back to those random Neural Net Features}
+
+\subsubsection*{2.3.1}
+
+For this question, I instead mapped the PCA-reduced image using the neural net features computed using the same outline given in previous homework:
+\begin{equation}
+h_j(x) = \max(v \cdot x, 0)
+\end{equation}
+where there are $k = 60,000$ $h_j$ in each transformed image.  I used a learning rate $\eta = 3 \times 10^{-11}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 3 \times 10^{-11}$.  I used a mini-batch size of 10 and a kernel bandwidth of 780 computing using the scheme described above. 
+\subsubsection*{2.3.2}
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{nn_square_loss.pdf}
+    \caption{Mean square loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$.}
+    \label{fig:nn_square_loss}
+\end{figure}
+TODO description
+
+\subsubsection*{2.3.3}
+\begin{figure}[H]
+	\includegraphics[width=\columnwidth]{nn_01_loss_masked.pdf}
+    \caption{0/1 loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$ computed after the testing loss dipped below $5\%$.}
+    \label{fig:nn_01_loss_masked}
+\end{figure}
+TODO description
+
+\subsubsection*{2.3.4}
+The final training square loss and 0/1 loss are 0.0665 and 0.0111, respectively.  The total number of mistakes made on the training set of the final point are 665.  The same values computed using $\bar{w}_{\tau}$ are 0.0661, 0.0112, and 672, respectively.
+
+\subsubsection*{2.3.5}
+The final testing square loss and 0/1 loss are 0.0837 and 0.0185, respectively.  The total number of mistakes made on the testing set of the final point are 185.  The same values computed using $\bar{w}_{\tau}$ are 0.0837, 0.0187, and 187, respectively.
 
 \section*{3: SVMs: Hinge loss and mistake bounds}
 

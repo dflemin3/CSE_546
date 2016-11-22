@@ -69,7 +69,7 @@ eps = 1.0e-4
 batchsize = 100
 sparse = False
 Nclass = 10
-cache_name = "sgd_nn_best.npz"
+cache_name = "nn_best.npz"
 
 
 # Only run if cache doesn't exist

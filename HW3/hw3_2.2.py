@@ -55,6 +55,7 @@ PCA.fit(X_train)
 X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
+"""
 cut = 5000
 X_train = X_train[:cut]
 y_train = y_train[:cut]
@@ -62,9 +63,10 @@ y_train_true = y_train_true[:cut]
 X_test = X_test[:cut]
 y_test = y_test[:cut]
 y_test_true = y_test_true[:cut]
+"""
 
 # Estimate kernel bandwidth
-sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 2.0)
+sigma = kernel.estimate_bandwidth(X_train, num = 100, scale = 3.0)
 print("Estimted kernel bandwidth: %lf" % sigma)
 
 # Generate transformation matrix v
@@ -76,7 +78,7 @@ eps = 1.0e-3
 batchsize = 100
 sparse = False
 Nclass = 10
-cache_name = "tmp.npz"
+cache_name = "logistic_best.npz"
 
 # Only run if cache doesn't exist
 if not os.path.exists(cache_name):

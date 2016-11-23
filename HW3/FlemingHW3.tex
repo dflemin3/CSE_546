@@ -25,9 +25,7 @@ Please note that a copy of all the code I wrote to answer the questions in this 
 
 Overall, my code is structured as follows:  There are three main directories included in my submission: {\tt DML}, {\tt Data} and {\tt HW3}. {\tt HW3} contains all the scripts used to run my analysis.  For example to reproduce the answer for Question 1.2, one would run {\tt python hw3$\_1.2.py$}.  All scripts have relative file paths so the code should run and have detailed comments to describe functionality.  In addition, the scripts have flags near the top to control functionality.  By default, I set all flags to true so the script performs the entire analysis and plotting.  The {\tt Data} directory contains both the MNIST dataset. The grader should be able to run my homework scripts without altering this directory.  
 
-The {\tt DML} directory contains all the auxiliary files used to do the computations in the homework scripts and has a logical hierarchy.  For example, the directory {\tt optimization} contains the file {\tt gradient$\_$descent.py} while contains both my batch gradient descent and stochastic gradient descent implementations.  The directory {\tt data$\_$processing} contains the script {\tt mnist$\_$utils.py} which contains my functions used to load and work with the MNIST data.  The directory {\tt classification} contains the file {\tt classifier$\_$utils.py} which contains all things related to binary and softmax classification including the gradients for each respective method for use with a gradient descent algorithm.  The {\tt validation} subdirectory contains {\tt validation.py}.  This file contains all my loss functions such as 0/1 loss and also my implementations for regularization paths for both linear regression and logistic and softmax classification using gradient descent.  Finally, the {\tt regression} directory contains all utilities for a normal or multi-class regression.  In particular, this directory contains the file where my ridge regression implementation lives, {\tt ridge$\_$utils.py}. 
-
-In each section, I try to be explicit with what files I used to perform the computation including the path from the {\tt DML} directory for ease of grading.
+The {\tt DML} directory contains all the auxiliary files used to do the computations in the homework scripts and has a logical hierarchy.  For example, the directory {\tt optimization} contains the file {\tt gradient$\_$descent.py} while contains both my batch gradient descent and stochastic gradient descent implementations.  The directory {\tt data$\_$processing} contains the script {\tt mnist$\_$utils.py} which contains my functions used to load and work with the MNIST data.  The directory {\tt classification} contains the file {\tt classifier$\_$utils.py} which contains all things related to binary and softmax classification including the gradients for each respective method for use with a gradient descent algorithm.  The {\tt validation} subdirectory contains {\tt validation.py}.  This file contains all my loss functions such as 0/1 loss and also my implementations for regularization paths for both linear regression and logistic and softmax classification using gradient descent.  Finally, the {\tt regression} directory contains all utilities for a normal or multi-class regression.  In each section, I try to be explicit with what files I used to perform the computation including the path from the {\tt DML} directory for ease of grading.
 
 %%% QUESTION 0  %%%
 \section*{Question 0: Collaborators}
@@ -210,7 +208,7 @@ h_j(x) = \sin \left( \frac{v_i \cdot x}{\sigma} \right)
 \end{equation}
 where $h_j(x)$ is the $jth$ feature out of $n$ of the transformed image $x$.  The transformation matrix $v$ is composed of $k = 60,000$ columns where each coordinate of the $k$ columns are independently sampled from the standard normal distribution.  The same matrix $v$ was used to transform both the training and testing sets.  I selected the bandwidth $\sigma = 780$ by taking the mean of the pairwise distance of about 100 samples and scaling that value by 3.  I explored several other values for $\sigma$ and found no improvement in performance.  
 
-Since the transformed training data matrix was so large, I used mini-batch SGD with a mini-batch size of 10 for all gradient calculations.  Each epoch, or each complete pass through a randomly permuted training set, I performed 60,000/10 = 6,000 mini-batch gradient updates.  I computed the loss of the entire transformed training set and testing set (to which I applied the same transformation as the training set for consistency).  In addition over a given epoch, I averaged the weight vectors and offset terms to get $\bar{w}$ and $\bar{w}_0$ and used these to compute losses as well.  I called my algorithm converged once the mean square loss on the training set did not change by more than $0.1\%$.  I did not explicitly use regularization since the early-stopping from my learning rate decay scheme (described below) and my convergence criterion implicitly $l_2$ regularize my solution.
+Since the transformed training data matrix was so large, I used mini-batch SGD with a mini-batch size of 10 for all gradient calculations.  Each epoch, or each complete pass through a randomly permuted training set, I performed 60,000/10 = 6,000 mini-batch gradient updates.  I computed the loss of the entire transformed training set and testing set (to which I applied the same transformation as the training set for consistency).  In addition over a given epoch, I averaged the weight vectors and offset terms to get $\bar{w}$ and $\bar{w}_0$ and used these to compute losses as well.  I called my algorithm converged once the mean square loss on the training set did not change by more than $0.1\%$.  I did not explicitly use regularization since the early-stopping from my learning rate decay scheme (described below) and my convergence criterion implicitly $l_2$ regularize my solution.  I used this exact same optimization scheme for both Questions 2.2 and 2.3 (see below).
 
 \subsubsection*{2.1.1}
 
@@ -240,10 +238,10 @@ The final training squared loss and 0/1 loss are 0.0584 and 0.0029, respectively
 The final testing squared loss and 0/1 loss are 0.0912 and 0.016, respectively.  The total number of mistakes made on the testing set of the final point are 160.  The same values computed using the weights averaged over the last epoch, $\bar{w}_{\tau}$, are 0.0912, 0.0161, and 161, respectively.
 
 \subsection*{2.2: EXTRA CREDIT: Softmax Classification}
+Here, I classify the PCA-reduced MNIST digits using the same transformation and procedure using in Question 2.1 except this time I optimize the log loss and classify using the soft max scheme as done in previous assignments.
 
 \subsubsection*{2.2.1}
-
-I used a learning rate $\eta = 1 \times 10^{-4}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 1 \times 10^{-4}$.  I used a mini-batch size of 100 and a kernel bandwidth of 780 computing using the scheme described above.  In order to prevent my weights from becoming too large and causing the solution to diverge, I used a regularization constant of $\lambda = 1$.  I empirically found that larger values yielded a worse solution and smaller values did not provide enough regularization to keep the solution stable.
+I used a learning rate $\eta = 1 \times 10^{-4}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 1 \times 10^{-4}$.  I used a mini-batch size of 100 and a kernel bandwidth of 780 computing using the scheme described above.  In order to prevent my weights from becoming too large and causing the solution to diverge, I used a regularization constant of $\lambda = 1$.  I empirically found that larger values yielded a worse solution and smaller values did not provide enough regularization to keep the solution stable.  As before, I said my run was converged once the log loss stopped changing by more than $0.1\%$.
 
 \subsubsection*{2.2.2}
 \begin{figure}[H]
@@ -251,7 +249,7 @@ I used a learning rate $\eta = 1 \times 10^{-4}$ as gave the best fit.  In pract
     \caption{Mean log loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$.}
     \label{fig:logistic_log_loss}
 \end{figure}
-TODO description
+Both the training and testing log loss drop rapidly on the first iteration and then slowly converges.  As expected, the training log loss was appreciably lower than the testing log loss.  There was no significant difference between the losses computing using $w_t$ and $\bar{w}_{\tau}$.
 
 \subsubsection*{2.2.3}
 \begin{figure}[H]
@@ -259,30 +257,31 @@ TODO description
     \caption{0/1 loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$ computed after the testing loss dipped below $5\%$.}
     \label{fig:logistic_01_loss_masked}
 \end{figure}
-TODO description
+Both the training and testing 0/1 losses dropped dramatically during the first iteration with the testing loss being noticeably worse than the training loss, as expected.  Although it appears as if the training 0/1 loss could still decrease, the testing 0/1 loss curve had effectively flatten out suggesting that any further gradient steps would lead to overfitting and potentially worse testing set performance.  At later epochs, there was no appreciable difference between 0/1 losses computed with $w_t$ and $\bar{w}_{\tau}$.
 
 \subsubsection*{2.2.4}
 The final training log loss and 0/1 loss are 0.0458 and 0.0035, respectively.  The total number of mistakes made on the training set of the final point are 212.  The same values computed using $\bar{w}_{\tau}$ are 0.0458, 0.0035, and 212, respectively.
 
 \subsubsection*{2.2.5}
-The final testing log loss and 0/1 loss are 0.0922 and 0.0224, respectively.  The total number of mistakes made on the testing set of the final point are 224.  The same values computed using $\bar{w}_{\tau}$ are 0.0922, 0.0225, and 225, respectively.
+The final testing log loss and 0/1 loss are 0.0922 and 0.0224, respectively.  The total number of mistakes made on the testing set of the final point are 224.  The same values computed using $\bar{w}_{\tau}$ are 0.0922, 0.0225, and 225, respectively.  This classifier does not perform as well as the Fourier feature case in Question 2.1, but it still performs rather well.
 
 \subsection*{2.3: EXTRA CREDIT: Back to those random Neural Net Features}
-
-\subsubsection*{2.3.1}
-
 For this question, I instead mapped the PCA-reduced image using the neural net features computed using the same outline given in previous homework:
 \begin{equation}
 h_j(x) = \max(v \cdot x, 0)
 \end{equation}
-where there are $k = 60,000$ $h_j$ in each transformed image.  I used a learning rate $\eta = 3 \times 10^{-11}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 3 \times 10^{-11}$.  I used a mini-batch size of 10 and a kernel bandwidth of 780 computing using the scheme described above. 
+where there are $k = 60,000$ $h_j$ in each transformed image.  I optimized my solution using the square loss and classified using a ordinary least square ``one-against-all" classifier for 10 classes.
+
+\subsubsection*{2.3.1}
+I used a learning rate $\eta = 3 \times 10^{-11}$ as gave the best fit.  In practice in my SGD implementation at the start of each epoch, I reset $\eta = k\eta_0/N$ where $N$ is the number of samples in a batch, $k = 1/\sqrt{t}$ is a scaling constant where $t$ is the epoch number and $\eta_0 = 3 \times 10^{-11}$.  I used a mini-batch size of 10 and a kernel bandwidth of 780 computing using the scheme described above.   As before, I deemed my solution converged once the loss stopped changing by more than $0.1\%$.
+
 \subsubsection*{2.3.2}
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{nn_square_loss.pdf}
     \caption{Mean square loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$.}
     \label{fig:nn_square_loss}
 \end{figure}
-TODO description
+As shown before, the square loss rapidly drops on the first iteration and then converges slowly for both the training and testing set.  At later epochs, no appreciable difference is seen between losses computed using $w_t$ and $\bar{w}_{\tau}$.  As expected, the training loss is less than the testing set loss.
 
 \subsubsection*{2.3.3}
 \begin{figure}[H]
@@ -290,13 +289,13 @@ TODO description
     \caption{0/1 loss versus epoch for the both the MNIST training and testing sets for both the $w_t$ and $\bar{w}_{\tau}$ computed after the testing loss dipped below $5\%$.}
     \label{fig:nn_01_loss_masked}
 \end{figure}
-TODO description
+Both the training set and testing set 0/1 loss drops rapidly in the first few iterations and continues to drop.  Even though this optimization ran for many epochs and was deemed converged, it appears as if both the training and testing 0/1 loss would continue to decrease with additional epochs.  Computational time constraints prevented the continued optimization of this problem.  One interesting feature not observed in the optimization over the Fourier feature transformed datasets is the scatter in the 0/1 loss, especially for the testing loss.  The 0/1 loss curves for the Fourier features were much smoother and appeared to monotonically decrease with epoch as opposed to the more noisy solution observed here.  In cases like this, it is obvious why averaging the weight vector is useful.  Not only would it beat down the noisy solution, it can also lead to better performance.
 
 \subsubsection*{2.3.4}
 The final training square loss and 0/1 loss are 0.0665 and 0.0111, respectively.  The total number of mistakes made on the training set of the final point are 665.  The same values computed using $\bar{w}_{\tau}$ are 0.0661, 0.0112, and 672, respectively.
 
 \subsubsection*{2.3.5}
-The final testing square loss and 0/1 loss are 0.0837 and 0.0185, respectively.  The total number of mistakes made on the testing set of the final point are 185.  The same values computed using $\bar{w}_{\tau}$ are 0.0837, 0.0187, and 187, respectively.
+The final testing square loss and 0/1 loss are 0.0837 and 0.0185, respectively.  The total number of mistakes made on the testing set of the final point are 185.  The same values computed using $\bar{w}_{\tau}$ are 0.0837, 0.0187, and 187, respectively.   This classifier does not perform as well as the Fourier feature case in Question 2.1, but it still performs rather well.
 
 \section*{3: SVMs: Hinge loss and mistake bounds}
 

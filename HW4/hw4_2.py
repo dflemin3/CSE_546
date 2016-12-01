@@ -33,7 +33,7 @@ use_one_digit = False
 
 # Parameters
 eps = 2.0e-3
-eta = 2.0e-8
+eta = 1.0e-4
 
 # Load in MNIST data
 print("Loading MNIST Training data...")
@@ -45,7 +45,9 @@ X_train = X_train[:cut]
 y_train = y_train[:cut]
 
 print("Training neural network...")
-y_hat = deep.neural_net(X_train, y_train, nodes=500, activators=None, activators_prime=None,
+activators = [deep.relu,deep.sigmoid]
+activators_prime = [deep.relu_prime,deep.sigmoid_prime]
+y_hat = deep.neural_net(X_train, y_train, nodes=500, activators=activators, activators_prime=activators_prime,
                scale=1.0, eps=eps, eta=eta)
 mask = y_hat > 0.5
 y_hat[mask] = 1

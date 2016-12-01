@@ -33,19 +33,24 @@ use_one_digit = False
 
 # Parameters
 eps = 2.0e-3
-eta = 2.0e-7
+eta = 2.0e-8
 
 # Load in MNIST data
 print("Loading MNIST Training data...")
 X_train, y_train = mu.load_mnist(dataset='testing')
 y_train = mu.mnist_filter(y_train)
 
-cut = -1
+cut = 2000
 X_train = X_train[:cut]
 y_train = y_train[:cut]
 
 print("Training neural network...")
-y_hat = deep.neural_net(X_train, y_train, nodes=50, activators=None, activators_prime=None,
+y_hat = deep.neural_net(X_train, y_train, nodes=500, activators=None, activators_prime=None,
                scale=1.0, eps=eps, eta=eta)
+mask = y_hat > 0.5
+y_hat[mask] = 1
+y_hat[~mask] = 0
+
+print(y_hat,np.sum(y_hat))
 
 print("0/1 Loss: %lf" % val.loss_01(y_train,y_hat))

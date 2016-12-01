@@ -32,27 +32,53 @@ save_plots = True
 use_one_digit = False
 
 # Parameters
-eps = 2.0e-3
-eta = 1.0e-4
+eps = 1.0e-2
+eta = 1.0e-2
+k = 50
+scale = 0.1
+lam = 0.0
+batchsize = 10
+nout = 30000
 
 # Load in MNIST data
-print("Loading MNIST Training data...")
-X_train, y_train = mu.load_mnist(dataset='testing')
+print("Loading MNIST data...")
+X_train, y_train = mu.load_mnist(dataset='training')
+X_test, y_test = mu.load_mnist(dataset='testing')
 y_train = mu.mnist_filter(y_train)
+y_test = mu.mnist_filter(y_test)
 
-cut = 2000
+# Solve for all principal components but do calculations using only 50
+# Can reset l later if need be as all principal components are retained
+PCA = pca.PCA(l=k, center=True)
+
+print("Performing PCA with k = %d components..." % k)
+PCA.fit(X_train)
+X_train = PCA.transform(X_train)
+X_test = PCA.transform(X_test)
+
+"""
+cut = 5000
 X_train = X_train[:cut]
 y_train = y_train[:cut]
+"""
 
 print("Training neural network...")
-activators = [deep.relu,deep.sigmoid]
-activators_prime = [deep.relu_prime,deep.sigmoid_prime]
-y_hat = deep.neural_net(X_train, y_train, nodes=500, activators=activators, activators_prime=activators_prime,
-               scale=1.0, eps=eps, eta=eta)
-mask = y_hat > 0.5
-y_hat[mask] = 1
-y_hat[~mask] = 0
+activators = [deep.tanh,deep.sigmoid]
+activators_prime = [deep.tanh_prime,deep.sigmoid_prime]
+y_hat_train, w_1, w_2 = deep.neural_net(X_train, y_train, nodes=500, activators=activators, activators_prime=activators_prime,
+               scale=scale, eps=eps, eta=eta, lam=lam, adaptive=True, batchsize=batchsize, nout=nout)
 
-print(y_hat,np.sum(y_hat))
+# Compute y_hat
+a_hidden = activators[0](X_test.dot(w_1))
+y_hat_test = activators[1](a_hidden.dot(w_2))
 
-print("0/1 Loss: %lf" % val.loss_01(y_train,y_hat))
+mask = y_hat_train > 0.5
+y_hat_train[mask] = 1
+y_hat_train[~mask] = 0
+
+mask = y_hat_test > 0.5
+y_hat_test[mask] = 1
+y_hat_test[~mask] = 0
+
+print("Training 0/1 Loss: %lf" % val.loss_01(y_train,y_hat_train))
+print("Testing 0/1 Loss: %lf" % val.loss_01(y_test,y_hat_test))

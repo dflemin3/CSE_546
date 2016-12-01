@@ -1,3 +1,4 @@
+*.zip
 *.npz
 *__pycache__
 *.hdf5

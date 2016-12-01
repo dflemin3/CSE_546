@@ -6,3 +6,4 @@ from . import regression
 from . import pca
 from . import kernel
 from . import clustering
+from . import deep_learning

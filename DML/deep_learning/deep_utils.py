@@ -44,7 +44,7 @@ def linear_prime(x):
     -------
     x' : float, array
     """
-    return 1.0
+    return 0.0
 # end function
 
 
@@ -179,7 +179,7 @@ def initialize_weights(X, d, nodes, activator=None, scale=1.0, input_layer=False
 
     # If none given, default to relu as it works well
     if activator is None:
-        activator = "relu"
+        raise RuntimeError("No activator specified!")
 
     # Init weights depending on activation function
     if activator is sigmoid or activator is tanh:
@@ -189,8 +189,10 @@ def initialize_weights(X, d, nodes, activator=None, scale=1.0, input_layer=False
         else:
             sigma = scale/np.sqrt(d)
             W = np.random.normal(loc=0.0, scale=sigma, size=(d,nodes))
-    elif activator is linear or activator is relu:
+    elif activator is relu:
         W = np.random.normal(size=(d,nodes))
+    elif activator is linear:
+        W = numpy.eye(d, M=nodes)
     else:
         raise RuntimeError("No such activator: %s" % activator)
 
@@ -233,7 +235,7 @@ def trivial_scale(y_hat, w_1, w_2, scale=1.0):
 
 def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
                scale=1.0, eps=1.0e-3, eta=1.0e-3, lam=0.0, scaler=None,
-               adaptive=False, nout=None, batchsize=10):
+               adaptive=False, nout=None, batchsize=10, nclass=1):
     """
     Train a 1 hidden layer neural net classifier optimized using SGD
 
@@ -257,8 +259,10 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
         learning rate
     lam : float (optional)
         l2 regularization constant
-    adaptive : bool
+    adaptive : bool (optional)
         whether or not to use and adaptive learning rate
+    nclass : int (optional)
+        number of classes.  Defaults to binary classification (nclass = 1)
 
     Returns
     -------
@@ -288,10 +292,10 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
 
     # Initialize weight matrices for each layer-layer interface
     # Input -> Hidden layer
-    w_1 = initialize_weights(X, d, nodes, activator=activators[0], scale=scale)
+    w_1 = initialize_weights(X, d, nodes, activator=activators[0], scale=scale) # d x nodes
 
     # Hidden layer -> output
-    w_2 = initialize_weights(X, nodes, 1, activator=activators[1], scale=scale)
+    w_2 = initialize_weights(X, nodes, nclass, activator=activators[1], scale=scale) # nodes x nclass
 
     # SGD params setup
     converged = False
@@ -319,15 +323,15 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
             a_hidden = activators[0](X_b.dot(w_1)) # n x nodes
 
             # Hidden layer -> output layer
-            a_out = activators[1](a_hidden.dot(w_2)) # n x 1
+            a_out = activators[1](a_hidden.dot(w_2)) # n x nclass
 
             # 2: Compute delta for output layer, hidden layer
-            delta_out = -(y_b - a_out)*activators_prime[1](a_hidden.dot(w_2)) # n x 1
-            delta_hidden = delta_out.dot(w_2.T)*activators_prime[0](X_b.dot(w_1)) # nodes x 1
+            delta_out = -(y_b - a_out)*activators_prime[1](a_hidden.dot(w_2)) # n x nclass
+            delta_hidden = delta_out.dot(w_2.T)*activators_prime[0](X_b.dot(w_1)) # nodes x nclass
 
             # 3: Compute gradients
-            grad_w1 = X_b.T.dot(delta_hidden)
-            grad_w2 = a_out.T.dot(delta_out)
+            grad_w1 = X_b.T.dot(delta_hidden) # d x nodes
+            grad_w2 = a_hidden.T.dot(delta_out)
 
             # 4: Update parameters!
             w_1 = w_1 - scale*eta*(w_1*lam + grad_w1)

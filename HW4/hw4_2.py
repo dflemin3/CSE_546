@@ -33,6 +33,9 @@ import DML.data_processing.mnist_utils as mu
 import DML.deep_learning.deep_utils as deep
 import DML.validation.validation as val
 
+#from sklearn.preprocessing import StandardScaler
+#scaler = StandardScaler()
+
 """import matplotlib.pyplot as plt
 import matplotlib as mpl
 #Typical plot parameters that make for pretty plots
@@ -42,10 +45,10 @@ mpl.rc('font',**{'family':'serif','serif':['Computer Modern']})
 mpl.rc('text', usetex=True)"""
 
 # Parameters
-eps = 2.5e-3
-eta = 5.0e-3
+eps = 1.0e-4
+eta = 5.0e-4
 k = 50
-scale = 0.1
+scale = 0.001
 lam = 0.0
 batchsize = 10
 nout = 30000
@@ -69,21 +72,22 @@ X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
 """
-cut = 5000
-X_train = X_train[:cut]
-y_train = y_train[:cut]
+scaler.fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
 """
 
 print("Training neural network...")
-activators = [deep.tanh,deep.sigmoid]
-activators_prime = [deep.tanh_prime,deep.sigmoid_prime]
-y_hat_train, w_1, w_2 = deep.neural_net(X_train, y_train_true, nodes=nodes, activators=activators, activators_prime=activators_prime,
+activators = [deep.relu,deep.linear]
+activators_prime = [deep.relu_prime,deep.linear_prime]
+y_hat_train, w_1, w_2, b_1, b_2 = deep.neural_net(X_train, y_train_true, nodes=nodes, activators=activators, activators_prime=activators_prime,
                scale=scale, eps=eps, eta=eta, lam=lam, adaptive=True, batchsize=batchsize, nout=nout, nclass=nclass)
 
 # Compute y_hat
-a_hidden = activators[0](X_test.dot(w_1))
-y_hat_test = activators[1](a_hidden.dot(w_2))
+a_hidden = activators[0](np.dot(X_test,w_1) + b_1)
+y_hat_test = activators[1](np.dot(a_hidden,w_2) + b_2)
 
+# Classify
 y_hat_train = np.argmax(y_hat_train, axis=1).reshape((X_train.shape[0],1))
 y_hat_test = np.argmax(y_hat_test, axis=1).reshape((X_test.shape[0],1))
 

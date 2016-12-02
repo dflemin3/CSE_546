@@ -44,7 +44,7 @@ def linear_prime(x):
     -------
     x' : float, array
     """
-    return 0.0
+    return 1.0
 # end function
 
 
@@ -93,7 +93,7 @@ def relu(x):
     -------
     relu(x) : float, array
     """
-    return np.fmax(0.0,x)
+    return np.maximum(0.0,x)
 # end function
 
 
@@ -183,16 +183,17 @@ def initialize_weights(X, d, nodes, activator=None, scale=1.0, input_layer=False
 
     # Init weights depending on activation function
     if activator is sigmoid or activator is tanh:
+        print("Using sigmoid/tanh layer...")
         if input_layer:
             sigma = scale/(np.mean(X)**2) # Assuming mean(X) ~ E[X]
             W = np.random.normal(loc=0.0, scale=sigma, size=(d,nodes))
         else:
             sigma = scale/np.sqrt(d)
             W = np.random.normal(loc=0.0, scale=sigma, size=(d,nodes))
-    elif activator is relu:
-        W = np.random.normal(size=(d,nodes))
-    elif activator is linear:
-        W = numpy.eye(d, M=nodes)
+    elif activator is relu or activator is linear:
+        print("Using relu/linear layer...")
+        sigma = scale
+        W = np.random.normal(loc=0.0,scale=sigma,size=(d,nodes))
     else:
         raise RuntimeError("No such activator: %s" % activator)
 
@@ -297,6 +298,10 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
     # Hidden layer -> output
     w_2 = initialize_weights(X, nodes, nclass, activator=activators[1], scale=scale) # nodes x nclass
 
+    # Init bias terms
+    b_1 = np.zeros((1,nodes))
+    b_2 = np.zeros((1,nclass))
+
     # SGD params setup
     converged = False
     old_loss = 1.0e10
@@ -320,31 +325,41 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
 
             # 1: Feed forward pass
             # Inputs -> hidden layer
-            a_hidden = activators[0](X_b.dot(w_1)) # n x nodes
+            z_1 = np.dot(X_b,w_1) + b_1
+            a_hidden = activators[0](z_1) # n x nodes
 
             # Hidden layer -> output layer
-            a_out = activators[1](a_hidden.dot(w_2)) # n x nclass
+            z_2 = np.dot(a_hidden,w_2) + b_2
+            a_out = activators[1](z_2) # n x nclass
 
             # 2: Compute delta for output layer, hidden layer
-            delta_out = -(y_b - a_out)*activators_prime[1](a_hidden.dot(w_2)) # n x nclass
-            delta_hidden = delta_out.dot(w_2.T)*activators_prime[0](X_b.dot(w_1)) # nodes x nclass
+            # change z->a?
+            delta_out = -(y_b - a_out)*activators_prime[1](z_2) # n x nclass
+            delta_hidden = np.dot(delta_out,w_2.T)*activators_prime[0](z_1) # nodes x nclass
 
             # 3: Compute gradients
-            grad_w1 = X_b.T.dot(delta_hidden) # d x nodes
-            grad_w2 = a_hidden.T.dot(delta_out)
+            grad_w2 = np.dot(a_hidden.T,delta_out)
+            grad_w1 = np.dot(X_b.T,delta_hidden) # d x nodes
+
+            grad_b2 = np.sum(delta_out, axis=0, keepdims=True)
+            grad_b1 = np.sum(delta_hidden, axis=0, keepdims=True)
 
             # 4: Update parameters!
             w_1 = w_1 - scale*eta*(w_1*lam + grad_w1)
+            b_1 = b_1 - scale*eta*grad_b1
+
             w_2 = w_2 - scale*eta*(w_2*lam + grad_w2)
+            b_2 = b_2 - scale*eta*grad_b2
 
             # If epoch is complete (or 1st iter), compute losses for this fit
             if (ii+n) % nout == 0 or iters == 0:
 
-                # Compute y_hat
-                a_hidden = activators[0](X.dot(w_1))
-                y_hat = activators[1](a_hidden.dot(w_2))
-                loss = np.sum(np.power(y - y_hat,2))/len(y)
-                print(loss)
+                # Compute y_hat over entire training set
+                a_hidden = activators[0](np.dot(X,w_1) + b_1)
+                y_hat = activators[1](np.dot(a_hidden,w_2) + b_2)
+                loss = np.sum(np.power(y - y_hat,2))/len(y) # Square loss
+                loss_01 = np.sum(np.argmax(y_hat, axis=1) != np.argmax(y, axis=1))/y.shape[0]
+                print(loss, loss_01)
 
                 # Using an adaptive step size?
                 if adaptive:
@@ -362,5 +377,5 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
                 iters += 1
             ii = ii + n
 
-    return y_hat, w_1, w_2
+    return y_hat, w_1, w_2, b_1, b_2
 # end function

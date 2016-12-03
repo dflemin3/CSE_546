@@ -8,19 +8,33 @@ Created on Nov 2016
 
 This script solves question 2 of CSE 546 HW4
 
-ReLu, linear:
+ReLu, linear
+------------
 
 # Parameters
-eps = 2.5e-3
-eta = 5.0e-9
+eps = 1.0e-4
+eta = 2.0e-3
 k = 50
-scale = 0.1
+scale = 0.001
 lam = 0.0
 batchsize = 10
 nout = 30000
 nclass = 10
 nodes = 500
 
+ReLu, ReLu
+----------
+
+# Parameters
+eps = 5.0e-4
+eta = 5.0e-4
+k = 50
+scale = 0.001
+lam = 0.0
+batchsize = 10
+nout = 30000
+nclass = 10
+nodes = 500
 
 """
 
@@ -33,9 +47,6 @@ import DML.data_processing.mnist_utils as mu
 import DML.deep_learning.deep_utils as deep
 import DML.validation.validation as val
 
-#from sklearn.preprocessing import StandardScaler
-#scaler = StandardScaler()
-
 """import matplotlib.pyplot as plt
 import matplotlib as mpl
 #Typical plot parameters that make for pretty plots
@@ -45,7 +56,7 @@ mpl.rc('font',**{'family':'serif','serif':['Computer Modern']})
 mpl.rc('text', usetex=True)"""
 
 # Parameters
-eps = 1.0e-4
+eps = 5.0e-4
 eta = 5.0e-4
 k = 50
 scale = 0.001
@@ -64,26 +75,19 @@ y_test_true = np.asarray(y_test[:, None] == np.arange(max(y_test)+1),dtype=int).
 
 # Solve for all principal components but do calculations using only 50
 # Can reset l later if need be as all principal components are retained
-PCA = pca.PCA(l=k, center=True)
-
 print("Performing PCA with k = %d components..." % k)
+PCA = pca.PCA(l=k, center=True)
 PCA.fit(X_train)
 X_train = PCA.transform(X_train)
 X_test = PCA.transform(X_test)
 
-"""
-scaler.fit(X_train)
-X_train = scaler.transform(X_train)
-X_test = scaler.transform(X_test)
-"""
-
 print("Training neural network...")
-activators = [deep.relu,deep.linear]
-activators_prime = [deep.relu_prime,deep.linear_prime]
+activators = [deep.relu,deep.relu]
+activators_prime = [deep.relu_prime,deep.relu_prime]
 y_hat_train, w_1, w_2, b_1, b_2 = deep.neural_net(X_train, y_train_true, nodes=nodes, activators=activators, activators_prime=activators_prime,
                scale=scale, eps=eps, eta=eta, lam=lam, adaptive=True, batchsize=batchsize, nout=nout, nclass=nclass)
 
-# Compute y_hat
+# Compute y_hat_test
 a_hidden = activators[0](np.dot(X_test,w_1) + b_1)
 y_hat_test = activators[1](np.dot(a_hidden,w_2) + b_2)
 

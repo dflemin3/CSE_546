@@ -14,6 +14,7 @@ future confused me might thank me later.
 from __future__ import print_function, division
 import numpy as np
 from ..optimization import gradient_descent as gd
+from ..validation import validation as val
 
 
 def linear(x):
@@ -236,9 +237,13 @@ def trivial_scale(y_hat, w_1, w_2, scale=1.0):
 
 def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
                scale=1.0, eps=1.0e-3, eta=1.0e-3, lam=0.0, scaler=None,
-               adaptive=False, nout=None, batchsize=10, nclass=1):
+               adaptive=False, nout=None, batchsize=10, nclass=1, X_test = None,
+               y_test = None, multi=None, classfn=None, train_label=None,
+               test_label=None, verbose=True):
     """
-    Train a 1 hidden layer neural net classifier optimized using SGD
+    Train a 1 hidden layer neural net classifier which optimizes the square
+    loss using SGD.  Can also compute square loss, 0/1 loss for training and
+    testing set using fit from current iteration when verbose is True.
 
     Parameters
     ----------
@@ -264,10 +269,13 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
         whether or not to use and adaptive learning rate
     nclass : int (optional)
         number of classes.  Defaults to binary classification (nclass = 1)
+    verbose : bool (optional)
+        whether or not to calculate and return ALLLLL losses.  Defaults to True.
+    For the rest, check out the SGD docs
 
     Returns
     -------
-    ?
+    Same stuff as the SGD functions
     """
 
     #Define values
@@ -284,6 +292,14 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
     # Default epoch size is n_training_samples
     if nout is None:
         nout = X.shape[0]
+
+    # Save, output losses?
+    if verbose:
+        train_sq_loss = []
+        train_01_loss = []
+        test_sq_loss = []
+        test_01_loss = []
+        iters_arr = []
 
     # Set up activation functions and their derivatives?
     if activators is None:
@@ -304,8 +320,8 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
 
     # SGD params setup
     converged = False
-    old_loss = 1.0e10
-    loss = old_loss
+    old_loss_train = 1.0e10
+    loss_train = old_loss_train
     iters = 0
     scale = 1.0/n
 
@@ -356,26 +372,50 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
 
                 # Compute y_hat over entire training set
                 a_hidden = activators[0](np.dot(X,w_1) + b_1)
-                y_hat = activators[1](np.dot(a_hidden,w_2) + b_2)
-                loss = np.sum(np.power(y - y_hat,2))/len(y) # Square loss
-                loss_01 = np.sum(np.argmax(y_hat, axis=1) != np.argmax(y, axis=1))/y.shape[0]
-                print(loss, loss_01)
+                y_hat_train = activators[1](np.dot(a_hidden,w_2) + b_2)
+                loss_train = np.sum(np.power(y - y_hat_train,2))/len(y) # Square loss
+                loss_01_train = val.loss_01(np.argmax(y_hat_train, axis=1),train_label.squeeze())
+                # Print training set square and 0/1 loss
+                print(loss_train, loss_01_train)
+
+                # Save losses?
+                if verbose:
+                    train_sq_loss.append(loss_train)
+                    train_01_loss.append(loss_01_train)
+
+                # Compute losses over testing set
+                if verbose:
+                    a_hidden = activators[0](np.dot(X_test,w_1) + b_1)
+                    y_hat_test = activators[1](np.dot(a_hidden,w_2) + b_2)
+                    loss_test = np.sum(np.power(y_test - y_hat_test,2))/len(y_test)
+                    loss_01_test = val.loss_01(np.argmax(y_hat_test, axis=1),test_label.squeeze())
+
+                    test_sq_loss.append(loss_test)
+                    test_01_loss.append(loss_01_test)
 
                 # Using an adaptive step size?
                 if adaptive:
                     scale = 1.0/(n * np.sqrt(1.0 + iters))
 
                 # Is it converged (is loss not changing by some %?)
-                if np.fabs(loss - old_loss)/np.fabs(old_loss) > eps:
+                if np.fabs(loss_train - old_loss_train)/np.fabs(old_loss_train) > eps:
                     converged = False
                 else:
                     converged = True
                     break
 
                 # Store old loss, iterate
-                old_loss = loss
+                old_loss_train = loss_train
+                if verbose:
+                    iters_arr.append(iters)
+
                 iters += 1
             ii = ii + n
 
-    return y_hat, w_1, w_2, b_1, b_2
+    # Return everything or a few things?
+    if verbose:
+        y_hat_train, w_1, w_2, b_1, b_2, np.asarray(iters_arr), np.asarray(train_sq_loss), \
+        np.asarray(train_01_loss), np.asarray(test_sq_loss), np.asarray(test_01_loss)
+    else:
+        return y_hat_train, w_1, w_2, b_1, b_2
 # end function

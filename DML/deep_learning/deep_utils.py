@@ -393,6 +393,9 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
                     test_sq_loss.append(loss_test)
                     test_01_loss.append(loss_01_test)
 
+                if verbose:
+                    iters_arr.append(iters)
+
                 # Using an adaptive step size?
                 if adaptive:
                     scale = 1.0/(n * np.sqrt(1.0 + iters))
@@ -406,16 +409,15 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
 
                 # Store old loss, iterate
                 old_loss_train = loss_train
-                if verbose:
-                    iters_arr.append(iters)
 
                 iters += 1
             ii = ii + n
 
     # Return everything or a few things?
     if verbose:
-        y_hat_train, w_1, w_2, b_1, b_2, np.asarray(iters_arr), np.asarray(train_sq_loss), \
-        np.asarray(train_01_loss), np.asarray(test_sq_loss), np.asarray(test_01_loss)
+        return y_hat_train, w_1, w_2, b_1, b_2, np.asarray(iters_arr), \
+        np.asarray(train_sq_loss), np.asarray(train_01_loss), \
+        np.asarray(test_sq_loss), np.asarray(test_01_loss)
     else:
         return y_hat_train, w_1, w_2, b_1, b_2
 # end function

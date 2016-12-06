@@ -202,44 +202,11 @@ def initialize_weights(X, d, nodes, activator=None, scale=1.0, input_layer=False
 # end function
 
 
-def simple_scale(y_hat, w_1, w_2, scale=1.0):
-    """
-    Perform a simple y_hat scaling so E[y_hat] ~ E[y].  Here I don't touch the
-    weight vectors but keep them for compatibility
-
-    Parameters
-    ----------
-    y_hat : array
-        array to scale
-    w_1 : array
-        weight vector I don't use
-    w_2 : array
-        other weight vector I also don't use
-    scale : float (optional)
-        extra scaling factor because why not? Defaults to 1.0
-
-    Returns
-    -------
-    y_hat : array
-        scaled y_hat
-    """
-    return scale*y_hat/y_hat.shape[0], w_1, w_2
-# end function
-
-
-def trivial_scale(y_hat, w_1, w_2, scale=1.0):
-    """
-    Trivial scaling function that doesn't do anything.
-    """
-    return y_hat, w_1, w_2
-# end function
-
-
 def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
                scale=1.0, eps=1.0e-3, eta=1.0e-3, lam=0.0, scaler=None,
                adaptive=False, nout=None, batchsize=10, nclass=1, X_test = None,
                y_test = None, multi=None, classfn=None, train_label=None,
-               test_label=None, verbose=True):
+               test_label=None, verbose=True, max_iters=20):
     """
     Train a 1 hidden layer neural net classifier which optimizes the square
     loss using SGD.  Can also compute square loss, 0/1 loss for training and
@@ -285,10 +252,6 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
         n = batchsize
     d = X.shape[-1]
 
-    # Set up scaling function
-    if scaler is None:
-        scaler = trivial_scale
-
     # Default epoch size is n_training_samples
     if nout is None:
         nout = X.shape[0]
@@ -323,10 +286,14 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
     old_loss_train = 1.0e10
     loss_train = old_loss_train
     iters = 0
-    scale = 1.0/n
+    eta_scale = 1.0/n
 
     # Main loop
     while not converged:
+        # Too many iterations?
+        if iters >= max_iters:
+            print("Too many iterations! Epochs: %d" % iters)
+            break
 
         # Randomly permute X, y
         inds = np.random.permutation(X.shape[0])
@@ -361,11 +328,11 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
             grad_b1 = np.sum(delta_hidden, axis=0, keepdims=True)
 
             # 4: Update parameters!
-            w_1 = w_1 - scale*eta*(w_1*lam + grad_w1)
-            b_1 = b_1 - scale*eta*grad_b1
+            w_1 = w_1 - eta_scale*eta*(w_1*lam + grad_w1)
+            b_1 = b_1 - eta_scale*eta*grad_b1
 
-            w_2 = w_2 - scale*eta*(w_2*lam + grad_w2)
-            b_2 = b_2 - scale*eta*grad_b2
+            w_2 = w_2 - eta_scale*eta*(w_2*lam + grad_w2)
+            b_2 = b_2 - eta_scale*eta*grad_b2
 
             # If epoch is complete (or 1st iter), compute losses for this fit
             if (ii+n) % nout == 0 or iters == 0:
@@ -398,7 +365,7 @@ def neural_net(X, y, nodes=50, activators=None, activators_prime=None,
 
                 # Using an adaptive step size?
                 if adaptive:
-                    scale = 1.0/(n * np.sqrt(1.0 + iters))
+                    eta_scale = 1.0/(n * np.sqrt(1.0 + iters))
 
                 # Is it converged (is loss not changing by some %?)
                 if np.fabs(loss_train - old_loss_train)/np.fabs(old_loss_train) > eps:

@@ -38,6 +38,7 @@ nout = 30000
 nclass = 10
 nodes = 500
 seed = 42
+max_iters = 50
 
 # Seed RNG
 np.random.seed(seed=seed)
@@ -74,7 +75,7 @@ test_01_loss = \
                                batchsize=batchsize, nout=nout, nclass=nclass,
                                X_test = X_test, y_test = y_test_true,
                                train_label=y_train, test_label=y_test,
-                               verbose=True)
+                               verbose=True, max_iters=max_iters)
 
 
 # Output final losses

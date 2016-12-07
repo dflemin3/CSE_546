@@ -8,10 +8,10 @@ Created on Nov 2016
 
 This script solves question 2.3 of CSE 546 HW4
 
-Training square Loss: 0.017584
-Testing square Loss: 0.038555
-Training 0/1 Loss: 0.003383
-Testing 0/1 Loss: 0.012500
+Training square Loss: 0.014006
+Testing square Loss: 0.037826
+Training 0/1 Loss: 0.003017
+Testing 0/1 Loss: 0.012400
 
 """
 
@@ -26,8 +26,8 @@ import DML.validation.validation as val
 import random
 
 # Parameters for ReLu, ReLu layers
-eps = 5.0e-4
-eta = 5.0e-4
+eps = 1.0e-4
+eta = 1.0e-3#5.0e-4
 k = 50
 scale = 0.001
 lam = 0.0
@@ -36,7 +36,7 @@ nout = 30000
 nclass = 10
 nodes = 500
 seed = 42
-max_iters = 50
+max_iters = 75
 
 # Seed RNG
 np.random.seed(seed=seed)

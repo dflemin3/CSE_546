@@ -10,10 +10,10 @@ This script solves question 2.2 of CSE 546 HW4
 
 ReLu, linear
 
-Training square Loss: 0.051906
-Testing square Loss: 0.066974
-Training 0/1 Loss: 0.009167
-Testing 0/1 Loss: 0.016500
+TTraining square Loss: 0.049179
+Testing square Loss: 0.065924
+Training 0/1 Loss: 0.008083
+Testing 0/1 Loss: 0.016000
 
 """
 
@@ -28,7 +28,7 @@ import DML.validation.validation as val
 import random
 
 # Parameters for ReLu, linear layers
-eps = 7.5e-4
+eps = 1.0e-4
 eta = 1.0e-3
 k = 50
 scale = 0.001

@@ -10,10 +10,10 @@ This script solves question 2.1 of CSE 546 HW4
 
 tanh, linear
 
-Training square Loss: 0.055638
-Testing square Loss: 0.073848
-Training 0/1 Loss: 0.013117
-Testing 0/1 Loss: 0.027800
+Training square Loss: 0.051509
+Testing square Loss: 0.073138
+Training 0/1 Loss: 0.010933
+Testing 0/1 Loss: 0.026500
 
 """
 
@@ -28,7 +28,7 @@ import DML.validation.validation as val
 import random
 
 # Parameters for tanh, linear layers
-eps = 7.5e-4
+eps = 1.0e-4
 eta = 1.0e-3
 k = 50
 scale = 0.001
@@ -38,7 +38,7 @@ nout = 30000
 nclass = 10
 nodes = 500
 seed = 42
-max_iters = 50
+max_iters = 100
 
 # Seed RNG
 np.random.seed(seed=seed)

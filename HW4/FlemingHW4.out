@@ -1,0 +1,17 @@
+\BOOKMARK [1][-]{section*.2}{Introduction}{}% 1
+\BOOKMARK [1][-]{section*.3}{Question 0: Collaborators}{}% 2
+\BOOKMARK [1][-]{section*.4}{Question 1: Manual calculation of one round of EM for a GMM}{}% 3
+\BOOKMARK [2][-]{section*.5}{1.1: M step}{section*.4}% 4
+\BOOKMARK [2][-]{section*.6}{1.2: E Step}{section*.4}% 5
+\BOOKMARK [1][-]{section.1}{1. Question 2: Neural Nets and Backprop}{}% 6
+\BOOKMARK [2][-]{section*.7}{2.1: With tanh hidden units}{section.1}% 7
+\BOOKMARK [2][-]{section*.12}{2.2: With ReLu hidden units}{section.1}% 8
+\BOOKMARK [2][-]{section*.17}{2.3: With ReLu hidden units + ReLu output units}{section.1}% 9
+\BOOKMARK [1][-]{section*.22}{3: EM v.s. Gradient Descent}{}% 10
+\BOOKMARK [2][-]{section*.23}{3.1}{section*.22}% 11
+\BOOKMARK [2][-]{section*.24}{3.2}{section*.22}% 12
+\BOOKMARK [2][-]{section*.25}{3.3}{section*.22}% 13
+\BOOKMARK [1][-]{section*.26}{4: Markov Decision Processes and Dynamic Programming}{}% 14
+\BOOKMARK [2][-]{section*.27}{4.1}{section*.26}% 15
+\BOOKMARK [2][-]{section*.28}{4.2}{section*.26}% 16
+\BOOKMARK [2][-]{section*.29}{4.3}{section*.26}% 17

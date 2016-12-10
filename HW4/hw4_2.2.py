@@ -10,7 +10,7 @@ This script solves question 2.2 of CSE 546 HW4
 
 ReLu, linear
 
-TTraining square Loss: 0.049179
+Training square Loss: 0.049179
 Testing square Loss: 0.065924
 Training 0/1 Loss: 0.008083
 Testing 0/1 Loss: 0.016000

@@ -38,7 +38,7 @@ nout = 30000
 nclass = 10
 nodes = 500
 seed = 42
-max_iters = 100
+max_iters = 50
 
 # Seed RNG
 np.random.seed(seed=seed)

@@ -33,16 +33,76 @@ I collaborated with Matt Wilde, Serena Liu, and Janet Matsen for various questio
 
 %%% QUESTION 1 %%%
 \section*{Question 1: Manual calculation of one round of EM for a GMM}
-
-TODO
+Here I perform one round of EM for a GMM on the 1D data $x = [1,10,20]$.  All M and E step equations are taken from Murphy section 11.4.2.
 
 \subsection*{1.1: M step}
+\subsubsection*{1.1.1}
+The likelihood function we optimize is taken Murphy (eqn. 11.26) and is
+\begin{equation}
+\sum_i \sum_c R_{ic} \log \pi_c + \sum_i \sum_c R_{ic} \log p(x_i | \theta_c).
+\end{equation}
+\subsubsection*{1.1.2}
+The M step to update $\pi$ is 
+\begin{equation}
+\pi_c = \frac{1}{N} \sum_i R_{ic}.
+\end{equation}
+Applying this equation to the given data gives the updated mixing weights
+\begin{equation}
+\pi_1 = \frac{1 + 0.4}{3} = 0.467
+\end{equation}
+and 
+\begin{equation}
+\pi_2 = \frac{0.6 + 1}{3} = 0.533.
+\end{equation}
 
-TODO
+\subsubsection*{1.1.3}
+The M step for the means is
+\begin{equation}
+\mu_c = \frac{\sum_i R_{ic x_i}}{R_c}.
+\end{equation}
+Apply this equation to the given data gives the updated means
+\begin{equation}
+\mu_1 = \frac{(1 \cdot 1) + (10 \cdot 0.4) + (20 \cdot 0)}{1.4} = 3.57
+\end{equation}
+and
+\begin{equation}
+\mu_2 = \frac{(0 \cdot 1) + (10 \cdot 0.6) + (20 \cdot 1)}{1.6} = 16.25.
+\end{equation}
+
+\subsubsection*{1.1.4}
+The M step for the standard deviation is
+\begin{equation}
+\Sigma_c = \frac{\sum_i R_{ic}(x_i - \mu_c)(x_i - \mu_c)^T}{R_c}
+\end{equation}
+where $\sigma_c = \sqrt{\Sigma_c}$ for the 1D case.  Applying this equation to the given data gives the updated standard deviations
+\begin{equation}
+\sigma_1 = \sqrt{\frac{1(1-3.57)^2 + 0.4(10-3.57)^2}{1.4}} = 4.07
+\end{equation}
+and
+\begin{equation}
+\sigma_2 = \sqrt{\frac{0.6(10-16.25)^2 + 1(20-16.25)^2}{1.6}} = 4.84.
+\end{equation}
 
 \subsection*{1.2: E Step}
 
-TODO
+\subsubsection*{1.2.1}
+The probability for observation $x_i$ belonging to cluster $c$ is the responsibility
+\begin{equation}
+R_{ic} = \frac{\pi_c p(x_i | \theta_c^{(t-1)})}{\sum_{c'}\pi_{c'} p(x_i | \theta_{c'}^{(t-1)})}
+\end{equation}
+where $p(x_i | \theta_c^{(t-1)}) = N(\mu_c,\sigma_c)$ for the assumed GMM.
+
+\subsubsection*{1.2.2}
+After performing the E step, the new value of R is
+\begin{equation}
+R = 
+\begin{pmatrix}
+    0.99  & 0.01 \\
+    0.41  & 0.59 \\
+    0       & 1      \\
+\end{pmatrix}
+\end{equation}
+where the last row values barely changed ($< 1 \times 10^{-4}$) in this iteration.
 
 %%% QUESTION 2 %%%
 \section{Question 2: Neural Nets and Backprop}
@@ -50,7 +110,7 @@ The code used for this question is given in {\tt hw4$\_$2.1.py, hw4$\_$2.2.py, h
 
 For all parts of this question and for computational speed purposes, I first performed dimension reduction using PCA.  I fit my PCA algorithm on the MNIST training set and then projected each image using the first $k = 50$ components.  I did not subtract off the mean when fitting for PCA as the mean component swamped out the differences between the hidden layer weights images.  
 
-I used mini-batch SGD with a mini-batch size of 10 for all gradient calculations during the backprop step.  Each half epoch, or each complete pass through half of the randomly permuted training set, I performed 30,000/10 = 3,000 mini-batch gradient updates.  I computed the square loss of the entire transformed training set and testing set (to which I applied the same transformation as the training set for consistency).  I called my algorithm converged either once the mean square loss on the training set did not change by more than $0.01\%$ or when the algorithm has passed through the training set a certain number of times, typically 25.  Since this is a non-convex optimization problem, I found that once near convergence, the loss jumped around substantially necessitating terminting the optimization after a certain number of epochs.  I did not explicitly use regularization since the early-stopping from the combination of my capped number of epochs and my learning rate decay scheme (described below) implicitly $l_2$ regularize my solution.  I used this exact same optimization scheme for both Questions 2.2 and 2.3 (see below).  Interestingly, I found that the same learning rate and scaling parameter yielded optimal performances for all my solutions as shown below.
+I used mini-batch SGD with a mini-batch size of 10 for all gradient calculations during the backprop step.  Each half epoch, or each complete pass through half of the randomly permuted training set, I performed 30,000/10 = 3,000 mini-batch gradient updates.  I computed the square loss of the entire transformed training set and testing set (to which I applied the same transformation as the training set for consistency).  I called my algorithm converged either once the mean square loss on the training set did not change by more than $0.01\%$ or when the algorithm has passed through the training set a certain number of times, typically 25.  Since this is a non-convex optimization problem, I found that once near convergence, the loss jumped around substantially necessitating terminating the optimization after a certain number of epochs.  I did not explicitly use regularization since the early-stopping from the combination of my capped number of epochs and my learning rate decay scheme (described below) implicitly $l_2$ regularize my solution.  I used this exact same optimization scheme for both Questions 2.2 and 2.3 (see below).  Interestingly, I found that the same learning rate and scaling parameter yielded optimal performances for all my solutions as shown below.
 
 My testing set 0/1 loss to beat for a comparable neural network architecture from the official MNIST website is $4.5\%$ for a 2-layer neural network with 1000 hidden units.  
 

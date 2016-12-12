@@ -241,16 +241,41 @@ In Fig.~\ref{fig:relu_relu_hidden}, I choose 10 hidden layer nodes at random and
 As before, all the hidden weights appear to be seemingly random combinations of digits with additional noisy jitter.
 
 \section*{3: EM v.s. Gradient Descent}
-TODO
 
 \subsection*{3.1}
-TODO
+I will show that
+\begin{equation}
+\nabla L(\theta) = E_{Z {\sim}P(z|x,\theta)} \nabla \log P(x,z|\theta)
+\end{equation}
+and note that I will use the relation
+\begin{equation} \label{eqn:bayes_3}
+P(z|x,\theta)P(x|\theta) = P(x,z|\theta).
+\end{equation}
+
+I expand the gradient of the likelihood to get
+\begin{equation}
+\begin{split}
+\nabla L(\theta) & = \frac{\partial}{\partial \theta} \log P(x|\theta) \\
+& \frac{1}{P(x|\theta)} \frac{\partial}{\partial \theta} P(x|\theta) \\
+& \frac{1}{P(x|\theta)} \frac{\partial}{\partial \theta} \sum_z P(x, z|\theta) \\
+& =  \frac{1}{P(x|\theta)} \sum_z  \frac{\partial}{\partial \theta} P(x, z|\theta) \\
+& = \sum_z  \frac{1}{P(x|\theta)}  \frac{\partial}{\partial \theta} P(x, z|\theta) \\
+& = \sum_z  \frac{P(z|x,\theta)}{P(x,z|\theta)}  \frac{\partial}{\partial \theta} P(x, z|\theta) \\
+&= \sum_z P(z|x,\theta) \nabla \log P(x,z|\theta) \\
+& =  E_{Z {\sim}P(z|x,\theta)} \nabla \log P(x,z|\theta)
+\end{split}
+\end{equation}
+where I made use of Eqn.~\ref{eqn:bayes_3} to replace $1/P(x|\theta)$, completing the proof.
 
 \subsection*{3.2}
-TODO
+Alice and Bob are doing the same thing since at that point, the gradient of the loss function and the gradient of the product of the E step are identical.  In the E step, we compute the expected complete data log likelihood via the auxiliary function, Q, where the expectation is taken with respect to the old parameters and the observed data.  Therefore at that same point, the gradient of the expected log likelihood is equal to the gradient of the true log likelihood so a gradient descent update on either Q or the true log likelihood will be equivalent.
 
 \subsection*{3.3}
-TODO
+If ran to convergence, the EM algorithm reaches a critical point, either a local optimum or a saddle point, where the gradient of the log likelihood function is 0.  This occurs because EM monotonically increases the observed data log likelihood until it reaches a local optimum.  After the E step, the expected complete log likelihood is a tight lower bound to the log likelihood function so any maximization on this lower bound, via the M step, is assured to update the model parameters to increase the observed data log likelihood until reaching a local optimum.  Specifically in therms of the expected complete data log likelihood $Q$ and log likelihood $l$, we have
+\begin{equation}
+l(\theta^{t+1}) \geq Q(\theta^{t+1},\theta^{t}) \geq Q(\theta^{t+1},\theta^{t}) = l(\theta^{t}) 
+\end{equation}
+so when $l(\theta^{t+1}) = l(\theta^{t})$, $Q(\theta^{t+1},\theta^{t}) = Q(\theta^{t+1},\theta^{t})$ and the algorithm has converged to a local optimum.
 
 \section*{4: Markov Decision Processes and Dynamic Programming}
 TODO

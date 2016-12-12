@@ -342,10 +342,20 @@ where $\sum_{x'}P(x'|x,a) = 1$.  Note that now since the relation does not depen
 by the definition of the infinity norm, completing the proof.
 
 \subsection*{4.2}
-TODO
+If $\text{Bell}(V) = V$, then from the inequality derived in the last question,
+\begin{equation}
+\begin{split}
+& ||\text{Bell}(V_1) - \text{Bell}(V_2)||_{\infty} \leq \gamma || V_1 - V_2 ||_{\infty}  \\
+& || V_1 - V_2 ||_{\infty} \leq \gamma || V_1 - V_2 ||_{\infty}.
+\end{split}
+\end{equation}
+Since $\gamma \in [1,0)$, $V_1 = V_2$ in order to satisfy the inequality showing that this $V_1 = V_2 = V$ is unique.  This $V$ is the value of the optimal policty.
 
 \subsection*{4.3}
-TODO
+If $\text{Bell}(V) = V$, the optimal policy is
+\begin{equation}
+\Pi^* = \text{argmax}_a R(x,a) + \gamma \sum_{x'} P(x'|x,a) V(x').
+\end{equation}
 
 \end{document}
 

@@ -58,7 +58,7 @@ and
 \subsubsection*{1.1.3}
 The M step for the means is
 \begin{equation}
-\mu_c = \frac{\sum_i R_{ic x_i}}{R_c}.
+\mu_c = \frac{\sum_i R_{ic} x_i}{R_c}.
 \end{equation}
 Apply this equation to the given data gives the updated means
 \begin{equation}
@@ -278,10 +278,68 @@ l(\theta^{t+1}) \geq Q(\theta^{t+1},\theta^{t}) \geq Q(\theta^{t+1},\theta^{t}) 
 so when $l(\theta^{t+1}) = l(\theta^{t})$, $Q(\theta^{t+1},\theta^{t}) = Q(\theta^{t+1},\theta^{t})$ and the algorithm has converged to a local optimum.
 
 \section*{4: Markov Decision Processes and Dynamic Programming}
-TODO
+Here I make use of the Bellman equation,
+\begin{equation}
+\tilde{V}(x) = \max_a \left( R(x,a) + \gamma \sum_{x'}P(x'|x,a)V(x') \right)
+\end{equation}
+where the discount factor $\gamma \in [0,1)$.
 
 \subsection*{4.1}
-TODO
+For this section, I will use the following inequalities
+\begin{equation} \label{eqn:max_ab}
+|\max(A) - \max(B) | \leq \max(|A-B|)
+\end{equation}
+and
+\begin{equation} \label{eqn:max_v}
+V_1(x') - V_2(x') \leq \max_{x'} |V_1(x') - V_2(x')|.
+\end{equation}
+
+\begin{equation}
+\begin{split}
+& ||\text{Bell}(V_1) - \text{Bell}(V_2)||_{\infty} \\
+& = \max_{x} | \max_a (R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_1(x')) - \max_a (R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_2(x'))|
+\end{split}
+\end{equation}
+where I define 
+\begin{equation}
+A = \max_a (R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_1(x'))
+\end{equation}
+and 
+\begin{equation}
+B = \max_a (R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_2(x')).
+\end{equation}
+Using Eqn.~\ref{eqn:max_ab},
+\begin{equation}
+\begin{split}
+& \max_x | \max_a(A) - \max_a(B) | \\
+& \leq \max_{a,x} |A - B|.
+\end{split}
+\end{equation}
+Reinserting the definitions for A and B,
+\begin{equation}
+\begin{split}
+&\max_{x,a} |(R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_1(x')) - (R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_2(x'))| \\
+&\leq \max_{x,a} | \gamma \sum_{x'}P(x'|x,a)V_1(x') - \gamma \sum_{x'}P(x'|x,a)V_2(x'))| \\
+& \leq  \gamma \max_{x,a} |\sum_{x'}P(x'|x,a)(V_1(x') - V_2(x'))|.
+\end{split}
+\end{equation}
+Now using Eqn.~\ref{eqn:max_v}, I rewrite the above as
+\begin{equation}
+\begin{split}
+& \leq  \gamma \max_{x,a} |\sum_{x'}P(x'|x,a)(V_1(x') - V_2(x'))| \\
+& \leq \gamma \max_{x,a} |\sum_{x'}P(x'|x,a)| \max_{x'}|V_1(x') - V_2(x')| \\
+& \leq \gamma \max_{x,a,x'}|V_1(x') - V_2(x')|
+\end{split}
+\end{equation}
+where $\sum_{x'}P(x'|x,a) = 1$.  Note that now since the relation does not depend on $x$ or $a$, I can drop them from the max operator.  The equation simplifies to 
+\begin{equation}
+\begin{split}
+& \leq \gamma \max_{x,a,x'}|V_1(x') - V_2(x')| \\
+& \leq \gamma \max_{x'}|V_1(x') - V_2(x')| \\
+& \leq \gamma ||V_1 - V_2||_{\infty}
+\end{split}
+\end{equation}
+by the definition of the infinity norm, completing the proof.
 
 \subsection*{4.2}
 TODO

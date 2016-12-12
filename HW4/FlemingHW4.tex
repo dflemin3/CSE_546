@@ -21,7 +21,7 @@
 
 \section*{Introduction}
 
-Please note that a copy of all the code I wrote to answer the questions in this assignment are included in my submission but also located online at \url{https://github.com/dflemin3/CSE_546/tree/master/HW4}.  Some scripts require data, such as MNIST data, to run to completion and were not included on my github due to file size constraints.  
+Please note that a copy of all the code I wrote to answer the questions in this assignment are included in my submission but also located online at \url{https://github.com/dflemin3/CSE_546/tree/master/HW4}.  Some scripts require data, such as MNIST data, to run to completion and were not included on my github due to file size constraints but can be supplied as {\tt .pkl} files upon request.  
 
 Overall, my code is structured as follows:  There are three main directories included in my submission: {\tt DML}, {\tt Data} and {\tt HW4}. {\tt HW4} contains all the scripts used to run my analysis.  For example to reproduce the answer for Question 2.1, one would run {\tt python hw4$\_2.1.py$}.  All scripts have relative file paths so the code should run and have detailed comments to describe functionality.  In addition, the scripts have flags near the top to control functionality.  By default, I set all flags to true so the script performs the entire analysis and plotting.  
 
@@ -124,7 +124,7 @@ I initialized the weights which map the input to the hidden layer by randomly sa
 \begin{equation}
 \sigma = \frac{c}{||X||^2_2}
 \end{equation}
-for $d$ features in the dataset.  I set the arbitrary scaling constant $c = 0.001$ to keep the weights near zero to prevent from the solution from getting stuck in the flat part of the tanh function.  I initial the second $n_{nodes} \times n_{classes}$ weight matrix which maps the hidden layer to the output layer by randomly sampling from $N(0,\sigma)$ for each element of the weight matrix where I computed 
+for $d$ features in the dataset.  I set the arbitrary scaling constant $c = 0.001$ to keep the weights near zero to prevent from the solution from getting stuck in the flat part of the tanh function.  I initialize the second $n_{nodes} \times n_{classes}$ weight matrix which maps the hidden layer to the output layer by randomly sampling from $N(0,\sigma)$ for each element of the weight matrix where I computed 
 \begin{equation}
 \sigma = \frac{c}{\sqrt{n_{nodes}}}
 \end{equation}
@@ -166,7 +166,7 @@ I initialized the weights which map the input to the hidden layer by randomly sa
 \begin{equation}
 \sigma = \frac{c}{||X||^2_2}
 \end{equation}
-for $d$ features in the dataset.  I set the arbitrary scaling constant $c = 0.001$ to keep the weights near zero to prevent from the solution from blowing up when the weights are far from 0.  I initial the second $n_{nodes} \times n_{classes}$ weight matrix which maps the hidden layer to the output layer by randomly sampling from $N(0,\sigma)$ for each element of the weight matrix where I computed 
+for $d$ features in the dataset.  I set the arbitrary scaling constant $c = 0.001$ to keep the weights near zero to prevent from the solution from blowing up when the weights are far from 0.  I initialize the second $n_{nodes} \times n_{classes}$ weight matrix which maps the hidden layer to the output layer by randomly sampling from $N(0,\sigma)$ for each element of the weight matrix where I computed 
 \begin{equation}
 \sigma = \frac{c}{\sqrt{n_{nodes}}}
 \end{equation}
@@ -184,7 +184,7 @@ I plot square loss as a function of half epoch in Fig.~\ref{fig:relu_linear_sq} 
     \caption{0/1 loss for both the training and testing sets as a function of half epochs for a 2 layer neural network with a ReLu hidden unit and linear output units.}
     \label{fig:relu_linear_01}
 \end{figure}
-In the first few epoch, both the square and 0/1 losses for both the training and testing sets drop dramatically.  Although the square loss seems to slowly asymptote until the maximum number of iterators, the 0/1 losses decay but substantially bounce around, much more so than for the tanh hidden unit optimization.  This additional stochastic bouncing is likely due to the piece-wise linear nature of the ReLu function and its non-continuos derivative.  As expected, the training 0/1 loss continues to decay as I train on the training set but the testing loss seems to bottom-out indicating that running SGD for more epochs would only lead to over-fitting.
+In the first few epoch, both the square and 0/1 losses for both the training and testing sets drop dramatically.  Although the square loss seems to slowly asymptote until the maximum number of iterators, the 0/1 losses decay but substantially bounce around, much more so than for the tanh hidden unit optimization.  This additional stochastic-like bouncing is likely due to the piece-wise linear nature of the ReLu function and its discontinuos gradient.  As expected, the training 0/1 loss continues to decay as I train on the training set but the testing loss seems to bottom-out indicating that running SGD for more epochs would only lead to over-fitting.
 
 \subsubsection*{2.2.3}
 My final squared losses on the training and testing sets are 0.049179 and 0.065924, respectively.  My final 0/1 losses on the training and testing sets are 0.008083 and 0.016000, respectively.  My performance on the testing set for this architecture and set of activation functions is much better than the MNIST website benchmark and than my tanh activation function solution.  It is interesting that learning with a simple nonlinear function like ReLu yields substantially better performance than the tanh layer with much fewer iterations.
@@ -208,7 +208,7 @@ I initialized the weights which map the input to the hidden layer by randomly sa
 \begin{equation}
 \sigma = \frac{c}{||X||^2_2}
 \end{equation}
-for $d$ features in the dataset.  I set the arbitrary scaling constant $c = 0.001$ to keep the weights near zero to prevent from the solution from blowing up when weights are far from 0.  I initial the second $n_{nodes} \times n_{classes}$ weight matrix which maps the hidden layer to the output layer by randomly sampling from $N(0,\sigma)$ for each element of the weight matrix where I computed 
+for $d$ features in the dataset.  I set the arbitrary scaling constant $c = 0.001$ to keep the weights near zero to prevent from the solution from blowing up when weights are far from 0.  I initialize the second $n_{nodes} \times n_{classes}$ weight matrix which maps the hidden layer to the output layer by randomly sampling from $N(0,\sigma)$ for each element of the weight matrix where I computed 
 \begin{equation}
 \sigma = \frac{c}{\sqrt{n_{nodes}}}
 \end{equation}
@@ -271,7 +271,7 @@ where I made use of Eqn.~\ref{eqn:bayes_3} to replace $1/P(x|\theta)$, completin
 Alice and Bob are doing the same thing since at that point, the gradient of the loss function and the gradient of the product of the E step are identical.  In the E step, we compute the expected complete data log likelihood via the auxiliary function, Q, where the expectation is taken with respect to the old parameters and the observed data.  Therefore at that same point, the gradient of the expected log likelihood is equal to the gradient of the true log likelihood so a gradient descent update on either Q or the true log likelihood will be equivalent.
 
 \subsection*{3.3}
-If ran to convergence, the EM algorithm reaches a critical point, either a local optimum or a saddle point, where the gradient of the log likelihood function is 0.  This occurs because EM monotonically increases the observed data log likelihood until it reaches a local optimum.  After the E step, the expected complete log likelihood is a tight lower bound to the log likelihood function so any maximization on this lower bound, via the M step, is assured to update the model parameters to increase the observed data log likelihood until reaching a local optimum.  Specifically in therms of the expected complete data log likelihood $Q$ and log likelihood $l$, we have
+If ran to convergence, the EM algorithm reaches a critical point, either a local optimum or a saddle point, where the gradient of the log likelihood function is 0.  This occurs because EM monotonically increases the observed data log likelihood until it reaches a local optimum.  After the E step, the expected complete log likelihood is a tight lower bound to the log likelihood function so any maximization on this lower bound, via the M step, is assured to update the model parameters to increase the observed data log likelihood until reaching a local optimum.  Specifically in terms of the expected complete data log likelihood $Q$ and log likelihood $l$, we have
 \begin{equation}
 l(\theta^{t+1}) \geq Q(\theta^{t+1},\theta^{t}) \geq Q(\theta^{t+1},\theta^{t}) = l(\theta^{t}) 
 \end{equation}
@@ -302,11 +302,11 @@ V_1(x') - V_2(x') \leq \max_{x'} |V_1(x') - V_2(x')|.
 \end{equation}
 where I define 
 \begin{equation}
-A = \max_a (R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_1(x'))
+A = R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_1(x')
 \end{equation}
 and 
 \begin{equation}
-B = \max_a (R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_2(x')).
+B = R(x,a) + \gamma \sum_{x'}P(x'|x,a)V_2(x').
 \end{equation}
 Using Eqn.~\ref{eqn:max_ab},
 \begin{equation}
